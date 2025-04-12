@@ -1,0 +1,20 @@
+<div class="w-full h-screen relative overflow-hidden bg-black"
+     (touchstart)="onTouchStart($event)" 
+     (touchend)="onTouchEnd($event)">
+  
+  <div class="w-full h-full transition-transform duration-500 ease-in-out"
+       [ngStyle]="{ transform: 'translateY(-' + activeIndex * 100 + 'vh)' }">
+
+    <div *ngFor="let meme of memes" class="w-full h-screen">
+      <app-meme-viewer [meme]="meme" 
+      (swipeLeft)="goToDetail()"
+      (swipeRight)="openMenu()"></app-meme-viewer>
+    </div>
+  </div>
+
+  <!-- Кнопки на десктопе -->
+  <div class="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 hidden md:flex flex-col gap-4">
+    <button (click)="prev()">⬆️</button>
+    <button (click)="next()">⬇️</button>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="w-full h-screen relative flex items-center justify-center bg-black overflow-hidden"
+     (touchstart)="onTouchStart($event)"
+     (touchend)="onTouchEnd($event)">
+
+    <div class="relative w-fit h-fit">
+      <!-- Мем -->
+      <img *ngIf="meme?.imageUrl"
+           [src]="meme.imageUrl"
+           alt="meme"
+           class="object-contain max-h-screen max-w-full" />
+  
+      <!-- Иконки -->
+      <div class="absolute -right-10 bottom-0 mb-4 flex flex-col items-center gap-4 text-white z-50">
+        <button>❤️</button>
+        <button>💬</button>
+        <button>🔖</button>
+        <button>🔗</button>
+        <button (click)="onSwipeLeft()">➡️</button>
+      </div>
+    </div>
+  
+  </div>
