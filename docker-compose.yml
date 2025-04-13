@@ -1,0 +1,21 @@
+version: "3.8"
+
+services:
+  memeup-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: memeup-web:latest
+    container_name: memeup-web
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.memeup-web.rule=Host(`memeup.kuzmenko.dev`)"
+      - "traefik.http.routers.memeup-web.entrypoints=websecure"
+      - "traefik.http.routers.memeup-web.tls.certresolver=myresolver"
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
