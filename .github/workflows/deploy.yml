@@ -40,5 +40,5 @@ jobs:
             rm memeup-web.tar.gz
             cd memeup-web
             docker compose down || true
-            docker compose build
+            docker compose build --no-cache
             docker compose up -d
