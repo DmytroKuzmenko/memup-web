@@ -1,29 +1,44 @@
-- name: Archive project files
-  run: |
-    tar --exclude='.git' -czf memeup-web.tar.gz .
+name: Build and Deploy memeup-web
 
-- name: Copy archive to server
-  uses: appleboy/scp-action@v0.1.4
-  with:
-    host: ${{ secrets.SSH_HOST }}
-    username: ${{ secrets.SSH_USER }}
-    key: ${{ secrets.SSH_KEY }}
-    source: "memeup-web.tar.gz"
-    target: "/opt"
+on:
+  push:
+    branches:
+      - main
 
-- name: SSH and deploy
-  uses: appleboy/ssh-action@v1.0.0
-  with:
-    host: ${{ secrets.SSH_HOST }}
-    username: ${{ secrets.SSH_USER }}
-    key: ${{ secrets.SSH_KEY }}
-    script: |
-      cd /opt
-      rm -rf memeup-web
-      mkdir memeup-web
-      tar -xzf memeup-web.tar.gz -C memeup-web
-      rm memeup-web.tar.gz
-      cd memeup-web
-      docker compose down || true
-      docker compose build
-      docker compose up -d
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Archive project files
+        run: |
+          tar --exclude='.git' -czf memeup-web.tar.gz .
+
+      - name: Copy archive to server
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "memeup-web.tar.gz"
+          target: "/opt"
+
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt
+            rm -rf memeup-web
+            mkdir memeup-web
+            tar -xzf memeup-web.tar.gz -C memeup-web
+            rm memeup-web.tar.gz
+            cd memeup-web
+            docker compose down || true
+            docker compose build
+            docker compose up -d
