@@ -15,7 +15,7 @@ jobs:
 
       - name: Archive project files
         run: |
-          tar --exclude='.git' --warning=no-file-changed -czf memeup-web.tar.gz .
+          tar --exclude='.git' -czf memeup-web.tar.gz . || true
 
       - name: Copy archive to server
         uses: appleboy/scp-action@v0.1.4
