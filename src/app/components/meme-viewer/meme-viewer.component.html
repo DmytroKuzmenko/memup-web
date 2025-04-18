@@ -1,14 +1,39 @@
 <div class="w-full h-screen relative flex items-center justify-center bg-white overflow-hidden"
+    
      (touchstart)="onTouchStart($event)"
      (touchend)="onTouchEnd($event)">
 
-    <div class="relative w-fit h-fit">
+    <div class="relative w-fit h-fit"
+    (dblclick)="onDoubleTap($event)">
       <!-- Мем -->
       <img *ngIf="meme?.imageUrl"
            [src]="meme.imageUrl"
            alt="meme"
            class="object-contain max-h-screen max-w-full" />
-  
+
+      <!-- Сердца как в TikTok -->
+      <div *ngFor="let heart of hearts"
+      class="fixed pointer-events-none z-50"
+      [ngStyle]="{
+        left: (heart.x - 32) + 'px',
+        top: (heart.y - 32) + 'px'
+      }">
+      <svg xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 512 512"
+        class="w-16 h-16 animate-[popHeart_1s_ease-out]">
+      <defs>
+      <linearGradient id="flagGerman" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#000" />
+        <stop offset="33%" stop-color="#D00" />
+        <stop offset="66%" stop-color="#FFCE00" />
+      </linearGradient>
+      </defs>
+      <path fill="url(#flagGerman)"
+          d="M256 464s-182-104.3-182-264C74 129.7 114.3 96 160 96c36.3 0 64 23.6 80 48 16-24.4 43.7-48 80-48 45.7 0 86 33.7 86 104 0 159.7-182 264-182 264z"/>
+      </svg>
+      </div>
+
+
       <!-- Иконки -->
       <div class="absolute -right-10 bottom-0 mb-4 flex flex-col items-center gap-4 text-white z-50">
         <button>❤️</button>
