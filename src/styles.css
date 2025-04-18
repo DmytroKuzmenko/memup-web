@@ -6,7 +6,6 @@ html, body {
     touch-action: pan-x;
   }
   
-  /* динамическая высота */
   .full-height {
     height: calc(var(--vh, 1vh) * 100);
   }
