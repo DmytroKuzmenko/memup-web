@@ -1,14 +1,14 @@
-<div class="w-full h-full relative overflow-hidden bg-white"
+<div class="w-full h-screen relative overflow-hidden bg-white"
      (touchstart)="onTouchStart($event)" 
      (touchend)="onTouchEnd($event)">
   
   <div class="w-full h-full transition-transform duration-500 ease-in-out"
        [ngStyle]="{ transform: 'translateY(-' + activeIndex * 100 + 'vh)' }">
 
-    <div *ngFor="let meme of memes" class="w-full min-h-[100vh]">
+    <div *ngFor="let meme of memes" class="w-full h-screen">
       <app-meme-viewer [meme]="meme" 
-        (swipeLeft)="goToDetail()"
-        (swipeRight)="openMenu()"></app-meme-viewer>
+      (swipeLeft)="goToDetail()"
+      (swipeRight)="openMenu()"></app-meme-viewer>
     </div>
   </div>
 
