@@ -1,13 +1,9 @@
 @import "tailwindcss";
 
 html, body {
-    margin: 0;
-    padding: 0;
-    background: white;
-    height: 100%;
+    @apply m-0 p-0 bg-white text-black;
   }
   
-  /* переменная для динамического vh */
   .full-height {
     height: calc(var(--vh, 1vh) * 100);
   }
