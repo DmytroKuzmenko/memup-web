@@ -1,7 +1,13 @@
 @import "tailwindcss";
 
 html, body {
+    margin: 0;
+    padding: 0;
+    background: white;
     height: 100%;
-    overscroll-behavior-y: none;
-    touch-action: pan-x;
+  }
+  
+  /* переменная для динамического vh */
+  .full-height {
+    height: calc(var(--vh, 1vh) * 100);
   }
