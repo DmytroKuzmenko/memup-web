@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router';
 export class MemeDetailComponent {
   meme = {
     text: 'Ich liebe Montag...',
-    translation: 'Я люблю понеділок...',
+    translation: 'Я люблю понеділок... (test)',
     example: 'Zum Beispiel: Ich liebe Montag, weil ich produktiv bin.',
     note: 'Цей мем іронічний — більшість людей не люблять понеділки.'
   };
