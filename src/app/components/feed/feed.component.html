@@ -3,7 +3,7 @@
      (touchend)="onTouchEnd($event)">
   
   <div class="w-full h-full transition-transform duration-500 ease-in-out"
-       [ngStyle]="{ transform: 'translateY(-' + activeIndex * 100 + 'dvh)' }">
+       [ngStyle]="{ transform: 'translateY(-' + activeIndex * 100 + 'vh)' }">
 
     <div *ngFor="let meme of memes" class="w-full h-screen">
       <app-meme-viewer [meme]="meme" 
