@@ -1,0 +1,35 @@
+.levels-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  
+  .level-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+  }
+  
+  .level-card:hover {
+    box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  }
+  
+  .level-bg {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+  
+  .level-info {
+    flex: 1;
+  }

@@ -14,8 +14,4 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 })
 export class SectionsListComponent {
   sections: Section[] = SECTIONS;
-
-  openSection(id: number) {
-    // Навигация (например, [routerLink] в шаблоне, здесь не требуется)
-  }
 }

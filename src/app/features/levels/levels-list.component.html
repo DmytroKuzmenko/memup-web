@@ -1,0 +1,9 @@
+<div class="levels-list">
+    <mat-card *ngFor="let level of levels" [routerLink]="['/levels', level.id]" class="level-card">
+      <img [src]="level.backgroundUrl" class="level-bg" alt="{{ level.name }}" />
+      <div class="level-info">
+        <h2>{{ level.name }}</h2>
+        <p>Мінімальний % для проходження: {{ level.minPercentToPass }}%</p>
+      </div>
+    </mat-card>
+  </div>

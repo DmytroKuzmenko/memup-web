@@ -1,0 +1,39 @@
+.memes-carousel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px auto;
+    max-width: 500px;
+  }
+  
+  .meme-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .media-block {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  
+  .meme-media {
+    max-width: 210px;
+    max-height: 200px;
+    border-radius: 12px;
+    background: #eee;
+  }
+  
+  .carousel-controls {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  

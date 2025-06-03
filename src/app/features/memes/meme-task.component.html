@@ -1,0 +1,22 @@
+<mat-card *ngIf="task">
+    <h3>{{ task.questionText }}</h3>
+    <div class="answers">
+      <button
+        mat-stroked-button
+        *ngFor="let answer of task.answerOptions; let i = index"
+        [color]="answered ? (i === task.correctAnswerIndex ? 'primary' : (selected === i ? 'warn' : undefined)) : undefined"
+        [disabled]="answered"
+        (click)="choose(i)">
+        {{ answer }}
+      </button>
+    </div>
+  
+    <div *ngIf="answered" class="result-block">
+      <div *ngIf="selected === task.correctAnswerIndex" class="correct">✅ Вірно!</div>
+      <div *ngIf="selected !== task.correctAnswerIndex" class="incorrect">❌ Невірно!</div>
+      <button mat-button (click)="openExplanation()" *ngIf="!showExplanation">Пояснення</button>
+      <div *ngIf="showExplanation" class="explanation">{{ task.explanationText }}</div>
+      <button mat-button (click)="reset()" *ngIf="showExplanation">Спробувати ще</button>
+    </div>
+  </mat-card>
+  

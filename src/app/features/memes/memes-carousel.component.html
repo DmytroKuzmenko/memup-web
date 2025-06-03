@@ -1,0 +1,43 @@
+<div *ngIf="!finished && memes.length" class="memes-carousel">
+    <mat-card class="meme-card">
+      <h2>{{ memes[currentIndex].title }}</h2>
+      <div class="media-block">
+        <ng-container *ngFor="let media of memes[currentIndex].media">
+          <img *ngIf="media.type === 'image'" [src]="media.url" alt="meme" class="meme-media" />
+          <video *ngIf="media.type === 'video'" controls [src]="media.url" class="meme-media"></video>
+        </ng-container>
+      </div>
+  
+      <!-- ВСТАВЬ КОМПОНЕНТ ЗАДАНИЯ -->
+      <div *ngIf="currentTask">
+        <app-meme-task
+          [task]="currentTask"
+          (completed)="onTaskCompleted($event)">
+        </app-meme-task>
+      </div>
+  
+      <div class="carousel-controls">
+        <button mat-button (click)="prevMeme()" [disabled]="currentIndex === 0">&lt; Назад</button>
+        <span>{{ currentIndex + 1 }}/{{ memes.length }}</span>
+        <button
+          mat-button
+          (click)="nextMeme()"
+          [disabled]="!memeResults[currentIndex].answered">
+          {{ currentIndex === memes.length - 1 ? 'Завершити' : 'Далі >' }}
+        </button>
+      </div>
+    </mat-card>
+  </div>
+  
+  <!-- ФИНИШНЫЙ ЭКРАН -->
+  <div *ngIf="finished" class="memes-carousel">
+    <mat-card class="meme-card result-card">
+      <h2>Результат рівня</h2>
+      <div>Набрано балів: <b>{{ totalPoints }} / {{ maxPoints }}</b></div>
+      <div *ngIf="totalPoints / maxPoints >= 0.7" class="success">✅ Рівень пройдено!</div>
+      <div *ngIf="totalPoints / maxPoints < 0.7" class="fail">❌ Недостатньо балів для проходження</div>
+      <button mat-raised-button color="primary" (click)="retryLevel()">Спробувати ще раз</button>
+      <button mat-button routerLink="/sections">До розділів</button>
+    </mat-card>
+  </div>
+  
