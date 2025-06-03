@@ -25,6 +25,7 @@ export class MemesCarouselComponent {
   currentIndex = 0;
   memeResults: MemeResult[] = [];
   finished = false;
+  currentMediaIndex = 0;
 
   constructor(private route: ActivatedRoute, private router: Router) {
     this.route.paramMap.subscribe(params => {
@@ -40,6 +41,22 @@ export class MemesCarouselComponent {
       }));
       this.finished = false;
     });
+  }
+
+  get currentMedia() {
+    return this.memes.length ? this.memes[this.currentIndex].media[this.currentMediaIndex] : undefined;
+  }
+  
+  mediaCount(): number {
+    return this.memes.length ? this.memes[this.currentIndex].media.length : 0;
+  }
+  
+  mediaPrev() {
+    if (this.currentMediaIndex > 0) this.currentMediaIndex--;
+  }
+  
+  mediaNext() {
+    if (this.mediaCount() && this.currentMediaIndex < this.mediaCount() - 1) this.currentMediaIndex++;
   }
 
   get currentTask(): Task | undefined {
@@ -60,13 +77,17 @@ export class MemesCarouselComponent {
   nextMeme() {
     if (this.currentIndex < this.memes.length - 1) {
       this.currentIndex++;
+      this.currentMediaIndex = 0; // сброс при смене мема
     } else {
       this.finished = true;
     }
   }
-
+  
   prevMeme() {
-    if (this.currentIndex > 0) this.currentIndex--;
+    if (this.currentIndex > 0) {
+      this.currentIndex--;
+      this.currentMediaIndex = 0; // сброс при смене мема
+    }
   }
 
   get totalPoints() {

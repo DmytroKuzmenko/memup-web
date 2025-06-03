@@ -12,7 +12,7 @@ export interface Level {
       id: 10,
       sectionId: 1,
       name: 'Баварія',
-      backgroundUrl: 'assets/levels/bavaria.jpg',
+      backgroundUrl: 'assets/levels/bavaria.png',
       minPercentToPass: 70,
       displayOrder: 1
     },
@@ -20,7 +20,7 @@ export interface Level {
       id: 11,
       sectionId: 1,
       name: 'Берлін',
-      backgroundUrl: 'assets/levels/berlin.jpg',
+      backgroundUrl: 'assets/levels/berlin.png',
       minPercentToPass: 70,
       displayOrder: 2
     },

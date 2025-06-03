@@ -2,10 +2,25 @@
     <mat-card class="meme-card">
       <h2>{{ memes[currentIndex].title }}</h2>
       <div class="media-block">
-        <ng-container *ngFor="let media of memes[currentIndex].media">
-          <img *ngIf="media.type === 'image'" [src]="media.url" alt="meme" class="meme-media" />
-          <video *ngIf="media.type === 'video'" controls [src]="media.url" class="meme-media"></video>
+        <ng-container *ngIf="currentMedia">
+          <img *ngIf="currentMedia.type === 'image'"
+               [src]="currentMedia.url"
+               alt="meme"
+               class="meme-media full-width-media" />
+          <video *ngIf="currentMedia.type === 'video'"
+                 controls
+                 [src]="currentMedia.url"
+                 class="meme-media full-width-media"></video>
         </ng-container>
+        <div class="media-controls" *ngIf="mediaCount() > 1">
+          <button mat-mini-button (click)="mediaPrev()" [disabled]="currentMediaIndex === 0">&lt;</button>
+          <span class="media-indicators">
+            <ng-container *ngFor="let item of [].constructor(mediaCount()); let idx = index">
+              <span [class.active]="idx === currentMediaIndex" class="dot"></span>
+            </ng-container>
+          </span>
+          <button mat-mini-button (click)="mediaNext()" [disabled]="currentMediaIndex === mediaCount() - 1">&gt;</button>
+        </div>
       </div>
   
       <!-- ВСТАВЬ КОМПОНЕНТ ЗАДАНИЯ -->
