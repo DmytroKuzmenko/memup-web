@@ -1,0 +1,10 @@
+<div class="sections-list">
+    <mat-card *ngFor="let section of sections" [routerLink]="['/sections', section.id]" class="section-card">
+      <img [src]="section.iconUrl" class="section-icon" alt="{{ section.name }}" />
+      <h2>{{ section.name }}</h2>
+      <p>{{ section.description }}</p>
+      <!-- Заглушка прогресса (можно заменить на реальный) -->
+      <mat-progress-bar mode="determinate" value="50"></mat-progress-bar>
+      <div class="progress-label">Пройдено 8 із 16 рівнів</div>
+    </mat-card>
+  </div>
