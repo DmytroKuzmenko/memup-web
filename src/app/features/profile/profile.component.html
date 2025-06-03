@@ -1,0 +1,14 @@
+<div class="profile-card">
+    <h2>Профіль</h2>
+    <div>Ім’я: {{ progress.username }}</div>
+    <div>Завершені рівні: {{ progress.levels.filter(l => l.completed).length }}</div>
+    <div>Загальна сума балів: {{ progress.levels.reduce((sum, l) => sum + l.score, 0) }}</div>
+    <div>
+      <b>Досягнення:</b>
+      <span *ngIf="progress.achievements.length === 0">немає</span>
+      <span *ngFor="let badge of progress.achievements">🏅{{ badge }}</span>
+    </div>
+    <button (click)="resetProgress()">Скинути прогрес</button>
+  </div>
+  <a routerLink="/sections">← До розділів</a>
+  

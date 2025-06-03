@@ -18,8 +18,7 @@ export interface MemeMedia {
       title: 'Октоберфест',
       media: [
         { url: 'assets/memes/oktoberfest-1.jpg', type: 'image' },
-        { url: 'assets/memes/oktoberfest-2.jpg', type: 'image' },
-        { url: 'assets/memes/oktoberfest-vid.mp4', type: 'video' }
+        { url: 'assets/memes/oktoberfest-2.jpg', type: 'image' }
       ],
       displayOrder: 1
     },
