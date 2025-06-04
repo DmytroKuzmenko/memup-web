@@ -6,6 +6,7 @@ import { TASKS, Task } from '../../mock/tasks.mock';
 import { MatCardModule } from '@angular/material/card';
 import { MemeTaskComponent } from './meme-task.component';
 import { MatButtonModule } from '@angular/material/button';
+import { LevelIntroComponent } from '../../shared/components/level-intro/level-intro.component'; 
 
 interface MemeResult {
   memeId: number;
@@ -16,7 +17,7 @@ interface MemeResult {
 @Component({
   selector: 'app-memes-carousel',
   standalone: true,
-  imports: [CommonModule, MatCardModule, MemeTaskComponent, MatButtonModule],
+  imports: [CommonModule, MatCardModule, MemeTaskComponent, MatButtonModule, LevelIntroComponent],
   templateUrl: './memes-carousel.component.html',
   styleUrls: ['./memes-carousel.component.scss']
 })
@@ -26,6 +27,7 @@ export class MemesCarouselComponent {
   memeResults: MemeResult[] = [];
   finished = false;
   currentMediaIndex = 0;
+  touchStartX = 0;
 
   constructor(private route: ActivatedRoute, private router: Router) {
     this.route.paramMap.subscribe(params => {
@@ -40,7 +42,34 @@ export class MemesCarouselComponent {
         answered: false
       }));
       this.finished = false;
+      this.showIntro = true;
     });
+  }
+
+
+  showIntro = true;
+  introPhrase = "Bitte warten..."; 
+
+  onIntroDone() {
+    this.showIntro = false;
+  } 
+
+  onTouchStart(event: TouchEvent) {
+    this.touchStartX = event.changedTouches[0].screenX;
+  }
+  
+  onTouchEnd(event: TouchEvent) {
+    const endX = event.changedTouches[0].screenX;
+    const diff = endX - this.touchStartX;
+  
+    // чувствительность свайпа (порог)
+    if (Math.abs(diff) > 50) {
+      if (diff < 0) {
+        this.mediaNext();
+      } else {
+        this.mediaPrev();
+      }
+    }
   }
 
   get currentMedia() {
