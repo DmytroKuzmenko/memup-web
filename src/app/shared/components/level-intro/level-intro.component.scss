@@ -37,8 +37,34 @@
     position: absolute;
     bottom: 0;
     height: 120px;
-    left: -60vw;
+    left: 50vw;
+    transform: translateX(-50%);
     transition: none;
+    max-width: 90vw; // не выходить за край экрана
+  }
+  
+/* На планшетах чуть меньше */
+@media (max-width: 900px) {
+    .train {
+      height: 90px;
+      max-width: 80vw;
+    }
+  }
+  
+  /* На обычных мобильных */
+  @media (max-width: 600px) {
+    .train {
+      height: 60px;
+      max-width: 60vw;
+    }
+  }
+  
+  /* На очень маленьких экранах */
+  @media (max-width: 400px) {
+    .train {
+      height: 40px;
+      max-width: 45vw;
+    }
   }
   
   .train-in {

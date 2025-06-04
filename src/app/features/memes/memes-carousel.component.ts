@@ -48,7 +48,7 @@ export class MemesCarouselComponent {
 
 
   showIntro = true;
-  introPhrase = "Bitte warten..."; 
+  introPhrase = "Der Zug verspätet sich aufgrund eines Polizeieinsatzes um ca. 30 Minuten."; 
 
   onIntroDone() {
     this.showIntro = false;
