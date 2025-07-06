@@ -23,15 +23,22 @@ export class AppComponent {
 
   async installPWA() {
     const installed = await this.pwaService.promptInstall();
+    this.closePrompt();
     if (installed) {
       console.log('PWA встановлено!');
     } else {
       console.log('Користувач відхилив встановлення');
     }
+    
     this.canInstall = false;
   }
 
   closePrompt() {
     this.showInstallPrompt = false;
+  }
+
+  get isIosOrMac(): boolean {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    return /iphone|ipad|macintosh/.test(userAgent);
   }
 }
