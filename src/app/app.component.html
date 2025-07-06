@@ -1,24 +1,4 @@
-@if(isIosOrMac && !canInstall && showInstallPrompt){
-    <div class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 px-4 py-3 rounded-xl shadow-lg z-50 flex flex-col sm:flex-row sm:items-center sm:gap-4 border border-gray-200 w-[90vw] max-w-sm animate-fade-in">
-        <!-- Текст -->
-        <div class="text-center text-sm text-gray-800 px-2">
-            <span class="text-sm font-medium flex items-center gap-2 justify-center">
-                📲 <span>Встановіть застосунок</span>
-            </span>
-            <p class="text-xs text-gray-600">
-            Натисніть <strong>“Поділитися”</strong> в браузері, потім
-            <strong>“На початковий екран”</strong>
-            </p>
-        </div>
-        <button
-            (click)="closePrompt()"
-            class="hidden sm:inline text-gray-400 hover:text-gray-500 text-xl"
-            aria-label="Закрити"
-            >
-            ×
-            </button>
-    </div>
-}
+
 @if (canInstall && showInstallPrompt) {
     <div class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 px-4 py-3 rounded-xl shadow-lg z-50 flex flex-col sm:flex-row sm:items-center sm:gap-4 border border-gray-200 w-[90vw] max-w-sm animate-fade-in">
 
