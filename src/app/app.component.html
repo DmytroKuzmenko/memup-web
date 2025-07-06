@@ -1,3 +1,28 @@
+@if (canInstall && showInstallPrompt) {
+    <div
 
-    <router-outlet></router-outlet>
+    class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-white text-gray-900 px-5 py-4 rounded-2xl shadow-xl z-50 flex items-center gap-4 border border-gray-200 animate-fade-in"
+    >
+        <div class="flex items-center gap-2">
+        <span class="text-xl">📲</span>
+        <span class="font-medium">Встановіть застосунок для зручного доступу</span>
+        </div>
+    
+        <button
+        (click)="installPWA()"
+        class="ml-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg shadow transition"
+        >
+        Встановити
+        </button>
+    
+        <button
+        (click)="closePrompt()"
+        class="text-gray-400 hover:text-gray-500 text-xl ml-2"
+        aria-label="Закрити"
+        >
+        ×
+        </button>
+    </div>
+}
+<router-outlet></router-outlet>
 
