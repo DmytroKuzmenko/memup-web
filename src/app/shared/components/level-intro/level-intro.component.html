@@ -1,26 +1,15 @@
 <div *ngIf="state !== 'hidden'" class="intro-screen">
-    <div class="phrase">{{ phrase }}</div>
-    <div class="train-container">
-      <img
-        src="assets/zug.gif"
-        alt="Zug"
-        class="train"
-        [ngClass]="{
-          'train-in': state === 'move-in',
-          'train-center': state === 'center',
-          'train-out': state === 'move-out'
-        }"
-        (animationend)="
-          state === 'move-in' ? onArrived() :
-          state === 'move-out' ? onDeparted() : null
-        "
-      />
-    </div>
-    <button
-      *ngIf="state === 'center'"
-      class="start-btn"
-      (click)="startLevel()"
-    >
-      Розпочати
-    </button>
+  <div class="phrase">{{ phrase }}</div>
+
+  <div class="train-container">
+    <img
+      src="assets/zug.png"
+      alt="Zug"
+      class="train"
+      [class.animate]="state === 'move'"
+      (animationend)="onDeparted()"
+    />
   </div>
+
+  <button *ngIf="buttonVisible" class="start-btn" (click)="startLevel()">Розпочати</button>
+</div>

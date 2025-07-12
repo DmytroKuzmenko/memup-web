@@ -1,29 +1,25 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Вот это важно!
+import { CommonModule } from '@angular/common';
 
 @Component({
+ standalone: true,
   selector: 'app-level-intro',
   templateUrl: './level-intro.component.html',
   styleUrls: ['./level-intro.component.scss'],
-  imports: [CommonModule] 
+  imports: [CommonModule]
 })
 export class LevelIntroComponent {
-  @Input() phrase = 'Bitte warten...'; // или передавай свою фразу
+  @Input() phrase = 'Bitte warten...';
   @Output() introDone = new EventEmitter<void>();
 
-  state: 'move-in' | 'center' | 'move-out' | 'hidden' = 'move-in';
+  state: 'idle' | 'move' | 'hidden' = 'idle';
+buttonVisible = true;
 
-  // Когда поезд остановился (анимация въезда закончилась)
-  onArrived() {
-    this.state = 'center';
-  }
-
-  // Кнопка "Розпочати"
   startLevel() {
-    this.state = 'move-out';
+     this.buttonVisible = false; // ⬅️ скрываем кнопку
+    this.state = 'move';
   }
 
-  // Когда поезд уехал полностью
   onDeparted() {
     this.state = 'hidden';
     this.introDone.emit();
