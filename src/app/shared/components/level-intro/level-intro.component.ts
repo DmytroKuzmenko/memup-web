@@ -24,4 +24,14 @@ buttonVisible = true;
     this.state = 'hidden';
     this.introDone.emit();
   }
+
+  ngAfterViewInit(): void {
+  this.setViewportHeight();
+  window.addEventListener('resize', this.setViewportHeight.bind(this));
+}
+
+setViewportHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
 }
