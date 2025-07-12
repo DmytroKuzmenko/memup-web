@@ -1,5 +1,5 @@
 <div *ngIf="state !== 'hidden'" class="intro-screen">
-  <div class="phrase">{{ phrase }}</div>
+  <div *ngIf="buttonVisible" class="phrase">{{ phrase }}</div>
 
   <div class="train-container">
     <img
