@@ -12,17 +12,14 @@ import { ReactiveFormsModule, FormBuilder, FormControl } from '@angular/forms';
 })
 export class AdminSectionsComponent {
   sections = signal<Section[]>([]);
-
-  // ВАРИАНТ 1: без FormBuilder, чтобы не «раньше конструктора»
-  // search = new FormControl<string>('', { nonNullable: true });
-
-  // ВАРИАНТ 2: с FormBuilder, но инициализируем в конструкторе
   search!: FormControl<string>;
 
+  query = signal<string>(''); // текущее значение поиска как сигнал
+
   filtered = computed(() => {
-    const q = (this.search?.value ?? '').toLowerCase().trim();
-    if (!q) return this.sections();
-    return this.sections().filter((s) => s.name.toLowerCase().includes(q));
+    const q = this.query(); // читаем из сигнала
+    const list = this.sections();
+    return q ? list.filter((s) => s.name.toLowerCase().includes(q)) : list;
   });
 
   constructor(
@@ -33,6 +30,9 @@ export class AdminSectionsComponent {
     this.refresh();
     // Если используешь ВАРИАНТ 2:
     this.search = this.fb.control('', { nonNullable: true });
+
+    // ✅ синхронизируем FormControl → сигнал
+    this.search.valueChanges.subscribe((v) => this.query.set((v ?? '').toLowerCase().trim()));
   }
 
   refresh() {

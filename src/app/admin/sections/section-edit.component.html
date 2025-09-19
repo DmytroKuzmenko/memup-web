@@ -1,21 +1,67 @@
-<h2>{{ isEditMode ? 'Edit Section' : 'Create Section' }}</h2>
-<form [formGroup]="sectionForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 max-w-sm">
-  <label>
-    Name
-    <input formControlName="name" class="border border-gray-300 rounded px-3 py-2">
-  </label>
-  <label>
-    Image URL
-    <input formControlName="imagePath" class="border border-gray-300 rounded px-3 py-2">
-  </label>
-  <label>
-    Status
-    <select formControlName="status" class="border border-gray-300 rounded px-3 py-2">
-      <option [value]="1">Published</option>
-      <option [value]="0">Draft</option>
-    </select>
-  </label>
-  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-    {{ isEditMode ? 'Save' : 'Create' }}
-  </button>
-</form>
+<div class="mx-auto max-w-2xl p-4 md:p-6">
+  <div
+    class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <div class="p-4 md:p-6">
+      <h2 class="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+        {{ isEdit ? 'Edit Section' : 'New Section' }}
+      </h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="grid gap-4">
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Name</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="name"
+            placeholder="Section name"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
+            >Image URL</label
+          >
+          <input
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="imagePath"
+            placeholder="https://..."
+          />
+          <img
+            *ngIf="form.value.imagePath"
+            [src]="form.value.imagePath"
+            alt=""
+            class="mt-2 h-24 w-24 rounded-xl border border-neutral-200 object-cover dark:border-neutral-800"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Status</label>
+          <select
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="status"
+          >
+            <option [value]="1">Published</option>
+            <option [value]="0">Draft</option>
+          </select>
+        </div>
+
+        <div class="mt-2 flex flex-col gap-2 md:flex-row">
+          <button
+            class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-60 md:w-auto"
+            type="submit"
+            [disabled]="form.invalid"
+          >
+            {{ isEdit ? 'Save' : 'Create' }}
+          </button>
+          <button
+            class="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50 md:w-auto dark:border-neutral-700 dark:hover:bg-neutral-900"
+            type="button"
+            (click)="cancel()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

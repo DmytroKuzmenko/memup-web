@@ -1,61 +1,69 @@
-import { Component } from '@angular/core';
-import { SectionService, Section } from '../../section.service';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SectionService, Section } from '../../section.service';
 
 @Component({
   selector: 'app-section-edit',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './section-edit.component.html'
+  templateUrl: './section-edit.component.html',
 })
 export class SectionEditComponent {
-  sectionForm: ReturnType<FormBuilder['group']>;
+  private fb = inject(FormBuilder);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private sectionService = inject(SectionService);
 
-  sectionId: number | null = null;
-  isEditMode = false;
+  id: number | null = null;
 
-  constructor(
-    private sectionService: SectionService,
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    this.sectionForm = this.fb.group({
-      name: [''],
-      imagePath: [''],
-      status: [0]
-    });
-    // Определить edit или new
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.isEditMode = true;
-        this.sectionId = +id;
-        const section = this.sectionService.getSectionById(this.sectionId);
-        if (section) {
-          this.sectionForm.patchValue(section);
-        }
+  form = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    imagePath: [''],
+    status: [0, Validators.required], // 0 = Draft, 1 = Published
+  });
+
+  get isEdit() {
+    return this.id !== null;
+  }
+
+  ngOnInit() {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    this.id = idParam ? Number(idParam) : null;
+
+    if (this.id) {
+      const s = this.sectionService.getSectionById(this.id);
+      if (s) {
+        this.form.patchValue({
+          name: s.name ?? '',
+          imagePath: s.imagePath ?? '',
+          status: s.status ?? 0,
+        });
       }
-    });
+    }
   }
 
-  onSubmit() {
-  const formValue = this.sectionForm.value;
-  if (this.isEditMode && this.sectionId != null) {
-    this.sectionService.updateSection(this.sectionId, {
-      name: formValue.name ?? '',
-      imagePath: formValue.imagePath ?? '',
-      status: formValue.status ?? 0
-    });
-  } else {
-    this.sectionService.addSection({
-      name: formValue.name ?? '',
-      imagePath: formValue.imagePath ?? '',
-      status: formValue.status ?? 0
-    });
+  save() {
+    if (this.form.invalid) return;
+    const v = this.form.getRawValue();
+
+    const dto: Partial<Section> = {
+      ...(this.isEdit ? { id: this.id! } : {}),
+      name: v.name!,
+      imagePath: v.imagePath || '',
+      status: Number(v.status),
+    };
+
+    if (this.isEdit) {
+      this.sectionService.updateSection(this.id!, dto as Partial<Section>);
+    } else {
+      this.sectionService.addSection(dto as Partial<Section>);
+    }
+    this.router.navigate(['/admin/sections']);
   }
-  this.router.navigate(['/admin/sections']);
-}
+
+  cancel() {
+    this.router.navigate(['/admin/sections']);
+  }
 }
