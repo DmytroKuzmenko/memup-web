@@ -1,19 +1,42 @@
-import { Component } from '@angular/core';
-import { SectionService, Section } from '../../section.service';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SectionService, Section } from '../../section.service';
 import { Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, FormControl } from '@angular/forms';
 
 @Component({
   selector: 'app-admin-sections',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './sections.component.html'
+  imports: [CommonModule, ReactiveFormsModule],
+  templateUrl: './sections.component.html',
 })
 export class AdminSectionsComponent {
-  sections: Section[];
+  sections = signal<Section[]>([]);
 
-  constructor(private sectionService: SectionService, private router: Router) {
-    this.sections = this.sectionService.getSections();
+  // ВАРИАНТ 1: без FormBuilder, чтобы не «раньше конструктора»
+  // search = new FormControl<string>('', { nonNullable: true });
+
+  // ВАРИАНТ 2: с FormBuilder, но инициализируем в конструкторе
+  search!: FormControl<string>;
+
+  filtered = computed(() => {
+    const q = (this.search?.value ?? '').toLowerCase().trim();
+    if (!q) return this.sections();
+    return this.sections().filter((s) => s.name.toLowerCase().includes(q));
+  });
+
+  constructor(
+    private svc: SectionService,
+    private router: Router,
+    private fb: FormBuilder,
+  ) {
+    this.refresh();
+    // Если используешь ВАРИАНТ 2:
+    this.search = this.fb.control('', { nonNullable: true });
+  }
+
+  refresh() {
+    this.sections.set(this.svc.getSections());
   }
 
   onAdd() {
@@ -25,9 +48,11 @@ export class AdminSectionsComponent {
   }
 
   onDelete(id: number) {
-    if (confirm('Are you sure you want to delete this section?')) {
-      this.sectionService.deleteSection(id);
-      this.sections = this.sectionService.getSections(); // refresh
+    if (confirm('Delete this section?')) {
+      this.svc.deleteSection(id);
+      this.refresh();
     }
   }
+
+  trackById = (_: number, item: Section) => item.id;
 }
