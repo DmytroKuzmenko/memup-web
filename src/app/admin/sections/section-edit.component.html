@@ -1,0 +1,21 @@
+<h2>{{ isEditMode ? 'Edit Section' : 'Create Section' }}</h2>
+<form [formGroup]="sectionForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-4 max-w-sm">
+  <label>
+    Name
+    <input formControlName="name" class="border border-gray-300 rounded px-3 py-2">
+  </label>
+  <label>
+    Image URL
+    <input formControlName="imagePath" class="border border-gray-300 rounded px-3 py-2">
+  </label>
+  <label>
+    Status
+    <select formControlName="status" class="border border-gray-300 rounded px-3 py-2">
+      <option [value]="1">Published</option>
+      <option [value]="0">Draft</option>
+    </select>
+  </label>
+  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+    {{ isEditMode ? 'Save' : 'Create' }}
+  </button>
+</form>

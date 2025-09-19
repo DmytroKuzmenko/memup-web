@@ -1,0 +1,31 @@
+<h2 class="mb-4">Sections</h2>
+<button (click)="onAdd()" class="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Add New Section</button>
+
+<table class="min-w-full border border-gray-200 mb-4">
+  <thead>
+    <tr class="bg-gray-50">
+      <th class="p-2 text-left">Name</th>
+      <th class="p-2">Image</th>
+      <th class="p-2">Status</th>
+      <th class="p-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let section of sections" class="border-b">
+      <td class="p-2">{{ section.name }}</td>
+      <td class="p-2">
+        <img *ngIf="section.imagePath" [src]="section.imagePath" alt="" class="w-12 h-12 object-cover rounded" />
+        <span *ngIf="!section.imagePath" class="text-gray-400">No image</span>
+      </td>
+      <td class="p-2">
+        <span [ngClass]="section.status === 1 ? 'text-green-600' : 'text-gray-500'">
+          {{ section.status === 1 ? 'Published' : 'Draft' }}
+        </span>
+      </td>
+      <td class="p-2 flex gap-2">
+        <button (click)="onEdit(section.id)" class="px-3 py-1 bg-yellow-500 text-white rounded">Edit</button>
+        <button (click)="onDelete(section.id)" class="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
