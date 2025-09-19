@@ -1,4 +1,5 @@
 <div class="mx-auto max-w-2xl p-4 md:p-6">
+  <!-- Card: Section form -->
   <div
     class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
   >
@@ -64,4 +65,145 @@
       </form>
     </div>
   </div>
+
+  <!-- Card: Levels manager -->
+  <div
+    *ngIf="isEdit; else saveFirst"
+    class="mt-4 rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <div class="p-4 md:p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-lg font-semibold">
+          Levels in this section
+          <span class="ml-2 text-sm text-neutral-500 dark:text-neutral-400"
+            >({{ levels.length }})</span
+          >
+        </h3>
+        <button
+          (click)="openAddLevel()"
+          class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          + Add Level
+        </button>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="levels.length === 0" class="text-neutral-600 dark:text-neutral-300">
+        No levels yet.
+      </div>
+
+      <!-- Mobile: cards -->
+      <div class="grid gap-3 md:hidden" *ngIf="levels.length > 0">
+        <div
+          *ngFor="let lvl of levels; trackBy: trackByLevelId"
+          class="rounded-2xl border border-neutral-200/60 bg-white p-4 shadow dark:border-neutral-800 dark:bg-neutral-900"
+        >
+          <div class="flex items-center justify-between">
+            <div class="font-medium">{{ lvl.name }}</div>
+            <span
+              class="rounded-full px-2 py-0.5 text-xs"
+              [ngClass]="
+                lvl.status === 1
+                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                  : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+              "
+            >
+              {{ lvl.status === 1 ? 'Published' : 'Draft' }}
+            </span>
+          </div>
+
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button
+              (click)="openEditLevel(lvl)"
+              class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+            >
+              Edit
+            </button>
+            <button
+              (click)="deleteLevel(lvl.id)"
+              class="inline-flex items-center justify-center rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop: table -->
+      <div class="hidden md:block" *ngIf="levels.length > 0">
+        <div
+          class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+        >
+          <table class="min-w-full">
+            <thead class="bg-neutral-50 dark:bg-neutral-800/60">
+              <tr>
+                <th
+                  class="px-3 py-2 text-left text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
+                >
+                  Name
+                </th>
+                <th
+                  class="px-3 py-2 text-left text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
+                >
+                  Status
+                </th>
+                <th
+                  class="px-3 py-2 text-right text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let lvl of levels; trackBy: trackByLevelId"
+                class="border-t border-neutral-200 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40"
+              >
+                <td class="px-3 py-2 align-middle">
+                  <div class="font-medium">{{ lvl.name }}</div>
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs"
+                    [ngClass]="
+                      lvl.status === 1
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                        : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                    "
+                  >
+                    {{ lvl.status === 1 ? 'Published' : 'Draft' }}
+                  </span>
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  <div class="flex items-center justify-end gap-2">
+                    <button
+                      (click)="openEditLevel(lvl)"
+                      class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteLevel(lvl.id)"
+                      class="inline-flex items-center justify-center rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint when section is not yet created -->
+  <ng-template #saveFirst>
+    <div
+      class="mt-4 rounded-2xl border border-neutral-200/60 bg-white p-6 text-neutral-600 shadow dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
+    >
+      Save the section first to manage levels.
+    </div>
+  </ng-template>
 </div>

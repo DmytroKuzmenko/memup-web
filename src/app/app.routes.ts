@@ -9,7 +9,7 @@ import { AdminSectionsComponent } from './admin/sections/sections.component';
 import { adminGuard } from './admin/admin.guard';
 import { SectionEditComponent } from './admin/sections/section-edit.component';
 
-import { AdminLevelsComponent } from './admin/levels/levels.component';
+import { LevelEditComponent } from './admin/levels/level-edit.component';
 import { AdminTasksComponent } from './admin/tasks/tasks.component';
 
 export const routes: Routes = [
@@ -27,6 +27,8 @@ export const routes: Routes = [
       { path: 'sections/new', component: SectionEditComponent, canActivate: [adminGuard] },
       { path: 'sections/:id', component: SectionEditComponent, canActivate: [adminGuard] },
 
+      { path: 'levels/new', component: LevelEditComponent, canActivate: [adminGuard] },
+      { path: 'levels/:id', component: LevelEditComponent, canActivate: [adminGuard] },
       // --- NEW: Memes admin ---
       // { path: 'memes', component: AdminMemesComponent, canActivate: [adminGuard] },
       // { path: 'memes/new', component: MemeEditComponent, canActivate: [adminGuard] },

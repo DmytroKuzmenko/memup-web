@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SectionService, Section } from '../../section.service';
+import { LevelService, Level } from '../../level.service';
 
 @Component({
   selector: 'app-section-edit',
@@ -15,6 +16,7 @@ export class SectionEditComponent {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private sectionService = inject(SectionService);
+  private levelService = inject(LevelService);
 
   id: number | null = null;
 
@@ -23,6 +25,8 @@ export class SectionEditComponent {
     imagePath: [''],
     status: [0, Validators.required], // 0 = Draft, 1 = Published
   });
+
+  levels: Level[] = [];
 
   get isEdit() {
     return this.id !== null;
@@ -41,6 +45,7 @@ export class SectionEditComponent {
           status: s.status ?? 0,
         });
       }
+      this.loadLevels();
     }
   }
 
@@ -49,16 +54,15 @@ export class SectionEditComponent {
     const v = this.form.getRawValue();
 
     const dto: Partial<Section> = {
-      ...(this.isEdit ? { id: this.id! } : {}),
       name: v.name!,
       imagePath: v.imagePath || '',
       status: Number(v.status),
     };
 
     if (this.isEdit) {
-      this.sectionService.updateSection(this.id!, dto as Partial<Section>);
+      this.sectionService.updateSection(this.id!, dto);
     } else {
-      this.sectionService.addSection(dto as Partial<Section>);
+      this.sectionService.addSection(dto);
     }
     this.router.navigate(['/admin/sections']);
   }
@@ -66,4 +70,29 @@ export class SectionEditComponent {
   cancel() {
     this.router.navigate(['/admin/sections']);
   }
+
+  private loadLevels() {
+    if (!this.id) return;
+    this.levels = this.levelService.getLevels(this.id);
+  }
+
+  // переходы на страницы уровней
+  openAddLevel() {
+    if (!this.id) return;
+    this.router.navigate(['/admin/levels/new'], { queryParams: { sectionId: this.id } });
+  }
+
+  openEditLevel(lvl: Level) {
+    const sectionId = this.id ?? lvl.sectionId;
+    this.router.navigate(['/admin/levels', lvl.id], { queryParams: { sectionId } });
+  }
+
+  deleteLevel(id: number) {
+    if (confirm('Delete this level?')) {
+      this.levelService.deleteLevel(id);
+      this.loadLevels();
+    }
+  }
+
+  trackByLevelId = (_: number, x: Level) => x.id;
 }

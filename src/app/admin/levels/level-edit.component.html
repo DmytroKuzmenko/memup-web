@@ -1,0 +1,75 @@
+<div class="mx-auto max-w-2xl p-4 md:p-6">
+  <div
+    class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <div class="p-4 md:p-6">
+      <h2 class="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+        {{ isEdit ? 'Edit Level' : 'New Level' }}
+      </h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="grid gap-4">
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Section</label>
+          <select
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="sectionId"
+          >
+            <option [ngValue]="null" disabled>Select a section</option>
+            <option *ngFor="let s of sections" [ngValue]="s.id">{{ s.name }}</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Name</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="name"
+            placeholder="e.g. A1 / Basics"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Status</label>
+          <select
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="status"
+          >
+            <option [value]="1">Published</option>
+            <option [value]="0">Draft</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
+            >Order (optional)</label
+          >
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            formControlName="orderIndex"
+            placeholder="0, 1, 2..."
+          />
+        </div>
+
+        <div class="mt-2 flex flex-col gap-2 md:flex-row">
+          <button
+            type="submit"
+            [disabled]="form.invalid"
+            class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 md:w-auto"
+          >
+            {{ isEdit ? 'Save' : 'Create' }}
+          </button>
+          <button
+            type="button"
+            (click)="cancel()"
+            class="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50 md:w-auto dark:border-neutral-700 dark:hover:bg-neutral-900"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
