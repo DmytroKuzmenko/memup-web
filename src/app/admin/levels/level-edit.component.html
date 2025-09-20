@@ -29,20 +29,7 @@
           </select>
         </div>
 
-        <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Image</label>
-          <input
-            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-            formControlName="imagePath"
-            placeholder="https://..."
-          />
-          <img
-            *ngIf="form.value.imagePath"
-            [src]="form.value.imagePath"
-            alt=""
-            class="mt-2 h-24 w-24 rounded-xl border border-neutral-200 object-cover"
-          />
-        </div>
+        <app-image-picker formControlName="imagePath" label="Image"></app-image-picker>
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Preface text</label>
@@ -56,11 +43,10 @@
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Animation image (gif/webp)</label>
-          <input
-            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+          <app-image-picker
             formControlName="animationImagePath"
-            placeholder="https://..."
-          />
+            label="Moving image (sprite)"
+          ></app-image-picker>
         </div>
 
         <div class="grid gap-1.5">

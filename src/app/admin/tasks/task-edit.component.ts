@@ -6,10 +6,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TaskService, Task, TaskType } from '../../task.service';
 import { LevelService, Level } from '../../level.service';
 
+import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+
 @Component({
   selector: 'app-task-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImagePickerComponent],
   templateUrl: './task-edit.component.html',
 })
 export class TaskEditComponent {

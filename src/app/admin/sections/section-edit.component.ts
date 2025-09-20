@@ -4,11 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SectionService, Section } from '../../section.service';
 import { LevelService, Level } from '../../level.service';
+import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-section-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImagePickerComponent],
   templateUrl: './section-edit.component.html',
 })
 export class SectionEditComponent {
@@ -17,6 +19,8 @@ export class SectionEditComponent {
   private router = inject(Router);
   private sectionService = inject(SectionService);
   private levelService = inject(LevelService);
+
+  @ViewChild('sectionImagePicker') sectionImagePicker?: ImagePickerComponent;
 
   id: number | null = null;
 
@@ -61,7 +65,11 @@ export class SectionEditComponent {
     });
   }
 
-  save() {
+  async save() {
+    // загрузим отложенное изображение, если есть
+    const url = await this.sectionImagePicker?.uploadPendingIfAny();
+    if (url) this.form.patchValue({ imagePath: url });
+
     if (this.form.invalid) return;
     const v = this.form.getRawValue();
 

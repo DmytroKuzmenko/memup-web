@@ -7,10 +7,12 @@ import { SectionService, Section } from '../../section.service';
 import { LevelService, Level } from '../../level.service';
 import { TaskService, Task } from '../../task.service';
 
+import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+
 @Component({
   selector: 'app-level-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ImagePickerComponent],
   templateUrl: './level-edit.component.html',
 })
 export class LevelEditComponent {
