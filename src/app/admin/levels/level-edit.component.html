@@ -1,4 +1,5 @@
 <div class="mx-auto max-w-2xl p-4 md:p-6">
+  <!-- Card: Level form -->
   <div
     class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
   >
@@ -9,29 +10,75 @@
 
       <form [formGroup]="form" (ngSubmit)="save()" class="grid gap-4">
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Section</label>
+          <label class="text-sm font-medium">Name</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="name"
+            placeholder="Level name"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Section</label>
           <select
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="sectionId"
           >
-            <option [ngValue]="null" disabled>Select a section</option>
+            <option [ngValue]="null" disabled>Select section</option>
             <option *ngFor="let s of sections" [ngValue]="s.id">{{ s.name }}</option>
           </select>
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Name</label>
+          <label class="text-sm font-medium">Image</label>
           <input
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
-            formControlName="name"
-            placeholder="e.g. A1 / Basics"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="imagePath"
+            placeholder="https://..."
+          />
+          <img
+            *ngIf="form.value.imagePath"
+            [src]="form.value.imagePath"
+            alt=""
+            class="mt-2 h-24 w-24 rounded-xl border border-neutral-200 object-cover"
           />
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Status</label>
+          <label class="text-sm font-medium">Preface text</label>
+          <textarea
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            rows="2"
+            formControlName="prefaceText"
+            placeholder="Shown above the Start button"
+          ></textarea>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Animation image (gif/webp)</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="animationImagePath"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Display order</label>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="orderIndex"
+            placeholder="0, 1, 2..."
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Status</label>
           <select
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="status"
           >
             <option [value]="1">Published</option>
@@ -40,31 +87,34 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
-            >Order (optional)</label
-          >
+          <label class="text-sm font-medium">Time limit (seconds, optional)</label>
           <input
             type="number"
             inputmode="numeric"
             min="0"
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
-            formControlName="orderIndex"
-            placeholder="0, 1, 2..."
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="timeLimitSeconds"
+            placeholder="e.g., 120"
           />
+        </div>
+
+        <div *ngIf="levelDates" class="grid gap-1.5 text-sm text-neutral-600">
+          <div>Created: {{ levelDates!.createdAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+          <div>Updated: {{ levelDates!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
         </div>
 
         <div class="mt-2 flex flex-col gap-2 md:flex-row">
           <button
             type="submit"
             [disabled]="form.invalid"
-            class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 md:w-auto"
+            class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
           >
             {{ isEdit ? 'Save' : 'Create' }}
           </button>
           <button
             type="button"
             (click)="cancel()"
-            class="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50 md:w-auto dark:border-neutral-700 dark:hover:bg-neutral-900"
+            class="rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50"
           >
             Cancel
           </button>
@@ -72,4 +122,127 @@
       </form>
     </div>
   </div>
+
+  <!-- Card: Tasks (list + links) -->
+  <div
+    *ngIf="isEdit; else saveFirst"
+    class="mt-4 rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <div class="p-4 md:p-6">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-lg font-semibold">
+          Tasks in this level
+          <span class="ml-2 text-sm text-neutral-500">({{ tasks.length }})</span>
+        </h3>
+        <button
+          (click)="openAddTask()"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          + Add task
+        </button>
+      </div>
+
+      <div *ngIf="tasks.length === 0" class="text-neutral-600">No tasks yet.</div>
+
+      <!-- Mobile cards -->
+      <div class="grid gap-3 md:hidden" *ngIf="tasks.length > 0">
+        <div
+          *ngFor="let t of tasksSorted; trackBy: trackByTaskId"
+          class="rounded-2xl border border-neutral-200 p-4"
+        >
+          <div class="flex items-center justify-between">
+            <div class="truncate font-medium">{{ t.title }}</div>
+            <span
+              class="rounded-full px-2 py-0.5 text-xs"
+              [ngClass]="
+                t.status === 1 ? 'bg-green-100 text-green-700' : 'bg-neutral-100 text-neutral-700'
+              "
+            >
+              {{ t.status === 1 ? 'Published' : 'Draft' }}
+            </span>
+          </div>
+          <div class="mt-1 text-sm text-neutral-500">
+            Type: {{ t.type }}<span *ngIf="t.orderIndex != null"> • Order: {{ t.orderIndex }}</span>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <button
+              (click)="openEditTask(t)"
+              class="rounded-xl border px-3 py-2 hover:bg-neutral-50"
+            >
+              Edit
+            </button>
+            <button
+              (click)="deleteTask(t.id)"
+              class="rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Desktop table -->
+      <div class="hidden md:block" *ngIf="tasks.length > 0">
+        <div class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow">
+          <table class="min-w-full">
+            <thead class="bg-neutral-50">
+              <tr>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Title</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Type</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Order</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Status</th>
+                <th class="px-3 py-2 text-right text-xs font-medium uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let t of tasksSorted; trackBy: trackByTaskId"
+                class="border-t border-neutral-200 hover:bg-neutral-50/60"
+              >
+                <td class="px-3 py-2 align-middle">
+                  <div class="truncate font-medium">{{ t.title }}</div>
+                </td>
+                <td class="px-3 py-2 align-middle">{{ t.type }}</td>
+                <td class="px-3 py-2 align-middle">
+                  {{ t.orderIndex != null ? t.orderIndex : '—' }}
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs"
+                    [ngClass]="
+                      t.status === 1
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-neutral-100 text-neutral-700'
+                    "
+                  >
+                    {{ t.status === 1 ? 'Published' : 'Draft' }}
+                  </span>
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  <div class="flex justify-end gap-2">
+                    <button
+                      (click)="openEditTask(t)"
+                      class="rounded-xl border px-3 py-2 hover:bg-neutral-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      (click)="deleteTask(t.id)"
+                      class="rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #saveFirst>
+    <div class="mt-4 rounded-2xl border p-6 text-neutral-600">Save the level first.</div>
+  </ng-template>
 </div>

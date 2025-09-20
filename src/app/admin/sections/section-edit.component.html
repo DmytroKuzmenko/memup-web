@@ -10,20 +10,18 @@
 
       <form [formGroup]="form" (ngSubmit)="save()" class="grid gap-4">
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Name</label>
+          <label class="text-sm font-medium">Name</label>
           <input
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="name"
             placeholder="Section name"
           />
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
-            >Image URL</label
-          >
+          <label class="text-sm font-medium">Image</label>
           <input
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="imagePath"
             placeholder="https://..."
           />
@@ -31,14 +29,26 @@
             *ngIf="form.value.imagePath"
             [src]="form.value.imagePath"
             alt=""
-            class="mt-2 h-24 w-24 rounded-xl border border-neutral-200 object-cover dark:border-neutral-800"
+            class="mt-2 h-24 w-24 rounded-xl border border-neutral-200 object-cover"
           />
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium text-neutral-700 dark:text-neutral-200">Status</label>
+          <label class="text-sm font-medium">Display order</label>
+          <input
+            type="number"
+            inputmode="numeric"
+            min="0"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="orderIndex"
+            placeholder="0, 1, 2..."
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Status</label>
           <select
-            class="w-full rounded-xl border border-neutral-300 bg-white px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-950"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="status"
           >
             <option [value]="1">Published</option>
@@ -46,16 +56,22 @@
           </select>
         </div>
 
+        <!-- Created/Updated (read-only) -->
+        <div *ngIf="sectionDates" class="grid gap-1.5 text-sm text-neutral-600">
+          <div>Created: {{ sectionDates!.createdAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+          <div>Updated: {{ sectionDates!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+        </div>
+
         <div class="mt-2 flex flex-col gap-2 md:flex-row">
           <button
-            class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-60 md:w-auto"
+            class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
             type="submit"
             [disabled]="form.invalid"
           >
             {{ isEdit ? 'Save' : 'Create' }}
           </button>
           <button
-            class="inline-flex w-full items-center justify-center rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50 md:w-auto dark:border-neutral-700 dark:hover:bg-neutral-900"
+            class="rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50"
             type="button"
             (click)="cancel()"
           >
@@ -66,7 +82,7 @@
     </div>
   </div>
 
-  <!-- Card: Levels manager -->
+  <!-- Card: Levels list -->
   <div
     *ngIf="isEdit; else saveFirst"
     class="mt-4 rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
@@ -75,116 +91,133 @@
       <div class="mb-4 flex items-center justify-between gap-3">
         <h3 class="text-lg font-semibold">
           Levels in this section
-          <span class="ml-2 text-sm text-neutral-500 dark:text-neutral-400"
-            >({{ levels.length }})</span
-          >
+          <span class="ml-2 text-sm text-neutral-500">({{ levels.length }})</span>
         </h3>
         <button
           (click)="openAddLevel()"
-          class="inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          + Add Level
+          + Add level
         </button>
       </div>
 
-      <!-- Empty state -->
-      <div *ngIf="levels.length === 0" class="text-neutral-600 dark:text-neutral-300">
-        No levels yet.
-      </div>
+      <div *ngIf="levels.length === 0" class="text-neutral-600">No levels yet.</div>
 
-      <!-- Mobile: cards -->
+      <!-- Mobile cards -->
       <div class="grid gap-3 md:hidden" *ngIf="levels.length > 0">
         <div
-          *ngFor="let lvl of levels; trackBy: trackByLevelId"
-          class="rounded-2xl border border-neutral-200/60 bg-white p-4 shadow dark:border-neutral-800 dark:bg-neutral-900"
+          *ngFor="let lvl of levelsSorted; trackBy: trackByLevelId"
+          class="flex gap-3 rounded-2xl border border-neutral-200 p-4"
         >
-          <div class="flex items-center justify-between">
-            <div class="font-medium">{{ lvl.name }}</div>
-            <span
-              class="rounded-full px-2 py-0.5 text-xs"
-              [ngClass]="
-                lvl.status === 1
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                  : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
-              "
-            >
-              {{ lvl.status === 1 ? 'Published' : 'Draft' }}
-            </span>
+          <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-xl border">
+            <img
+              *ngIf="lvl.imagePath; else noimg"
+              [src]="lvl.imagePath"
+              alt=""
+              class="h-full w-full object-cover"
+            />
+            <ng-template #noimg><span class="text-xs text-neutral-400">No image</span></ng-template>
           </div>
-
-          <div class="mt-3 grid grid-cols-2 gap-2">
-            <button
-              (click)="openEditLevel(lvl)"
-              class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
-            >
-              Edit
-            </button>
-            <button
-              (click)="deleteLevel(lvl.id)"
-              class="inline-flex items-center justify-center rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
-            >
-              Delete
-            </button>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center justify-between gap-2">
+              <div class="truncate font-medium">{{ lvl.name }}</div>
+              <span
+                class="rounded-full px-2 py-0.5 text-xs"
+                [ngClass]="
+                  lvl.status === 1
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-neutral-100 text-neutral-700'
+                "
+              >
+                {{ lvl.status === 1 ? 'Published' : 'Draft' }}
+              </span>
+            </div>
+            <div class="mt-1 text-xs text-neutral-500">
+              Created: {{ lvl.createdAt | date: 'yyyy-MM-dd HH:mm' }} • Updated:
+              {{ lvl.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
+            </div>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+              <button
+                (click)="openEditLevel(lvl)"
+                class="rounded-xl border px-3 py-2 hover:bg-neutral-50"
+              >
+                Edit
+              </button>
+              <button
+                (click)="deleteLevel(lvl.id)"
+                class="rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Desktop: table -->
+      <!-- Desktop table -->
       <div class="hidden md:block" *ngIf="levels.length > 0">
-        <div
-          class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
-        >
+        <div class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow">
           <table class="min-w-full">
-            <thead class="bg-neutral-50 dark:bg-neutral-800/60">
+            <thead class="bg-neutral-50">
               <tr>
-                <th
-                  class="px-3 py-2 text-left text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
-                >
-                  Name
-                </th>
-                <th
-                  class="px-3 py-2 text-left text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
-                >
-                  Status
-                </th>
-                <th
-                  class="px-3 py-2 text-right text-xs font-medium tracking-wide text-neutral-500 uppercase dark:text-neutral-300"
-                >
-                  Actions
-                </th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Image</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Name</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Status</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Created</th>
+                <th class="px-3 py-2 text-left text-xs font-medium uppercase">Updated</th>
+                <th class="px-3 py-2 text-right text-xs font-medium uppercase">Actions</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                *ngFor="let lvl of levels; trackBy: trackByLevelId"
-                class="border-t border-neutral-200 hover:bg-neutral-50/60 dark:border-neutral-800 dark:hover:bg-neutral-800/40"
+                *ngFor="let lvl of levelsSorted; trackBy: trackByLevelId"
+                class="border-t border-neutral-200 hover:bg-neutral-50/60"
               >
                 <td class="px-3 py-2 align-middle">
-                  <div class="font-medium">{{ lvl.name }}</div>
+                  <div
+                    class="flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl border"
+                  >
+                    <img
+                      *ngIf="lvl.imagePath; else noimg2"
+                      [src]="lvl.imagePath"
+                      alt=""
+                      class="h-full w-full object-cover"
+                    />
+                    <ng-template #noimg2
+                      ><span class="text-xs text-neutral-400">No</span></ng-template
+                    >
+                  </div>
                 </td>
+                <td class="px-3 py-2 align-middle font-medium">{{ lvl.name }}</td>
                 <td class="px-3 py-2 align-middle">
                   <span
                     class="rounded-full px-2 py-0.5 text-xs"
                     [ngClass]="
                       lvl.status === 1
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-neutral-100 text-neutral-700'
                     "
                   >
                     {{ lvl.status === 1 ? 'Published' : 'Draft' }}
                   </span>
                 </td>
                 <td class="px-3 py-2 align-middle">
-                  <div class="flex items-center justify-end gap-2">
+                  {{ lvl.createdAt | date: 'yyyy-MM-dd HH:mm' }}
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  {{ lvl.updatedAt | date: 'yyyy-MM-dd HH:mm' }}
+                </td>
+                <td class="px-3 py-2 align-middle">
+                  <div class="flex justify-end gap-2">
                     <button
                       (click)="openEditLevel(lvl)"
-                      class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
+                      class="rounded-xl border px-3 py-2 hover:bg-neutral-50"
                     >
                       Edit
                     </button>
                     <button
                       (click)="deleteLevel(lvl.id)"
-                      class="inline-flex items-center justify-center rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
+                      class="rounded-xl bg-red-600 px-3 py-2 text-white hover:bg-red-700"
                     >
                       Delete
                     </button>
@@ -198,12 +231,7 @@
     </div>
   </div>
 
-  <!-- Hint when section is not yet created -->
   <ng-template #saveFirst>
-    <div
-      class="mt-4 rounded-2xl border border-neutral-200/60 bg-white p-6 text-neutral-600 shadow dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
-    >
-      Save the section first to manage levels.
-    </div>
+    <div class="mt-4 rounded-2xl border p-6 text-neutral-600">Save the section first.</div>
   </ng-template>
 </div>

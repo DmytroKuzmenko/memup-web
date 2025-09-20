@@ -1,0 +1,231 @@
+<div class="mx-auto max-w-2xl p-4 md:p-6">
+  <div
+    class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <div class="p-4 md:p-6">
+      <h2 class="mb-4 text-xl font-semibold tracking-tight md:text-2xl">
+        {{ isEdit ? 'Edit Task' : 'New Task' }}
+      </h2>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="grid gap-4">
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Level</label>
+          <select
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="levelId"
+          >
+            <option [ngValue]="null" disabled>Select level</option>
+            <option *ngFor="let l of levels" [ngValue]="l.id">{{ l.name }}</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Title (internal)</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="title"
+            placeholder="Task title"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Task type</label>
+          <select
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="type"
+          >
+            <option value="anagram">Build the word</option>
+            <option value="image_choice">Image choice</option>
+            <option value="text_choice">Text choice</option>
+            <option value="meme">Meme task</option>
+          </select>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Top text</label>
+          <textarea
+            rows="2"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="topText"
+          ></textarea>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Image (optional)</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="imagePath"
+            placeholder="https://..."
+          />
+        </div>
+
+        <div class="grid grid-cols-1 gap-1.5 md:grid-cols-3 md:gap-3">
+          <div>
+            <label class="text-sm font-medium">Order</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="orderIndex"
+              placeholder="0,1,2..."
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Status</label>
+            <select
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="status"
+            >
+              <option [value]="1">Published</option>
+              <option [value]="0">Draft</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Time (sec, optional)</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="timeLimitSeconds"
+              placeholder="e.g., 90"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-1.5 md:grid-cols-3 md:gap-3">
+          <div>
+            <label class="text-sm font-medium">Points (1st try)</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="pointsFirst"
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Points (2nd try)</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="pointsSecond"
+            />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Points (3rd try)</label>
+            <input
+              type="number"
+              inputmode="numeric"
+              min="0"
+              class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+              formControlName="pointsThird"
+            />
+          </div>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Explanation text</label>
+          <textarea
+            rows="2"
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="explanationText"
+          ></textarea>
+        </div>
+
+        <!-- Type: anagram -->
+        <div
+          *ngIf="form.value.type === 'anagram'"
+          class="grid gap-1.5 rounded-xl border border-neutral-200 p-3"
+        >
+          <div class="text-sm font-semibold">Build the word</div>
+          <label class="text-sm">Characters list (comma-separated)</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="charsCsv"
+            placeholder="B,E,R,L,I,N"
+          />
+          <label class="text-sm">Correct answer</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="correctAnswer"
+            placeholder="BERLIN"
+          />
+        </div>
+
+        <!-- Type: image_choice / text_choice -->
+        <div
+          *ngIf="form.value.type === 'image_choice' || form.value.type === 'text_choice'"
+          class="grid gap-2 rounded-xl border border-neutral-200 p-3"
+        >
+          <div class="text-sm font-semibold">Answer options</div>
+
+          <!-- ВАЖНО: formArrayName + formGroupName вместо [formGroup]="opt" -->
+          <div formArrayName="options">
+            <div
+              *ngFor="let opt of options.controls; let i = index"
+              [formGroupName]="i"
+              class="grid gap-2 rounded-xl border border-neutral-200 p-2"
+            >
+              <div class="grid gap-1.5 md:grid-cols-3 md:gap-3">
+                <input
+                  class="rounded-xl border border-neutral-300 px-3 py-2"
+                  formControlName="label"
+                  placeholder="Label"
+                />
+                <input
+                  *ngIf="form.value.type === 'image_choice'"
+                  class="rounded-xl border border-neutral-300 px-3 py-2"
+                  formControlName="imageUrl"
+                  placeholder="https://image..."
+                />
+                <label class="inline-flex items-center gap-2">
+                  <input type="checkbox" formControlName="isCorrect" />
+                  Correct answer
+                </label>
+              </div>
+
+              <div class="flex justify-end">
+                <button
+                  type="button"
+                  (click)="removeOption(i)"
+                  class="rounded-xl border px-3 py-1 hover:bg-neutral-50"
+                >
+                  Remove option
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="addOption()"
+            class="rounded-xl border px-3 py-2 hover:bg-neutral-50"
+          >
+            + Add option
+          </button>
+        </div>
+
+        <div class="mt-2 flex flex-col gap-2 md:flex-row">
+          <button
+            type="submit"
+            [disabled]="form.invalid"
+            class="rounded-xl bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            {{ isEdit ? 'Save' : 'Create' }}
+          </button>
+          <button
+            type="button"
+            (click)="cancel()"
+            class="rounded-xl border border-neutral-300 px-4 py-2 hover:bg-neutral-50"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

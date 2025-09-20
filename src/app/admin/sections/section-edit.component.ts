@@ -23,7 +23,8 @@ export class SectionEditComponent {
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
     imagePath: [''],
-    status: [0, Validators.required], // 0 = Draft, 1 = Published
+    orderIndex: [0, [Validators.required, Validators.min(0)]],
+    status: [0, Validators.required],
   });
 
   levels: Level[] = [];
@@ -42,11 +43,22 @@ export class SectionEditComponent {
         this.form.patchValue({
           name: s.name ?? '',
           imagePath: s.imagePath ?? '',
+          orderIndex: s.orderIndex ?? 0,
           status: s.status ?? 0,
         });
       }
       this.loadLevels();
     }
+  }
+
+  // сортировка уровней на вывод
+  get levelsSorted(): Level[] {
+    return [...this.levels].sort((a, b) => {
+      const ao = a.orderIndex ?? Number.MAX_SAFE_INTEGER;
+      const bo = b.orderIndex ?? Number.MAX_SAFE_INTEGER;
+      if (ao !== bo) return ao - bo;
+      return a.name.localeCompare(b.name);
+    });
   }
 
   save() {
@@ -56,14 +68,13 @@ export class SectionEditComponent {
     const dto: Partial<Section> = {
       name: v.name!,
       imagePath: v.imagePath || '',
+      orderIndex: Number(v.orderIndex),
       status: Number(v.status),
     };
 
-    if (this.isEdit) {
-      this.sectionService.updateSection(this.id!, dto);
-    } else {
-      this.sectionService.addSection(dto);
-    }
+    if (this.isEdit) this.sectionService.updateSection(this.id!, dto);
+    else this.sectionService.addSection(dto);
+
     this.router.navigate(['/admin/sections']);
   }
 
@@ -76,7 +87,6 @@ export class SectionEditComponent {
     this.levels = this.levelService.getLevels(this.id);
   }
 
-  // переходы на страницы уровней
   openAddLevel() {
     if (!this.id) return;
     this.router.navigate(['/admin/levels/new'], { queryParams: { sectionId: this.id } });
@@ -95,4 +105,10 @@ export class SectionEditComponent {
   }
 
   trackByLevelId = (_: number, x: Level) => x.id;
+
+  // для отображения дат в шаблоне — берём из сервиса
+  get sectionDates() {
+    if (!this.id) return null;
+    return this.sectionService.getSectionById(this.id) ?? null;
+  }
 }
