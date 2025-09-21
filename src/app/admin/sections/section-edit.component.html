@@ -20,9 +20,15 @@
 
         <app-image-picker
           formControlName="imagePath"
-          [cropAspectRatio]="1"
-          [outputType]="'image/png'"
-        ></app-image-picker>
+          [mode]="'crop'"
+          [outputWidth]="1024"
+          [outputHeight]="500"
+          [editorCanvasWidth]="480"
+          [editorMaxCssWidth]="480"
+          [previewWidth]="470"
+          [previewHeight]="100"
+        >
+        </app-image-picker>
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Display order</label>

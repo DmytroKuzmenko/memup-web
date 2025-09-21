@@ -26,37 +26,11 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
       :host {
         display: block;
       }
-      .row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-      .btn {
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 12px;
-        background: #fff;
-        cursor: pointer;
-      }
-      .btn-primary {
-        background: #2563eb;
-        color: #fff;
-        border-color: #2563eb;
-      }
-      .input {
-        flex: 1;
-        min-width: 0;
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 12px;
-      }
 
+      /* Внешний превью (кликабельно) */
       .preview {
         position: relative;
         width: 100%;
-        max-width: 260px;
-        aspect-ratio: 1/1;
-        height: 260px;
         border: 2px dashed #60a5fa;
         border-radius: 16px;
         overflow: hidden;
@@ -64,7 +38,9 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         align-items: center;
         justify-content: center;
         background: #fff;
-        margin-top: 12px;
+        margin-top: 8px;
+        cursor: pointer;
+        user-select: none;
       }
       .preview img {
         width: 100%;
@@ -72,229 +48,282 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         object-fit: cover;
         display: block;
       }
+      .hint {
+        color: #6b7280;
+        font-size: 13px;
+        text-align: center;
+        padding: 0 10px;
+      }
+
       .toolbar {
         position: absolute;
-        left: 8px;
         right: 8px;
         bottom: 8px;
         display: flex;
-        justify-content: space-between;
         gap: 8px;
-        background: linear-gradient(to top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.05));
-        padding: 8px;
-        border-radius: 10px;
-        color: #fff;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 6px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
       }
-      .toolbar .btn {
-        color: #111827;
+      .btn {
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
         background: #fff;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .btn-danger {
+        background: #ef4444;
+        color: #fff;
+        border-color: #ef4444;
+      }
+      .btn-quiet {
+        background: #fff;
+        color: #111827;
         border-color: #e5e7eb;
       }
+      .hidden {
+        display: none !important;
+      }
 
+      /* Полноэкранная модалка */
       .modal {
         position: fixed;
         inset: 0;
         display: flex;
-        align-items: center;
+        align-items: stretch;
         justify-content: center;
         background: rgba(0, 0, 0, 0.55);
         z-index: 9999;
       }
       .card {
-        width: min(92vw, 980px);
+        width: 100%;
+        max-width: 980px;
         background: #fff;
-        border-radius: 16px;
+        border-radius: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
       }
       .card-head {
-        padding: 12px 16px;
+        padding: 14px 16px;
         font-weight: 600;
         border-bottom: 1px solid #eee;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
       .card-body {
         padding: 12px;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .card-foot {
         padding: 12px;
         border-top: 1px solid #eee;
         display: flex;
         gap: 8px;
-        justify-content: flex-end;
+        justify-content: space-between;
+        position: sticky;
+        bottom: 0;
+        background: #fff;
+        z-index: 5;
       }
 
-      .editor-wrap {
-        display: grid;
-        grid-template-columns: 1fr 300px;
-        gap: 16px;
-        align-items: start;
-      }
+      /* Редактор */
       .editor {
+        width: 100%;
+        margin: 0 auto;
         display: grid;
-        gap: 12px;
-        justify-items: center;
+        gap: 14px;
       }
-      .canvas-box {
-        width: min(80vmin, 560px);
-        max-width: 560px;
+      .canvas-wrap {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
       }
       .canvas {
         width: 100%;
         height: auto;
         background: #111;
-        border-radius: 12px;
+        border-radius: 16px;
         touch-action: none;
         border: 1px solid #e5e7eb;
       }
-      .side-preview {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        overflow: hidden;
-        aspect-ratio: 1/1;
-      }
-      .side-preview img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
 
       .ctrls {
-        width: 100%;
         display: grid;
-        gap: 6px;
-      }
-      .ctrls label {
-        font-size: 12px;
-        color: #374151;
+        grid-template-columns: 1fr auto auto;
+        gap: 10px;
+        align-items: center;
       }
       .range {
         width: 100%;
       }
-      @media (max-width: 860px) {
-        .editor-wrap {
-          grid-template-columns: 1fr;
+      .icon-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      @media (min-width: 721px) {
+        .card {
+          border-radius: 16px;
+          margin: 24px;
         }
       }
     `,
   ],
   template: `
-    <!-- URL + кнопки -->
-    <div class="row">
-      <input
-        class="input"
-        [value]="value || ''"
-        placeholder="https://..."
-        (input)="onUrl($event)"
-      />
-      <button
-        class="btn"
-        type="button"
-        (click)="clear()"
-        [disabled]="!value && !liveDataUrl && !rawPreviewUrl"
-      >
-        Clear
-      </button>
-      <button class="btn btn-primary" type="button" (click)="fileInput.click()">Upload</button>
-      <input #fileInput type="file" [accept]="accept" (change)="onFileChange($event)" hidden />
-    </div>
+    <!-- скрытый input -->
+    <input
+      #fileInput
+      type="file"
+      [accept]="accept"
+      (change)="onFileChange($event)"
+      class="hidden"
+    />
 
-    <!-- Внешний превью: приоритеты: live -> raw -> value -->
-    <div class="preview">
+    <!-- внешний превью -->
+    <div
+      class="preview"
+      [style.max-width.px]="previewWidth"
+      [style.height.px]="previewHeightComputed"
+      (click)="onPreviewClick()"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event)"
+    >
       <img
         *ngIf="liveDataUrl || rawPreviewUrl || value"
         [src]="liveDataUrl || rawPreviewUrl || value"
         alt="preview"
       />
-      <div *ngIf="!(liveDataUrl || rawPreviewUrl || value)" style="color:#6b7280; font-size:12px;">
-        No image yet
+      <div *ngIf="!(liveDataUrl || rawPreviewUrl || value)" class="hint">
+        Tap to upload<br />(or drop a file)
       </div>
 
       <div class="toolbar" *ngIf="liveDataUrl || rawPreviewUrl || value">
-        <a
-          [href]="(liveDataUrl || rawPreviewUrl || value)!"
-          target="_blank"
-          rel="noopener"
-          style="color:#fff;text-decoration:underline;font-size:12px;"
-          >Open</a
+        <button
+          class="btn btn-quiet"
+          type="button"
+          (click)="openEditor(); $event.stopPropagation()"
+          [disabled]="mode === 'original'"
         >
-        <div style="display:flex; gap:8px;">
-          <button class="btn" type="button" (click)="openEditor()" [disabled]="!imgLoaded">
-            Change
-          </button>
-          <button class="btn" type="button" (click)="clear()">Remove</button>
-        </div>
+          Edit
+        </button>
+        <button
+          class="btn btn-quiet"
+          type="button"
+          (click)="triggerPick(); $event.stopPropagation()"
+        >
+          Change
+        </button>
+        <button class="btn btn-danger" type="button" (click)="clear(); $event.stopPropagation()">
+          Remove
+        </button>
       </div>
     </div>
 
-    <!-- Модалка редактора (canvas crop) -->
-    <div class="modal" *ngIf="showEditor">
+    <!-- полноэкранный редактор (только для mode='crop') -->
+    <div class="modal" *ngIf="showEditor && mode === 'crop'">
       <div class="card">
-        <div class="card-head">Crop image</div>
-        <div class="card-body">
-          <div class="editor-wrap">
-            <div class="editor">
-              <div class="canvas-box">
-                <canvas
-                  #canvas
-                  class="canvas"
-                  (pointerdown)="onPointerDown($event)"
-                  (pointermove)="onPointerMove($event)"
-                  (pointerup)="onPointerUp($event)"
-                  (pointercancel)="onPointerUp($event)"
-                  (pointerleave)="onPointerUp($event)"
-                ></canvas>
-              </div>
+        <div class="card-head">
+          <span>Crop image</span>
+          <button class="btn btn-quiet" type="button" (click)="closeEditor()">Close</button>
+        </div>
 
-              <div class="ctrls">
-                <label>Zoom: {{ zoom | number: '1.2-2' }}x</label>
-                <input
-                  class="range"
-                  type="range"
-                  min="1"
-                  max="3"
-                  step="0.01"
-                  [(ngModel)]="zoom"
-                  (input)="render()"
-                />
-              </div>
+        <div class="card-body">
+          <div class="editor" [style.maxWidth.px]="editorMaxCssWidth">
+            <div class="canvas-wrap" [style.maxWidth.px]="editorMaxCssWidth">
+              <canvas
+                #canvas
+                class="canvas"
+                (pointerdown)="onPointerDown($event)"
+                (pointermove)="onPointerMove($event)"
+                (pointerup)="onPointerUp($event)"
+                (pointercancel)="onPointerUp($event)"
+                (pointerleave)="onPointerUp($event)"
+              ></canvas>
             </div>
 
-            <div>
-              <div class="side-preview">
-                <img *ngIf="liveDataUrl" [src]="liveDataUrl" alt="live" />
-                <div
-                  *ngIf="!liveDataUrl"
-                  style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b7280;font-size:12px;"
-                >
-                  Move/zoom to preview
-                </div>
-              </div>
+            <div class="ctrls">
+              <input
+                class="range"
+                type="range"
+                min="1"
+                [max]="maxZoom"
+                step="0.01"
+                [(ngModel)]="zoom"
+                (input)="onSliderZoom()"
+              />
+              <button class="btn icon-btn" type="button" (click)="bumpZoom(-0.1)">−</button>
+              <button class="btn icon-btn" type="button" (click)="bumpZoom(+0.1)">+</button>
             </div>
           </div>
         </div>
 
         <div class="card-foot">
-          <button class="btn" type="button" (click)="closeEditor()">Cancel</button>
-          <button class="btn btn-primary" type="button" (click)="apply()">Apply</button>
+          <button class="btn btn-quiet" type="button" (click)="closeEditor()">Cancel</button>
+          <button
+            class="btn"
+            type="button"
+            (click)="apply()"
+            style="background:#2563EB;color:#fff;border-color:#2563EB;"
+          >
+            Apply
+          </button>
         </div>
       </div>
     </div>
   `,
 })
 export class ImagePickerComponent implements ControlValueAccessor {
-  // Inputs
-  @Input() accept = 'image/png,image/jpeg,image/jpg,image/webp,image/gif'; // без SVG
+  /* === Inputs === */
+  @Input() accept = 'image/png,image/jpeg,image/jpg,image/webp,image/gif';
   @Input() outputType: 'image/png' | 'image/jpeg' = 'image/png';
-  @Input() cropSize = 600; // px
 
-  // Outputs
-  @Output() changed = new EventEmitter<string>();
+  /** Режим: 'crop' — редактирование; 'original' — сохранить как есть, без изменений */
+  @Input() mode: 'crop' | 'original' = 'crop';
 
-  // Refs
+  /** Прямоугольный выход — укажи оба, чтобы получить, например, 4700×240 */
+  @Input() outputWidth?: number; // если не задано — использует square outputSize
+  @Input() outputHeight?: number;
+  /** Квадратный выход по умолчанию (если не заданы outputWidth/Height) */
+  @Input() outputSize = 600;
+
+  /** Размер превью на форме (по умолчанию квадрат). Можно задать обе величины. */
+  @Input() previewWidth = 320;
+  @Input() previewHeight?: number; // если не задано — высчитывается из пропорции выхода
+
+  /** Размер canvas в редакторе: ширина. Высота берётся по пропорции выхода */
+  @Input() editorCanvasWidth = 960;
+  /** Максимальная визуальная ширина canvas на экране (CSS) */
+  @Input() editorMaxCssWidth = 640;
+
+  /** Совместимость (не используется напрямую) */
+  @Input() cropAspectRatio: number | null = null;
+
+  /* === Outputs === */
+  @Output() changed = new EventEmitter<string>(); // финальный base64
+
+  /* === Refs === */
+  @ViewChild('fileInput', { static: false }) fileInputRef?: ElementRef<HTMLInputElement>;
   @ViewChild('canvas', { static: false }) canvasRef?: ElementRef<HTMLCanvasElement>;
 
-  // CVA
+  /* === CVA === */
   value: string | null = null;
   private onChange: (v: string | null) => void = () => {};
   private onTouched: () => void = () => {};
@@ -309,30 +338,64 @@ export class ImagePickerComponent implements ControlValueAccessor {
   }
   setDisabledState(_: boolean): void {}
 
-  // State
+  /* === State === */
   showEditor = false;
   rawPreviewUrl: string | null = null; // objectURL выбранного файла
-  liveDataUrl: string | null = null; // текущий кроп (dataURL)
+  liveDataUrl: string | null = null; // текущий кадр (для внешнего превью)
   private objectUrlToRevoke?: string;
 
-  // Изображение и трансформация
   private img = new Image();
   imgLoaded = false;
+
   zoom = 1;
   minZoom = 1;
-  private posX = 0;
+  maxZoom = 8;
+
+  private posX = 0; // top-left картинки в координатах canvas
   private posY = 0;
+
   private isDragging = false;
   private dragStartX = 0;
   private dragStartY = 0;
   private startPosX = 0;
   private startPosY = 0;
 
-  // Handlers
-  onUrl(ev: Event) {
-    const v = (ev.target as HTMLInputElement).value || null;
-    this.value = v;
-    this.onChange(this.value);
+  private pointerScale = 1;
+  private pointers = new Map<number, PointerEvent>();
+  private pinchStartDist = 0;
+  private pinchStartZoom = 1;
+  private pinchCenterX = 0;
+  private pinchCenterY = 0;
+
+  /* === Вычисления размеров/пропорций === */
+  private get outW(): number {
+    return this.outputWidth ?? this.outputSize;
+  }
+  private get outH(): number {
+    return this.outputHeight ?? this.outputSize;
+  }
+  private get outRatio(): number {
+    return this.outH / this.outW;
+  }
+
+  get previewHeightComputed(): number {
+    if (this.previewHeight && this.previewHeight > 0) return this.previewHeight;
+    // Если задан прямоугольный выход — держим ту же пропорцию в превью
+    return Math.max(24, Math.round(this.previewWidth * this.outRatio));
+  }
+
+  /* === UI === */
+  onPreviewClick() {
+    if (this.mode === 'original') {
+      // При "original" редактор не нужен — повторный клик открывает смену файла
+      this.triggerPick();
+      return;
+    }
+    if (this.liveDataUrl || this.rawPreviewUrl || this.value) this.openEditor();
+    else this.triggerPick();
+  }
+  triggerPick() {
+    this.fileInputRef?.nativeElement.click();
   }
 
   onFileChange(ev: Event) {
@@ -341,41 +404,75 @@ export class ImagePickerComponent implements ControlValueAccessor {
     if (!file) return;
     if (!this.validate(file)) return;
 
-    // Показать сырой превью
+    // Быстрый внешний превью
     this.revokeObjectUrl();
     this.objectUrlToRevoke = URL.createObjectURL(file);
     this.rawPreviewUrl = this.objectUrlToRevoke;
 
-    // Загрузить в <img> для редактора
+    // Режим "original": сохранить как есть, без редактора
+    if (this.mode === 'original') {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        this.value = dataUrl;
+        this.onChange(this.value);
+        this.liveDataUrl = dataUrl; // показываем на форме
+        // очистим input, чтобы можно было выбрать тот же файл повторно
+        setTimeout(() => {
+          if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
+        }, 0);
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    // Режим "crop": загружаем в редактор
     this.img = new Image();
     this.img.onload = () => {
       this.imgLoaded = true;
-      this.setupEditor();
+      this.openEditor();
+      this.setupCanvas();
+      setTimeout(() => {
+        if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
+      }, 0);
     };
     this.img.onerror = () => {
       this.imgLoaded = false;
-      console.error('[picker] Failed to load image');
     };
     this.img.src = this.objectUrlToRevoke;
   }
 
+  onDragOver(e: DragEvent) {
+    e.preventDefault();
+  }
+  onDrop(e: DragEvent) {
+    e.preventDefault();
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    const fake = { target: { files: [file] } } as any as Event;
+    this.onFileChange(fake);
+  }
+
   openEditor() {
-    if (!this.imgLoaded) return;
+    if (!this.imgLoaded || this.mode !== 'crop') return;
     this.showEditor = true;
     setTimeout(() => this.setupCanvas(), 0);
   }
-
   closeEditor() {
     this.showEditor = false;
+    this.pointers.clear();
   }
 
   apply() {
-    if (this.liveDataUrl) {
-      this.value = this.liveDataUrl;
+    // финализируем кроп в точном размере (outW × outH)
+    const data = this.renderToOutput();
+    if (data) {
+      this.value = data;
       this.onChange(this.value);
       this.changed.emit(this.value);
+      this.liveDataUrl = data;
     }
-    this.showEditor = false;
+    this.closeEditor();
   }
 
   clear() {
@@ -384,96 +481,206 @@ export class ImagePickerComponent implements ControlValueAccessor {
     this.liveDataUrl = null;
     this.rawPreviewUrl = null;
     this.imgLoaded = false;
+    this.pointers.clear();
     this.revokeObjectUrl();
   }
 
-  // Canvas editor
-  private setupEditor() {
-    this.showEditor = true;
-    setTimeout(() => this.setupCanvas(), 0);
-  }
-
+  /* === Canvas === */
   private setupCanvas() {
     const canvas = this.canvasRef?.nativeElement;
-    if (!canvas) return;
+    if (!canvas || !this.imgLoaded) return;
 
-    const size = Math.min(this.cropSize, 800);
-    canvas.width = size;
-    canvas.height = size;
+    // ширина задаётся, высота по пропорции целевого выхода
+    const cw = Math.min(Math.max(this.editorCanvasWidth, 200), 2000);
+    const ch = Math.max(100, Math.round(cw * this.outRatio));
+    canvas.width = cw;
+    canvas.height = ch;
 
-    const sx = size / this.img.width;
-    const sy = size / this.img.height;
+    // минимальный зум, чтобы покрыть весь кадр редактора
+    const sx = cw / this.img.width;
+    const sy = ch / this.img.height;
     this.minZoom = Math.max(sx, sy);
     this.zoom = this.minZoom;
 
     const drawW = this.img.width * this.zoom;
     const drawH = this.img.height * this.zoom;
-    this.posX = (size - drawW) / 2;
-    this.posY = (size - drawH) / 2;
+    this.posX = (cw - drawW) / 2;
+    this.posY = (ch - drawH) / 2;
 
-    this.render();
+    const rect = canvas.getBoundingClientRect();
+    this.pointerScale = canvas.width / rect.width;
+
+    this.render(); // показать live превью сразу
   }
 
-  render() {
+  private clampPosition() {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const drawW = this.img.width * this.zoom;
+    const drawH = this.img.height * this.zoom;
+
+    this.posX = Math.min(0, Math.max(this.posX, cw - drawW));
+    this.posY = Math.min(0, Math.max(this.posY, ch - drawH));
+  }
+
+  private render() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas || !this.imgLoaded) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const size = canvas.width;
+    this.clampPosition();
+
+    const cw = canvas.width;
+    const ch = canvas.height;
     const drawW = this.img.width * this.zoom;
     const drawH = this.img.height * this.zoom;
 
-    // ограничиваем перемещение, чтобы не было пустых полей
-    this.posX = Math.min(0, Math.max(this.posX, size - drawW));
-    this.posY = Math.min(0, Math.max(this.posY, size - drawH));
-
-    ctx.clearRect(0, 0, size, size);
+    ctx.clearRect(0, 0, cw, ch);
     ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, size, size);
+    ctx.fillRect(0, 0, cw, ch);
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(this.img, this.posX, this.posY, drawW, drawH);
 
-    this.liveDataUrl = canvas.toDataURL(this.outputType);
+    // live превью — сразу в целевом размере и формате
+    this.liveDataUrl = this.renderToOutput();
   }
 
-  // Drag to pan
-  onPointerDown(ev: PointerEvent) {
-    if (!this.imgLoaded) return;
+  /** Рендер в offscreen-канвас точного размера outW×outH */
+  private renderToOutput(): string | null {
+    if (!this.imgLoaded) return null;
+    const outW = Math.min(Math.max(this.outW, 32), 10000); // защита от крайностей
+    const outH = Math.min(Math.max(this.outH, 16), 10000);
+
+    const canvas = this.canvasRef?.nativeElement!;
+    const ratioX = outW / canvas.width;
+    const ratioY = outH / canvas.height;
+
+    const out = document.createElement('canvas');
+    out.width = outW;
+    out.height = outH;
+    const octx = out.getContext('2d');
+    if (!octx) return null;
+
+    octx.imageSmoothingEnabled = true;
+    octx.imageSmoothingQuality = 'high';
+
+    const drawW = this.img.width * this.zoom * ratioX;
+    const drawH = this.img.height * this.zoom * ratioY;
+    const posX = this.posX * ratioX;
+    const posY = this.posY * ratioY;
+
+    octx.clearRect(0, 0, outW, outH);
+    octx.drawImage(this.img, posX, posY, drawW, drawH);
+
+    return out.toDataURL(this.outputType);
+  }
+
+  /* === Zoom / Move === */
+  private zoomAt(cx: number, cy: number, newZoom: number) {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas) return;
-    canvas.setPointerCapture(ev.pointerId);
 
-    this.isDragging = true;
-    this.dragStartX = ev.clientX;
-    this.dragStartY = ev.clientY;
-    this.startPosX = this.posX;
-    this.startPosY = this.posY;
-  }
+    newZoom = Math.min(this.maxZoom, Math.max(this.minZoom, newZoom));
 
-  onPointerMove(ev: PointerEvent) {
-    if (!this.isDragging || !this.imgLoaded) return;
-    const dx = ev.clientX - this.dragStartX;
-    const dy = ev.clientY - this.dragStartY;
-    this.posX = this.startPosX + dx;
-    this.posY = this.startPosY + dy;
+    const imgX = (cx - this.posX) / this.zoom;
+    const imgY = (cy - this.posY) / this.zoom;
+
+    this.zoom = newZoom;
+    this.posX = cx - imgX * this.zoom;
+    this.posY = cy - imgY * this.zoom;
+
     this.render();
   }
+  onSliderZoom() {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    this.zoomAt(cx, cy, this.zoom);
+  }
+  bumpZoom(delta: number) {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    this.zoomAt(cx, cy, this.zoom + delta);
+  }
 
+  // Pointer gestures
+  onPointerDown(ev: PointerEvent) {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas || !this.imgLoaded) return;
+    canvas.setPointerCapture(ev.pointerId);
+
+    const rect = canvas.getBoundingClientRect();
+    this.pointerScale = canvas.width / rect.width;
+
+    this.pointers.set(ev.pointerId, ev);
+
+    if (this.pointers.size === 1) {
+      this.isDragging = true;
+      this.dragStartX = ev.clientX;
+      this.dragStartY = ev.clientY;
+      this.startPosX = this.posX;
+      this.startPosY = this.posY;
+    } else if (this.pointers.size === 2) {
+      const [p1, p2] = Array.from(this.pointers.values());
+      const dist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY) * this.pointerScale;
+      this.pinchStartDist = dist;
+      this.pinchStartZoom = this.zoom;
+
+      const cxClient = (p1.clientX + p2.clientX) / 2;
+      const cyClient = (p1.clientY + p2.clientY) / 2;
+      const rect2 = canvas.getBoundingClientRect();
+      this.pinchCenterX = (cxClient - rect2.left) * this.pointerScale;
+      this.pinchCenterY = (cyClient - rect2.top) * this.pointerScale;
+
+      this.isDragging = false;
+    }
+  }
+  onPointerMove(ev: PointerEvent) {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas || !this.imgLoaded) return;
+
+    if (!this.pointers.has(ev.pointerId)) return;
+    this.pointers.set(ev.pointerId, ev);
+
+    if (this.pointers.size === 1 && this.isDragging) {
+      const dx = (ev.clientX - this.dragStartX) * this.pointerScale;
+      const dy = (ev.clientY - this.dragStartY) * this.pointerScale;
+      this.posX = this.startPosX + dx;
+      this.posY = this.startPosY + dy;
+      this.render();
+    } else if (this.pointers.size === 2) {
+      const [p1, p2] = Array.from(this.pointers.values());
+      const dist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY) * this.pointerScale;
+      if (this.pinchStartDist > 0) {
+        const scale = dist / this.pinchStartDist;
+        const target = this.pinchStartZoom * scale;
+        this.zoomAt(this.pinchCenterX, this.pinchCenterY, target);
+      }
+    }
+  }
   onPointerUp(ev: PointerEvent) {
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) canvas.releasePointerCapture(ev.pointerId);
-    this.isDragging = false;
+    this.pointers.delete(ev.pointerId);
+    if (this.pointers.size <= 1) {
+      this.isDragging = false;
+      this.pinchStartDist = 0;
+    }
   }
 
-  // Utils
+  /* === Utils === */
   validate(file: File): boolean {
     const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
-    return allowed.includes(file.type) && file.size <= 10 * 1024 * 1024;
+    return allowed.includes(file.type) && file.size <= 20 * 1024 * 1024; // до 20 МБ
   }
-
   revokeObjectUrl() {
     if (this.objectUrlToRevoke) {
       URL.revokeObjectURL(this.objectUrlToRevoke);
@@ -481,7 +688,8 @@ export class ImagePickerComponent implements ControlValueAccessor {
     }
   }
 
+  // совместимость
   async uploadPendingIfAny(): Promise<string | null> {
     return null;
-  } // совместимость со старым кодом
+  }
 }
