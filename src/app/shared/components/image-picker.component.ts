@@ -1,24 +1,19 @@
-// src/app/shared/components/image-picker.component.ts
 import { CommonModule } from '@angular/common';
 import {
-  ChangeDetectorRef,
   Component,
   EventEmitter,
-  Input,
-  OnDestroy,
-  Output,
   forwardRef,
-  inject,
+  Input,
+  Output,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { HttpEventType } from '@angular/common/http';
-import { ImageCropperComponent, ImageCroppedEvent, OutputFormat } from 'ngx-image-cropper';
-import { UploadService } from '../services/upload.service';
+import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-image-picker',
   standalone: true,
-  imports: [CommonModule, ImageCropperComponent],
+  imports: [CommonModule, FormsModule],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -31,121 +26,81 @@ import { UploadService } from '../services/upload.service';
       :host {
         display: block;
       }
-      .ip-root {
-        display: grid;
-        gap: 12px;
-      }
-      .ip-label {
-        font-size: 14px;
-        font-weight: 600;
-        color: #111827;
-      }
-      .ip-row {
+      .row {
         display: flex;
         gap: 8px;
         align-items: center;
       }
-      .ip-input {
+      .btn {
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        background: #fff;
+        cursor: pointer;
+      }
+      .btn-primary {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+      }
+      .input {
         flex: 1;
         min-width: 0;
         padding: 10px 12px;
         border: 1px solid #d1d5db;
         border-radius: 12px;
-        font-size: 14px;
-        outline: none;
-        transition:
-          border-color 0.15s,
-          box-shadow 0.15s;
-      }
-      .ip-input:focus {
-        border-color: #2563eb;
-        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-      }
-      .ip-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 10px 12px;
-        border-radius: 12px;
-        border: 1px solid #d1d5db;
-        background: #fff;
-        font-size: 14px;
-        cursor: pointer;
-        transition:
-          background 0.15s,
-          border-color 0.15s;
-      }
-      .ip-btn:hover {
-        background: #f9fafb;
-      }
-      .ip-btn--primary {
-        background: #2563eb;
-        color: #fff;
-        border-color: #2563eb;
       }
 
-      .ip-help {
-        font-size: 12px;
-        color: #6b7280;
-      }
-
-      .ip-progress {
-        width: 100%;
-        height: 8px;
-        background: #eef2ff;
-        border-radius: 999px;
-        overflow: hidden;
-        border: 1px solid #e5e7eb;
-      }
-      .ip-progress__bar {
-        height: 100%;
-        background: #2563eb;
-        width: 0%;
-        transition: width 0.15s;
-      }
-      .ip-error {
-        font-size: 12px;
-        color: #b91c1c;
-      }
-
-      .ip-preview {
+      .preview {
         position: relative;
         width: 100%;
         max-width: 260px;
         aspect-ratio: 1/1;
+        height: 260px;
+        border: 2px dashed #60a5fa;
         border-radius: 16px;
         overflow: hidden;
-        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         background: #fff;
+        margin-top: 12px;
       }
-      .ip-preview img {
+      .preview img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
       }
-      .ip-toolbar {
+      .toolbar {
         position: absolute;
-        inset: auto 8px 8px 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
         display: flex;
-        gap: 8px;
         justify-content: space-between;
+        gap: 8px;
         background: linear-gradient(to top, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.05));
         padding: 8px;
         border-radius: 10px;
         color: #fff;
       }
+      .toolbar .btn {
+        color: #111827;
+        background: #fff;
+        border-color: #e5e7eb;
+      }
 
-      .ip-modal {
+      .modal {
         position: fixed;
         inset: 0;
-        background: rgba(0, 0, 0, 0.6);
         display: flex;
         align-items: center;
         justify-content: center;
+        background: rgba(0, 0, 0, 0.55);
         z-index: 9999;
       }
-      .ip-card {
+      .card {
         width: min(92vw, 980px);
         background: #fff;
         border-radius: 16px;
@@ -153,15 +108,15 @@ import { UploadService } from '../services/upload.service';
         display: flex;
         flex-direction: column;
       }
-      .ip-card__head {
+      .card-head {
         padding: 12px 16px;
         font-weight: 600;
         border-bottom: 1px solid #eee;
       }
-      .ip-card__body {
+      .card-body {
         padding: 12px;
       }
-      .ip-card__foot {
+      .card-foot {
         padding: 12px;
         border-top: 1px solid #eee;
         display: flex;
@@ -169,396 +124,364 @@ import { UploadService } from '../services/upload.service';
         justify-content: flex-end;
       }
 
-      .ip-cropper {
-        height: 60vh;
-        max-height: 70vh;
+      .editor-wrap {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 16px;
+        align-items: start;
       }
-      @media (max-width: 480px) {
-        .ip-row {
-          flex-direction: column;
-          align-items: stretch;
-        }
-        .ip-btn {
-          justify-content: center;
-        }
-        .ip-card {
-          width: 98vw;
-        }
-        .ip-cropper {
-          height: 55vh;
+      .editor {
+        display: grid;
+        gap: 12px;
+        justify-items: center;
+      }
+      .canvas-box {
+        width: min(80vmin, 560px);
+        max-width: 560px;
+      }
+      .canvas {
+        width: 100%;
+        height: auto;
+        background: #111;
+        border-radius: 12px;
+        touch-action: none;
+        border: 1px solid #e5e7eb;
+      }
+      .side-preview {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 1/1;
+      }
+      .side-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .ctrls {
+        width: 100%;
+        display: grid;
+        gap: 6px;
+      }
+      .ctrls label {
+        font-size: 12px;
+        color: #374151;
+      }
+      .range {
+        width: 100%;
+      }
+      @media (max-width: 860px) {
+        .editor-wrap {
+          grid-template-columns: 1fr;
         }
       }
     `,
   ],
   template: `
-    <div class="ip-root">
-      <label *ngIf="label" class="ip-label">{{ label }}</label>
-
-      <!-- URL -->
-      <div class="ip-row">
-        <input
-          class="ip-input"
-          [placeholder]="placeholder || 'https://...'"
-          [value]="value || ''"
-          (input)="onUrlInput($event)"
-          [disabled]="disabled || uploading"
-        />
-        <button
-          class="ip-btn"
-          type="button"
-          (click)="clear()"
-          [disabled]="disabled || !value || uploading"
-        >
-          Clear
-        </button>
-      </div>
-
-      <!-- Upload -->
-      <div class="ip-row">
-        <div style="flex:1">
-          <div class="ip-help">PNG, JPG, JPEG, GIF, WEBP, SVG — up to {{ maxSizeMb }} MB</div>
-        </div>
-        <button
-          class="ip-btn ip-btn--primary"
-          type="button"
-          (click)="fileInput?.click()"
-          [disabled]="disabled || uploading"
-        >
-          Upload
-        </button>
-        <input
-          #fileInput
-          type="file"
-          [accept]="accept"
-          [attr.capture]="enableCamera ? 'environment' : null"
-          (change)="onFileSelected($event)"
-          hidden
-        />
-      </div>
-
-      <!-- Progress -->
-      <div *ngIf="uploading">
-        <div class="ip-progress">
-          <div class="ip-progress__bar" [style.width.%]="progress"></div>
-        </div>
-      </div>
-
-      <!-- Preview -->
-      <div *ngIf="previewUrl || value as src" class="ip-preview">
-        <img [src]="src" alt="Preview" />
-        <div class="ip-toolbar">
-          <a
-            [href]="src"
-            target="_blank"
-            rel="noopener"
-            style="color:#fff;text-decoration:underline;font-size:12px;"
-            >Open</a
-          >
-          <div style="display:flex; gap:8px;">
-            <button class="ip-btn" type="button" (click)="reCrop()" [disabled]="uploading">
-              Change
-            </button>
-            <button class="ip-btn" type="button" (click)="clear()" [disabled]="uploading">
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Errors -->
-      <div *ngIf="errorMsg" class="ip-error">{{ errorMsg }}</div>
+    <!-- URL + кнопки -->
+    <div class="row">
+      <input
+        class="input"
+        [value]="value || ''"
+        placeholder="https://..."
+        (input)="onUrl($event)"
+      />
+      <button
+        class="btn"
+        type="button"
+        (click)="clear()"
+        [disabled]="!value && !liveDataUrl && !rawPreviewUrl"
+      >
+        Clear
+      </button>
+      <button class="btn btn-primary" type="button" (click)="fileInput.click()">Upload</button>
+      <input #fileInput type="file" [accept]="accept" (change)="onFileChange($event)" hidden />
     </div>
 
-    <!-- Modal: Cropper -->
-    <div class="ip-modal" *ngIf="showCropper">
-      <div class="ip-card">
-        <div class="ip-card__head">Crop image</div>
-        <div class="ip-card__body">
-          <image-cropper
-            class="ip-cropper"
-            [imageFile]="cropFile"
-            [maintainAspectRatio]="!!cropAspectRatio"
-            [aspectRatio]="cropAspectRatio || 1"
-            [resizeToWidth]="outputWidth || 0"
-            [resizeToHeight]="outputHeight || 0"
-            [onlyScaleDown]="true"
-            [roundCropper]="false"
-            [format]="cropFormat"
-            [hideResizeSquares]="false"
-            [cropperMinWidth]="80"
-            [cropperMinHeight]="80"
-            [cropperMaxWidth]="4096"
-            [cropperMaxHeight]="4096"
-            (imageCropped)="onImageCropped($event)"
-            (imageLoaded)="onImageLoaded()"
-            (loadImageFailed)="onLoadFail()"
-          >
-          </image-cropper>
+    <!-- Внешний превью: приоритеты: live -> raw -> value -->
+    <div class="preview">
+      <img
+        *ngIf="liveDataUrl || rawPreviewUrl || value"
+        [src]="liveDataUrl || rawPreviewUrl || value"
+        alt="preview"
+      />
+      <div *ngIf="!(liveDataUrl || rawPreviewUrl || value)" style="color:#6b7280; font-size:12px;">
+        No image yet
+      </div>
+
+      <div class="toolbar" *ngIf="liveDataUrl || rawPreviewUrl || value">
+        <a
+          [href]="(liveDataUrl || rawPreviewUrl || value)!"
+          target="_blank"
+          rel="noopener"
+          style="color:#fff;text-decoration:underline;font-size:12px;"
+          >Open</a
+        >
+        <div style="display:flex; gap:8px;">
+          <button class="btn" type="button" (click)="openEditor()" [disabled]="!imgLoaded">
+            Change
+          </button>
+          <button class="btn" type="button" (click)="clear()">Remove</button>
         </div>
-        <div class="ip-card__foot">
-          <button class="ip-btn" type="button" (click)="cancelCrop()">Cancel</button>
-          <button class="ip-btn ip-btn--primary" type="button" (click)="applyCrop()">Apply</button>
+      </div>
+    </div>
+
+    <!-- Модалка редактора (canvas crop) -->
+    <div class="modal" *ngIf="showEditor">
+      <div class="card">
+        <div class="card-head">Crop image</div>
+        <div class="card-body">
+          <div class="editor-wrap">
+            <div class="editor">
+              <div class="canvas-box">
+                <canvas
+                  #canvas
+                  class="canvas"
+                  (pointerdown)="onPointerDown($event)"
+                  (pointermove)="onPointerMove($event)"
+                  (pointerup)="onPointerUp($event)"
+                  (pointercancel)="onPointerUp($event)"
+                  (pointerleave)="onPointerUp($event)"
+                ></canvas>
+              </div>
+
+              <div class="ctrls">
+                <label>Zoom: {{ zoom | number: '1.2-2' }}x</label>
+                <input
+                  class="range"
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.01"
+                  [(ngModel)]="zoom"
+                  (input)="render()"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div class="side-preview">
+                <img *ngIf="liveDataUrl" [src]="liveDataUrl" alt="live" />
+                <div
+                  *ngIf="!liveDataUrl"
+                  style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b7280;font-size:12px;"
+                >
+                  Move/zoom to preview
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-foot">
+          <button class="btn" type="button" (click)="closeEditor()">Cancel</button>
+          <button class="btn btn-primary" type="button" (click)="apply()">Apply</button>
         </div>
       </div>
     </div>
   `,
 })
-export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
-  // UI
-  @Input() label?: string;
-  @Input() placeholder?: string;
-  @Input() accept = 'image/*';
-  @Input() enableCamera = true;
-  @Input() maxSizeMb = 10;
-
-  // Crop config
-  @Input() enableCrop = true;
-  @Input() cropAspectRatio: number | null = 1; // 1 — квадрат, 16/9 и т.д.
-  @Input() outputWidth = 512;
-  @Input() outputHeight = 512;
+export class ImagePickerComponent implements ControlValueAccessor {
+  // Inputs
+  @Input() accept = 'image/png,image/jpeg,image/jpg,image/webp,image/gif'; // без SVG
   @Input() outputType: 'image/png' | 'image/jpeg' = 'image/png';
+  @Input() cropSize = 600; // px
 
-  /** 'defer' — грузить при сохранении родителя; 'immediate' — сразу после Apply */
-  @Input() uploadMode: 'defer' | 'immediate' = 'defer';
+  // Outputs
+  @Output() changed = new EventEmitter<string>();
 
-  @Output() uploaded = new EventEmitter<string>(); // итоговый URL (immediate)
-  @Output() pendingChange = new EventEmitter<Blob | null>(); // Blob для defer
+  // Refs
+  @ViewChild('canvas', { static: false }) canvasRef?: ElementRef<HTMLCanvasElement>;
 
-  private uploadSvc = inject(UploadService);
-  private cdr = inject(ChangeDetectorRef);
-
-  value: string | null = null; // значение контрола (URL)
-  disabled = false;
-  uploading = false;
-  progress = 0;
-  errorMsg = '';
-
-  // Preview
-  previewUrl: string | null = null;
-  private lastObjectUrl?: string;
-
-  // Cropper state
-  showCropper = false;
-  originalFile: File | null = null;
-  cropFile?: File; // источник для [imageFile]
-  croppedBlob: Blob | null = null;
-
-  // ---- CVA ----
+  // CVA
+  value: string | null = null;
   private onChange: (v: string | null) => void = () => {};
   private onTouched: () => void = () => {};
-  writeValue(v: string | null) {
+  writeValue(v: string | null): void {
     this.value = v ?? null;
-    this.setPreviewFromString(this.value);
   }
-  registerOnChange(fn: any) {
+  registerOnChange(fn: any): void {
     this.onChange = fn;
   }
-  registerOnTouched(fn: any) {
+  registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
-  setDisabledState(isDisabled: boolean) {
-    this.disabled = isDisabled;
-  }
+  setDisabledState(_: boolean): void {}
 
-  // Формат для кроппера
-  get cropFormat(): OutputFormat {
-    return this.outputType === 'image/jpeg' ? 'jpeg' : 'png';
-  }
+  // State
+  showEditor = false;
+  rawPreviewUrl: string | null = null; // objectURL выбранного файла
+  liveDataUrl: string | null = null; // текущий кроп (dataURL)
+  private objectUrlToRevoke?: string;
 
-  // Вызвать из родителя перед сохранением (в режиме 'defer')
-  async uploadPendingIfAny(): Promise<string | null> {
-    if (!this.croppedBlob || this.uploadMode !== 'defer') return null;
-    const url = await this.uploadBlob(this.croppedBlob);
-    this.value = url;
-    this.onChange(this.value);
-    this.croppedBlob = null;
-    this.pendingChange.emit(null);
-    this.setPreviewFromString(url);
-    return url;
-  }
+  // Изображение и трансформация
+  private img = new Image();
+  imgLoaded = false;
+  zoom = 1;
+  minZoom = 1;
+  private posX = 0;
+  private posY = 0;
+  private isDragging = false;
+  private dragStartX = 0;
+  private dragStartY = 0;
+  private startPosX = 0;
+  private startPosY = 0;
 
-  // ------- URL -------
-  onUrlInput(e: Event) {
-    this.clearError();
-    const v = (e.target as HTMLInputElement).value || null;
+  // Handlers
+  onUrl(ev: Event) {
+    const v = (ev.target as HTMLInputElement).value || null;
     this.value = v;
     this.onChange(this.value);
-    this.croppedBlob = null;
-    this.pendingChange.emit(null);
-    this.setPreviewFromString(v);
+  }
+
+  onFileChange(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    if (!this.validate(file)) return;
+
+    // Показать сырой превью
+    this.revokeObjectUrl();
+    this.objectUrlToRevoke = URL.createObjectURL(file);
+    this.rawPreviewUrl = this.objectUrlToRevoke;
+
+    // Загрузить в <img> для редактора
+    this.img = new Image();
+    this.img.onload = () => {
+      this.imgLoaded = true;
+      this.setupEditor();
+    };
+    this.img.onerror = () => {
+      this.imgLoaded = false;
+      console.error('[picker] Failed to load image');
+    };
+    this.img.src = this.objectUrlToRevoke;
+  }
+
+  openEditor() {
+    if (!this.imgLoaded) return;
+    this.showEditor = true;
+    setTimeout(() => this.setupCanvas(), 0);
+  }
+
+  closeEditor() {
+    this.showEditor = false;
+  }
+
+  apply() {
+    if (this.liveDataUrl) {
+      this.value = this.liveDataUrl;
+      this.onChange(this.value);
+      this.changed.emit(this.value);
+    }
+    this.showEditor = false;
   }
 
   clear() {
     this.value = null;
     this.onChange(this.value);
-    this.croppedBlob = null;
-    this.pendingChange.emit(null);
-    this.setPreviewFromString(null);
-    this.clearError();
+    this.liveDataUrl = null;
+    this.rawPreviewUrl = null;
+    this.imgLoaded = false;
+    this.revokeObjectUrl();
   }
 
-  // ------- File / Cropper -------
-  onFileSelected(ev: Event) {
-    const file = (ev.target as HTMLInputElement).files?.[0];
-    (ev.target as HTMLInputElement).value = '';
-    if (!file) return;
-    if (!this.validateFile(file)) return;
-
-    this.originalFile = file;
-    this.croppedBlob = null; // сбрасываем прошлый pending
-    this.cropFile = file; // отдаём файл кропперу
-    this.showCropper = true;
+  // Canvas editor
+  private setupEditor() {
+    this.showEditor = true;
+    setTimeout(() => this.setupCanvas(), 0);
   }
 
-  reCrop() {
-    if (!this.originalFile) return;
-    this.cropFile = this.originalFile;
-    this.showCropper = true;
+  private setupCanvas() {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+
+    const size = Math.min(this.cropSize, 800);
+    canvas.width = size;
+    canvas.height = size;
+
+    const sx = size / this.img.width;
+    const sy = size / this.img.height;
+    this.minZoom = Math.max(sx, sy);
+    this.zoom = this.minZoom;
+
+    const drawW = this.img.width * this.zoom;
+    const drawH = this.img.height * this.zoom;
+    this.posX = (size - drawW) / 2;
+    this.posY = (size - drawH) / 2;
+
+    this.render();
   }
 
-  onImageCropped(e: ImageCroppedEvent) {
-    if (!e.base64) return;
-    this.croppedBlob = this.base64ToBlob(e.base64, this.outputType);
+  render() {
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas || !this.imgLoaded) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const size = canvas.width;
+    const drawW = this.img.width * this.zoom;
+    const drawH = this.img.height * this.zoom;
+
+    // ограничиваем перемещение, чтобы не было пустых полей
+    this.posX = Math.min(0, Math.max(this.posX, size - drawW));
+    this.posY = Math.min(0, Math.max(this.posY, size - drawH));
+
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, size, size);
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(this.img, this.posX, this.posY, drawW, drawH);
+
+    this.liveDataUrl = canvas.toDataURL(this.outputType);
   }
 
-  onImageLoaded() {
-    // можно прятать лоадер, если добавишь
-    this.cdr.markForCheck();
-  }
-  onLoadFail() {
-    this.errorMsg = 'Failed to load image.';
-  }
+  // Drag to pan
+  onPointerDown(ev: PointerEvent) {
+    if (!this.imgLoaded) return;
+    const canvas = this.canvasRef?.nativeElement;
+    if (!canvas) return;
+    canvas.setPointerCapture(ev.pointerId);
 
-  cancelCrop() {
-    this.showCropper = false;
-    // текущий превью/value не трогаем
-  }
-
-  async applyCrop() {
-    this.showCropper = false;
-
-    // если кроп отключён (enableCrop=false) и blob ещё не создан — работаем с оригиналом
-    if (!this.croppedBlob && this.originalFile && !this.enableCrop) {
-      if (this.uploadMode === 'immediate') {
-        const url = await this.uploadOriginal(this.originalFile);
-        this.value = url;
-        this.onChange(this.value);
-        this.setPreviewFromString(url);
-        this.uploaded.emit(url);
-      } else {
-        this.setPreviewFromBlob(this.originalFile);
-        this.pendingChange.emit(this.originalFile);
-      }
-      return;
-    }
-
-    if (!this.croppedBlob) return;
-
-    if (this.uploadMode === 'immediate') {
-      const url = await this.uploadBlob(this.croppedBlob);
-      this.value = url;
-      this.onChange(this.value);
-      this.setPreviewFromString(url);
-      this.uploaded.emit(url);
-      this.croppedBlob = null;
-      this.pendingChange.emit(null);
-    } else {
-      // defer: показываем превью и отдаём Blob наружу
-      this.setPreviewFromBlob(this.croppedBlob);
-      this.pendingChange.emit(this.croppedBlob);
-    }
+    this.isDragging = true;
+    this.dragStartX = ev.clientX;
+    this.dragStartY = ev.clientY;
+    this.startPosX = this.posX;
+    this.startPosY = this.posY;
   }
 
-  // ------- Helpers -------
-  private validateFile(file: File): boolean {
-    const max = this.maxSizeMb * 1024 * 1024;
-    if (file.size > max) {
-      this.errorMsg = `File is too large. Max ${this.maxSizeMb} MB.`;
-      return false;
-    }
-    const allowed = [
-      'image/png',
-      'image/jpeg',
-      'image/jpg',
-      'image/gif',
-      'image/webp',
-      'image/svg+xml',
-    ];
-    if (!allowed.includes(file.type)) {
-      this.errorMsg = 'Unsupported file type.';
-      return false;
-    }
-    this.clearError();
-    return true;
+  onPointerMove(ev: PointerEvent) {
+    if (!this.isDragging || !this.imgLoaded) return;
+    const dx = ev.clientX - this.dragStartX;
+    const dy = ev.clientY - this.dragStartY;
+    this.posX = this.startPosX + dx;
+    this.posY = this.startPosY + dy;
+    this.render();
   }
 
-  private setPreviewFromBlob(blob: Blob) {
-    this.revokePreview();
-    const url = URL.createObjectURL(blob);
-    this.previewUrl = url;
-    this.lastObjectUrl = url;
-    this.cdr.markForCheck();
+  onPointerUp(ev: PointerEvent) {
+    const canvas = this.canvasRef?.nativeElement;
+    if (canvas) canvas.releasePointerCapture(ev.pointerId);
+    this.isDragging = false;
   }
 
-  private setPreviewFromString(url: string | null) {
-    this.revokePreview();
-    this.previewUrl = url;
-    this.cdr.markForCheck();
+  // Utils
+  validate(file: File): boolean {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/gif'];
+    return allowed.includes(file.type) && file.size <= 10 * 1024 * 1024;
   }
 
-  private revokePreview() {
-    if (this.lastObjectUrl) {
-      URL.revokeObjectURL(this.lastObjectUrl);
-      this.lastObjectUrl = undefined;
+  revokeObjectUrl() {
+    if (this.objectUrlToRevoke) {
+      URL.revokeObjectURL(this.objectUrlToRevoke);
+      this.objectUrlToRevoke = undefined;
     }
   }
 
-  private async uploadOriginal(file: File) {
-    const url = await this.uploadBlob(file);
-    return url;
-  }
-
-  private async uploadBlob(blob: Blob): Promise<string> {
-    this.uploading = true;
-    this.progress = 0;
-    return new Promise<string>((resolve, reject) => {
-      const file = new File([blob], 'image.' + (this.outputType === 'image/jpeg' ? 'jpg' : 'png'), {
-        type: this.outputType,
-      });
-      this.uploadSvc.uploadImage(file).subscribe({
-        next: (evt) => {
-          if (evt.type === HttpEventType.UploadProgress && evt.total) {
-            this.progress = Math.round((evt.loaded / evt.total) * 100);
-          } else if (evt.type === HttpEventType.Response) {
-            this.uploading = false;
-            this.progress = 0;
-            resolve(evt.body!.url);
-          }
-        },
-        error: (err) => {
-          this.uploading = false;
-          this.progress = 0;
-          this.errorMsg = 'Upload failed. Try again.';
-          reject(err);
-        },
-      });
-    });
-  }
-
-  private base64ToBlob(base64: string, mime: 'image/png' | 'image/jpeg'): Blob {
-    const arr = base64.split(',');
-    const bstr = atob(arr[1]);
-    const len = bstr.length;
-    const u8 = new Uint8Array(len);
-    for (let i = 0; i < len; i++) u8[i] = bstr.charCodeAt(i);
-    return new Blob([u8], { type: mime });
-  }
-
-  private clearError() {
-    this.errorMsg = '';
-  }
-
-  ngOnDestroy() {
-    this.revokePreview();
-  }
+  async uploadPendingIfAny(): Promise<string | null> {
+    return null;
+  } // совместимость со старым кодом
 }

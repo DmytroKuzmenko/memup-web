@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+// src/app/admin/sections/section-edit.component.ts
+import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SectionService, Section } from '../../section.service';
 import { LevelService, Level } from '../../level.service';
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
-import { ViewChild } from '@angular/core';
 
 @Component({
   selector: 'app-section-edit',
@@ -37,6 +37,13 @@ export class SectionEditComponent {
     return this.id !== null;
   }
 
+  onImagePending(b: Blob | null) {
+    console.log('pending blob:', b);
+  }
+  onImageUploaded(url: string) {
+    console.log('uploaded url:', url);
+  }
+
   ngOnInit() {
     const idParam = this.route.snapshot.paramMap.get('id');
     this.id = idParam ? Number(idParam) : null;
@@ -55,7 +62,6 @@ export class SectionEditComponent {
     }
   }
 
-  // сортировка уровней на вывод
   get levelsSorted(): Level[] {
     return [...this.levels].sort((a, b) => {
       const ao = a.orderIndex ?? Number.MAX_SAFE_INTEGER;
@@ -66,7 +72,6 @@ export class SectionEditComponent {
   }
 
   async save() {
-    // загрузим отложенное изображение, если есть
     const url = await this.sectionImagePicker?.uploadPendingIfAny();
     if (url) this.form.patchValue({ imagePath: url });
 
@@ -114,7 +119,6 @@ export class SectionEditComponent {
 
   trackByLevelId = (_: number, x: Level) => x.id;
 
-  // для отображения дат в шаблоне — берём из сервиса
   get sectionDates() {
     if (!this.id) return null;
     return this.sectionService.getSectionById(this.id) ?? null;

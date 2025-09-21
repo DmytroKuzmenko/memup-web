@@ -1,5 +1,5 @@
+<!-- src/app/admin/sections/section-edit.component.html -->
 <div class="mx-auto max-w-2xl p-4 md:p-6">
-  <!-- Card: Section form -->
   <div
     class="rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
   >
@@ -19,17 +19,10 @@
         </div>
 
         <app-image-picker
-          #sectionImagePicker
           formControlName="imagePath"
-          label="Image"
-          [enableCrop]="true"
           [cropAspectRatio]="1"
-          [outputWidth]="600"
-          [outputHeight]="600"
           [outputType]="'image/png'"
-          [uploadMode]="'defer'"
-        >
-        </app-image-picker>
+        ></app-image-picker>
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Display order</label>
@@ -54,7 +47,6 @@
           </select>
         </div>
 
-        <!-- Created/Updated (read-only) -->
         <div *ngIf="sectionDates" class="grid gap-1.5 text-sm text-neutral-600">
           <div>Created: {{ sectionDates!.createdAt | date: 'yyyy-MM-dd HH:mm' }}</div>
           <div>Updated: {{ sectionDates!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
@@ -80,7 +72,6 @@
     </div>
   </div>
 
-  <!-- Card: Levels list -->
   <div
     *ngIf="isEdit; else saveFirst"
     class="mt-4 rounded-2xl border border-neutral-200/60 bg-white shadow dark:border-neutral-800 dark:bg-neutral-900"
@@ -101,7 +92,6 @@
 
       <div *ngIf="levels.length === 0" class="text-neutral-600">No levels yet.</div>
 
-      <!-- Mobile cards -->
       <div class="grid gap-3 md:hidden" *ngIf="levels.length > 0">
         <div
           *ngFor="let lvl of levelsSorted; trackBy: trackByLevelId"
@@ -152,7 +142,6 @@
         </div>
       </div>
 
-      <!-- Desktop table -->
       <div class="hidden md:block" *ngIf="levels.length > 0">
         <div class="overflow-x-auto rounded-2xl border border-neutral-200 bg-white shadow">
           <table class="min-w-full">
