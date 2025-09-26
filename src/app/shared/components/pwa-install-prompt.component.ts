@@ -9,10 +9,12 @@ import { PwaService } from '../../services/pwa.service';
   template: `
     @if (isIosOrMac && !canInstall && showInstallPrompt) {
       <div
-        class="animate-fade-in fixed bottom-5 left-1/2 z-50 flex w-[90vw] max-w-sm -translate-x-1/2 transform flex-col rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 shadow-lg sm:flex-row sm:items-center sm:gap-4"
+        class="animate-fade-in fixed right-2 bottom-2 left-2 z-40 flex flex-col rounded-xl border border-gray-200 bg-white px-3 py-2 text-gray-900 shadow-lg sm:right-auto sm:bottom-5 sm:left-1/2 sm:w-[90vw] sm:max-w-sm sm:-translate-x-1/2 sm:transform sm:px-4 sm:py-3"
+        (touchstart)="onTouchStart($event)"
+        (touchend)="onTouchEnd($event)"
       >
         <!-- Текст -->
-        <div class="px-2 text-center text-sm text-gray-800">
+        <div class="px-1 text-center text-sm text-gray-800 sm:px-2">
           <span class="flex items-center justify-center gap-2 text-sm font-medium">
             📲 <span>Встановіть застосунок</span>
           </span>
@@ -23,7 +25,7 @@ import { PwaService } from '../../services/pwa.service';
         </div>
         <button
           (click)="closePrompt()"
-          class="hidden text-xl text-gray-400 hover:text-gray-500 sm:inline"
+          class="absolute top-2 right-2 text-lg text-gray-400 hover:text-gray-500 sm:text-xl"
           aria-label="Закрити"
         >
           ×
@@ -32,16 +34,18 @@ import { PwaService } from '../../services/pwa.service';
     }
     @if (canInstall && showInstallPrompt) {
       <div
-        class="animate-fade-in fixed bottom-5 left-1/2 z-50 flex w-[90vw] max-w-sm -translate-x-1/2 transform flex-col rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 shadow-lg sm:flex-row sm:items-center sm:gap-4"
+        class="animate-fade-in fixed right-2 bottom-2 left-2 z-40 flex flex-col rounded-xl border border-gray-200 bg-white px-3 py-2 text-gray-900 shadow-lg sm:right-auto sm:bottom-5 sm:left-1/2 sm:w-[90vw] sm:max-w-sm sm:-translate-x-1/2 sm:transform sm:px-4 sm:py-3"
+        (touchstart)="onTouchStart($event)"
+        (touchend)="onTouchEnd($event)"
       >
-        <div class="flex w-full items-center justify-between sm:w-auto">
+        <div class="flex w-full items-center justify-between">
           <span class="flex items-center gap-2 text-sm font-medium">
             📲 <span>Встановіть застосунок</span>
           </span>
 
           <button
             (click)="closePrompt()"
-            class="text-xl text-gray-400 hover:text-gray-500 sm:hidden"
+            class="text-lg text-gray-400 hover:text-gray-500 sm:hidden"
             aria-label="Закрити"
           >
             ×
@@ -58,7 +62,7 @@ import { PwaService } from '../../services/pwa.service';
 
           <button
             (click)="closePrompt()"
-            class="hidden text-xl text-gray-400 hover:text-gray-500 sm:inline"
+            class="hidden text-lg text-gray-400 hover:text-gray-500 sm:inline sm:text-xl"
             aria-label="Закрити"
           >
             ×
@@ -73,6 +77,8 @@ export class PwaInstallPromptComponent implements OnInit {
   showInstallPrompt = true;
   private readonly DISMISS_KEY = 'pwa-install-dismissed';
   private readonly WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+  private touchStartY = 0;
+  private touchStartX = 0;
 
   constructor(private pwaService: PwaService) {}
 
@@ -105,6 +111,23 @@ export class PwaInstallPromptComponent implements OnInit {
     this.showInstallPrompt = false;
     // Сохраняем время отклонения
     this.saveDismissTime();
+  }
+
+  onTouchStart(event: TouchEvent) {
+    this.touchStartY = event.touches[0].clientY;
+    this.touchStartX = event.touches[0].clientX;
+  }
+
+  onTouchEnd(event: TouchEvent) {
+    const touchEndY = event.changedTouches[0].clientY;
+    const touchEndX = event.changedTouches[0].clientX;
+    const deltaY = this.touchStartY - touchEndY;
+    const deltaX = Math.abs(this.touchStartX - touchEndX);
+
+    // Если свайп вверх больше 50px и горизонтальное движение меньше 100px
+    if (deltaY > 50 && deltaX < 100) {
+      this.closePrompt();
+    }
   }
 
   private wasRecentlyDismissed(): boolean {
