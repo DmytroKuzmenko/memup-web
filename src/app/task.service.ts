@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-export type TaskType = 'anagram' | 'image_choice' | 'text_choice' | 'meme';
+export type TaskType = 'anagram' | 'image_choice' | 'text_choice';
 
 export interface TaskOption {
   label: string;
@@ -14,7 +14,10 @@ export interface Task {
   title: string; // internal name
   type: TaskType;
   topText?: string;
-  imagePath?: string;
+  taskImagePath?: string;
+  taskImageSource?: string;
+  resultImagePath?: string;
+  resultImageSource?: string;
   orderIndex?: number;
   status: number; // 0 draft, 1 published
   timeLimitSeconds?: number;
@@ -29,8 +32,6 @@ export interface Task {
 
   // image_choice / text_choice
   options?: TaskOption[];
-
-  // meme — TBD
 
   createdAt: Date;
   updatedAt: Date;
@@ -83,7 +84,10 @@ export class TaskService {
       title: data.title ?? '',
       type: data.type ?? 'text_choice',
       topText: data.topText,
-      imagePath: data.imagePath,
+      taskImagePath: data.taskImagePath,
+      taskImageSource: data.taskImageSource,
+      resultImagePath: data.resultImagePath,
+      resultImageSource: data.resultImageSource,
       orderIndex: data.orderIndex,
       status: data.status ?? 0,
       timeLimitSeconds: data.timeLimitSeconds,
@@ -107,7 +111,10 @@ export class TaskService {
     t.title = data.title ?? t.title;
     t.type = data.type ?? t.type;
     t.topText = data.topText ?? t.topText;
-    t.imagePath = data.imagePath ?? t.imagePath;
+    t.taskImagePath = data.taskImagePath ?? t.taskImagePath;
+    t.taskImageSource = data.taskImageSource ?? t.taskImageSource;
+    t.resultImagePath = data.resultImagePath ?? t.resultImagePath;
+    t.resultImageSource = data.resultImageSource ?? t.resultImageSource;
     t.orderIndex = data.orderIndex ?? t.orderIndex;
     t.status = data.status ?? t.status;
     t.timeLimitSeconds = data.timeLimitSeconds ?? t.timeLimitSeconds;

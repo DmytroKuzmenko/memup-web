@@ -37,7 +37,6 @@
             <option value="anagram">Build the word</option>
             <option value="image_choice">Image choice</option>
             <option value="text_choice">Text choice</option>
-            <option value="meme">Meme task</option>
           </select>
         </div>
 
@@ -51,11 +50,38 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">First image</label>
-          <app-image-picker formControlName="imagePath" label="Image (optional)"></app-image-picker>
+          <label class="text-sm font-medium">Task image</label>
+          <app-image-picker
+            formControlName="taskImagePath"
+            label="Image (optional)"
+          ></app-image-picker>
         </div>
 
-        
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Task image source</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="taskImageSource"
+            placeholder="<a href='https://example.com/source'>source</a>"
+          />
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Result image</label>
+          <app-image-picker
+            formControlName="resultImagePath"
+            label="Image (optional)"
+          ></app-image-picker>
+        </div>
+
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">Result image source</label>
+          <input
+            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
+            formControlName="resultImageSource"
+            placeholder="<a href='https://example.com/source'>source</a>"
+          />
+        </div>
 
         <div class="grid grid-cols-1 gap-1.5 md:grid-cols-3 md:gap-3">
           <div>
