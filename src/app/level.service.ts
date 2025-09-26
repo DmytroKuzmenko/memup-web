@@ -9,7 +9,6 @@ export interface Level {
   animationImagePath?: string; // анімація (gif/webp) ліворуч направо
   orderIndex?: number;
   status: number; // 0 чернетка, 1 опубліковано
-  timeLimitSeconds?: number; // таймер, опційно
   createdAt: Date;
   updatedAt: Date;
 }
@@ -68,7 +67,6 @@ export class LevelService {
       animationImagePath: data.animationImagePath ?? '',
       orderIndex: data.orderIndex,
       status: data.status ?? 0,
-      timeLimitSeconds: data.timeLimitSeconds,
       createdAt: now,
       updatedAt: now,
     };
@@ -85,7 +83,6 @@ export class LevelService {
     l.animationImagePath = data.animationImagePath ?? l.animationImagePath;
     l.orderIndex = data.orderIndex ?? l.orderIndex;
     l.status = data.status ?? l.status;
-    l.timeLimitSeconds = data.timeLimitSeconds ?? l.timeLimitSeconds;
     l.updatedAt = new Date();
   }
 

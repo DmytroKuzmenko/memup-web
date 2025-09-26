@@ -50,7 +50,12 @@
           ></textarea>
         </div>
 
-        <app-image-picker formControlName="imagePath" label="Image (optional)"></app-image-picker>
+        <div class="grid gap-1.5">
+          <label class="text-sm font-medium">First image</label>
+          <app-image-picker formControlName="imagePath" label="Image (optional)"></app-image-picker>
+        </div>
+
+        
 
         <div class="grid grid-cols-1 gap-1.5 md:grid-cols-3 md:gap-3">
           <div>

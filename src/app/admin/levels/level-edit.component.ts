@@ -61,7 +61,6 @@ export class LevelEditComponent {
           animationImagePath: lvl.animationImagePath ?? '',
           orderIndex: lvl.orderIndex ?? null,
           status: lvl.status,
-          timeLimitSeconds: lvl.timeLimitSeconds ?? null,
         });
       }
       this.loadTasks();
@@ -90,7 +89,6 @@ export class LevelEditComponent {
       animationImagePath: v.animationImagePath || '',
       orderIndex: v.orderIndex != null ? Number(v.orderIndex) : undefined,
       status: Number(v.status),
-      timeLimitSeconds: v.timeLimitSeconds != null ? Number(v.timeLimitSeconds) : undefined,
     };
 
     if (this.isEdit) this.levelsSvc.updateLevel(this.id!, dto);
