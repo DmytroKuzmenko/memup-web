@@ -7,6 +7,9 @@ import {
   Output,
   ViewChild,
   ElementRef,
+  ChangeDetectorRef,
+  OnDestroy,
+  NgZone,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
 
@@ -25,92 +28,230 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     `
       :host {
         display: block;
+        --primary-color: #3b82f6;
+        --primary-hover: #2563eb;
+        --danger-color: #ef4444;
+        --danger-hover: #dc2626;
+        --success-color: #10b981;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        --border-radius: 12px;
+        --border-radius-lg: 16px;
+        --border-radius-xl: 20px;
+        --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
-      /* Внешний превью (кликабельно) */
+      /* Современный превью */
       .preview {
         position: relative;
         width: 100%;
-        border: 2px dashed #60a5fa;
-        border-radius: 16px;
+        border: 2px dashed var(--gray-300);
+        border-radius: var(--border-radius-lg);
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #fff;
-        margin-top: 8px;
+        background: var(--gray-50);
+        margin-top: 12px;
         cursor: pointer;
         user-select: none;
+        transition: var(--transition);
+        min-height: 120px;
       }
+
+      .preview:hover {
+        border-color: var(--primary-color);
+        background: #f8faff;
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+      }
+
+      .preview.dragover {
+        border-color: var(--primary-color);
+        background: #eff6ff;
+        transform: scale(1.02);
+      }
+
       .preview img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         display: block;
-      }
-      .hint {
-        color: #6b7280;
-        font-size: 13px;
-        text-align: center;
-        padding: 0 10px;
+        transition: var(--transition);
       }
 
+      .hint {
+        color: var(--gray-500);
+        font-size: 14px;
+        text-align: center;
+        padding: 20px;
+        line-height: 1.5;
+      }
+
+      .hint-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+        opacity: 0.6;
+      }
+
+      /* Современная панель инструментов */
       .toolbar {
         position: absolute;
-        right: 8px;
-        bottom: 8px;
+        right: 12px;
+        bottom: 12px;
         display: flex;
         gap: 8px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 6px;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        padding: 8px;
+        border-radius: var(--border-radius-lg);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: var(--shadow-lg);
+        opacity: 0;
+        transform: translateY(10px);
+        transition: var(--transition);
       }
+
+      .preview:hover .toolbar {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* Современные кнопки */
       .btn {
-        padding: 10px 12px;
-        border: 1px solid #d1d5db;
-        border-radius: 12px;
+        padding: 8px 16px;
+        border: 1px solid var(--gray-200);
+        border-radius: var(--border-radius);
         background: #fff;
         cursor: pointer;
-        font-size: 14px;
+        font-size: 13px;
+        font-weight: 500;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
       }
-      .btn-danger {
-        background: #ef4444;
+
+      .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn-primary {
+        background: var(--primary-color);
         color: #fff;
-        border-color: #ef4444;
+        border-color: var(--primary-color);
       }
-      .btn-quiet {
+
+      .btn-primary:hover {
+        background: var(--primary-hover);
+        border-color: var(--primary-hover);
+      }
+
+      .btn-danger {
+        background: var(--danger-color);
+        color: #fff;
+        border-color: var(--danger-color);
+      }
+
+      .btn-danger:hover {
+        background: var(--danger-hover);
+        border-color: var(--danger-hover);
+      }
+
+      .btn-secondary {
         background: #fff;
-        color: #111827;
-        border-color: #e5e7eb;
+        color: var(--gray-700);
+        border-color: var(--gray-200);
       }
+
+      .btn-secondary:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-300);
+      }
+
+      .btn.icon-only {
+        padding: 8px;
+        min-width: 36px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
       .hidden {
         display: none !important;
       }
 
-      /* Полноэкранная модалка */
+      /* Современная модалка */
       .modal {
         position: fixed;
         inset: 0;
         display: flex;
         align-items: stretch;
         justify-content: center;
-        background: rgba(0, 0, 0, 0.55);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
         z-index: 9999;
+        animation: modalFadeIn 0.2s ease-out;
       }
+
+      @keyframes modalFadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
       .card {
         width: 100%;
-        max-width: 980px;
+        max-width: min(95vw, 1200px);
         background: #fff;
         border-radius: 0;
         overflow: hidden;
         display: flex;
         flex-direction: column;
+        animation: cardSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: var(--shadow-xl);
       }
+
+      @keyframes cardSlideIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95) translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
       .card-head {
-        padding: 14px 16px;
+        padding: 20px 24px;
         font-weight: 600;
-        border-bottom: 1px solid #eee;
+        font-size: 18px;
+        border-bottom: 1px solid var(--gray-200);
         position: sticky;
         top: 0;
         background: #fff;
@@ -118,71 +259,263 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         display: flex;
         align-items: center;
         justify-content: space-between;
+        backdrop-filter: blur(8px);
       }
+
       .card-body {
-        padding: 12px;
+        padding: 24px;
         flex: 1;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-height: 400px;
       }
+
       .card-foot {
-        padding: 12px;
-        border-top: 1px solid #eee;
+        padding: 20px 24px;
+        border-top: 1px solid var(--gray-200);
         display: flex;
-        gap: 8px;
+        gap: 12px;
         justify-content: space-between;
         position: sticky;
         bottom: 0;
         background: #fff;
         z-index: 5;
+        backdrop-filter: blur(8px);
       }
 
-      /* Редактор */
+      /* Современный редактор */
       .editor {
         width: 100%;
         margin: 0 auto;
         display: grid;
-        gap: 14px;
+        gap: 20px;
       }
+
       .canvas-wrap {
         width: 100%;
         display: flex;
         justify-content: center;
         margin: 0 auto;
+        position: relative;
       }
+
       .canvas {
         width: 100%;
         height: auto;
-        background: #111;
-        border-radius: 16px;
+        background: var(--gray-900);
+        border-radius: var(--border-radius-lg);
         touch-action: none;
-        border: 1px solid #e5e7eb;
+        border: 1px solid var(--gray-200);
+        box-shadow: var(--shadow-lg);
+        transition: var(--transition);
       }
 
+      .canvas:hover {
+        box-shadow: var(--shadow-xl);
+      }
+
+      /* Современные контролы */
       .ctrls {
         display: grid;
         grid-template-columns: 1fr auto auto;
-        gap: 10px;
+        gap: 12px;
         align-items: center;
+        padding: 16px;
+        background: var(--gray-50);
+        border-radius: var(--border-radius-lg);
+        border: 1px solid var(--gray-200);
       }
+
       .range {
         width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--gray-200);
+        outline: none;
+        cursor: pointer;
+        transition: var(--transition);
       }
+
+      .range::-webkit-slider-thumb {
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+      }
+
+      .range::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+        box-shadow: var(--shadow-md);
+      }
+
+      .range::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        cursor: pointer;
+        border: none;
+        box-shadow: var(--shadow-sm);
+      }
+
       .icon-btn {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        font-size: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--border-radius);
+        font-size: 18px;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: var(--transition);
+        border: 1px solid var(--gray-200);
+        background: #fff;
+        color: var(--gray-700);
       }
 
-      @media (min-width: 721px) {
+      .icon-btn:hover {
+        background: var(--primary-color);
+        color: #fff;
+        border-color: var(--primary-color);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      /* Индикатор загрузки */
+      .loading-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(2px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--border-radius-lg);
+        z-index: 10;
+      }
+
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--gray-200);
+        border-top: 3px solid var(--primary-color);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Адаптивность */
+      @media (max-width: 768px) {
+        .preview {
+          min-height: 100px;
+        }
+
+        .toolbar {
+          position: static;
+          opacity: 1;
+          transform: none;
+          margin-top: 12px;
+          justify-content: center;
+        }
+
+        .card-head {
+          padding: 16px 20px;
+          font-size: 16px;
+        }
+
+        .card-body {
+          padding: 16px;
+          min-height: 300px;
+        }
+
+        .card-foot {
+          padding: 16px 20px;
+          flex-direction: column;
+        }
+
+        .ctrls {
+          grid-template-columns: 1fr;
+          gap: 16px;
+          text-align: center;
+        }
+
+        .icon-btn {
+          width: 40px;
+          height: 40px;
+          font-size: 16px;
+        }
+      }
+
+      @media (min-width: 769px) {
         .card {
-          border-radius: 16px;
-          margin: 24px;
+          border-radius: var(--border-radius-xl);
+          margin: 32px;
+          max-height: 90vh;
+        }
+
+        .ctrls {
+          grid-template-columns: 1fr auto auto;
+        }
+      }
+
+      /* Темная тема */
+      @media (prefers-color-scheme: dark) {
+        :host {
+          --gray-50: #1f2937;
+          --gray-100: #374151;
+          --gray-200: #4b5563;
+          --gray-300: #6b7280;
+          --gray-400: #9ca3af;
+          --gray-500: #d1d5db;
+          --gray-600: #e5e7eb;
+          --gray-700: #f3f4f6;
+          --gray-800: #f9fafb;
+          --gray-900: #ffffff;
+        }
+
+        .preview {
+          background: var(--gray-100);
+          border-color: var(--gray-300);
+        }
+
+        .preview:hover {
+          background: var(--gray-200);
+        }
+
+        .toolbar {
+          background: rgba(31, 41, 55, 0.95);
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary {
+          background: var(--gray-100);
+          color: var(--gray-700);
+          border-color: var(--gray-300);
+        }
+
+        .btn-secondary:hover {
+          background: var(--gray-200);
+        }
+
+        .ctrls {
+          background: var(--gray-100);
+          border-color: var(--gray-300);
+        }
+
+        .canvas {
+          background: var(--gray-800);
         }
       }
     `,
@@ -200,49 +533,57 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     <!-- внешний превью -->
     <div
       class="preview"
+      [class.dragover]="isDragOver"
       [style.max-width.px]="previewWidth"
       [style.height.px]="previewHeightComputed"
       (click)="onPreviewClick()"
       (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
       (drop)="onDrop($event)"
     >
+      <!-- Индикатор загрузки -->
+      <div class="loading-overlay" *ngIf="isLoading">
+        <div class="spinner"></div>
+      </div>
+
       <img
         *ngIf="liveDataUrl || rawPreviewUrl || value"
         [src]="liveDataUrl || rawPreviewUrl || value"
         alt="preview"
       />
       <div *ngIf="!(liveDataUrl || rawPreviewUrl || value)" class="hint">
-        Tap to upload<br />(or drop a file)
+        <div class="hint-icon">📷</div>
+        <div>Tap to upload image</div>
+        <div style="font-size: 12px; margin-top: 4px; opacity: 0.7;">or drag & drop</div>
+      </div>
+
+      <!-- Подсказка для смены изображения -->
+      <div
+        *ngIf="liveDataUrl || rawPreviewUrl || value"
+        class="hint"
+        style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;"
+      >
+        Click to change
       </div>
 
       <div class="toolbar" *ngIf="liveDataUrl || rawPreviewUrl || value">
         <button
-          class="btn btn-quiet"
+          class="btn btn-danger icon-only"
           type="button"
-          (click)="openEditor(); $event.stopPropagation()"
-          [disabled]="mode === 'original'"
+          (click)="clear(); $event.stopPropagation()"
+          title="Remove image"
         >
-          Edit
-        </button>
-        <button
-          class="btn btn-quiet"
-          type="button"
-          (click)="triggerPick(); $event.stopPropagation()"
-        >
-          Change
-        </button>
-        <button class="btn btn-danger" type="button" (click)="clear(); $event.stopPropagation()">
-          Remove
+          🗑️
         </button>
       </div>
     </div>
 
     <!-- полноэкранный редактор (только для mode='crop') -->
-    <div class="modal" *ngIf="showEditor && mode === 'crop'">
-      <div class="card">
+    <div class="modal" *ngIf="showEditor && mode === 'crop'" (click)="onModalClick($event)">
+      <div class="card" (click)="$event.stopPropagation()">
         <div class="card-head">
-          <span>Crop image</span>
-          <button class="btn btn-quiet" type="button" (click)="closeEditor()">Close</button>
+          <span>✂️ Crop Image</span>
+          <button class="btn btn-secondary" type="button" (click)="closeEditor()">✕ Close</button>
         </div>
 
         <div class="card-body">
@@ -263,34 +604,34 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
               <input
                 class="range"
                 type="range"
-                min="1"
+                [min]="minZoom"
                 [max]="maxZoom"
                 step="0.01"
                 [(ngModel)]="zoom"
                 (input)="onSliderZoom()"
               />
-              <button class="btn icon-btn" type="button" (click)="bumpZoom(-0.1)">−</button>
-              <button class="btn icon-btn" type="button" (click)="bumpZoom(+0.1)">+</button>
+              <button class="btn icon-btn" type="button" (click)="bumpZoom(-0.1)" title="Zoom out">
+                🔍−
+              </button>
+              <button class="btn icon-btn" type="button" (click)="bumpZoom(+0.1)" title="Zoom in">
+                🔍+
+              </button>
             </div>
           </div>
         </div>
 
         <div class="card-foot">
-          <button class="btn btn-quiet" type="button" (click)="closeEditor()">Cancel</button>
-          <button
-            class="btn"
-            type="button"
-            (click)="apply()"
-            style="background:#2563EB;color:#fff;border-color:#2563EB;"
-          >
-            Apply
+          <button class="btn btn-secondary" type="button" (click)="closeEditor()">Cancel</button>
+          <button class="btn btn-primary" type="button" (click)="apply()" [disabled]="isProcessing">
+            <span *ngIf="!isProcessing">✅ Apply</span>
+            <span *ngIf="isProcessing">⏳ Processing...</span>
           </button>
         </div>
       </div>
     </div>
   `,
 })
-export class ImagePickerComponent implements ControlValueAccessor {
+export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
   /* === Inputs === */
   @Input() accept = 'image/png,image/jpeg,image/jpg,image/webp,image/gif';
   @Input() outputType: 'image/png' | 'image/jpeg' = 'image/png';
@@ -367,6 +708,28 @@ export class ImagePickerComponent implements ControlValueAccessor {
   private pinchCenterX = 0;
   private pinchCenterY = 0;
 
+  // Новые состояния для улучшенного UX
+  isLoading = false;
+  isProcessing = false;
+  isDragOver = false;
+
+  // Оптимизация производительности
+  private renderTimeout?: number;
+  private lastRenderTime = 0;
+  private readonly RENDER_THROTTLE = 16; // ~60fps
+
+  constructor(
+    private cdr: ChangeDetectorRef,
+    private ngZone: NgZone,
+  ) {}
+
+  ngOnDestroy() {
+    this.revokeObjectUrl();
+    if (this.renderTimeout) {
+      clearTimeout(this.renderTimeout);
+    }
+  }
+
   /* === Вычисления размеров/пропорций === */
   private get outW(): number {
     return this.outputWidth ?? this.outputSize;
@@ -386,13 +749,8 @@ export class ImagePickerComponent implements ControlValueAccessor {
 
   /* === UI === */
   onPreviewClick() {
-    if (this.mode === 'original') {
-      // При "original" редактор не нужен — повторный клик открывает смену файла
-      this.triggerPick();
-      return;
-    }
-    if (this.liveDataUrl || this.rawPreviewUrl || this.value) this.openEditor();
-    else this.triggerPick();
+    // Всегда открываем выбор файла при клике на превью
+    this.triggerPick();
   }
   triggerPick() {
     this.fileInputRef?.nativeElement.click();
@@ -404,6 +762,9 @@ export class ImagePickerComponent implements ControlValueAccessor {
     if (!file) return;
     if (!this.validate(file)) return;
 
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
     // Быстрый внешний превью
     this.revokeObjectUrl();
     this.objectUrlToRevoke = URL.createObjectURL(file);
@@ -413,10 +774,14 @@ export class ImagePickerComponent implements ControlValueAccessor {
     if (this.mode === 'original') {
       const reader = new FileReader();
       reader.onload = () => {
-        const dataUrl = reader.result as string;
-        this.value = dataUrl;
-        this.onChange(this.value);
-        this.liveDataUrl = dataUrl; // показываем на форме
+        this.ngZone.run(() => {
+          const dataUrl = reader.result as string;
+          this.value = dataUrl;
+          this.onChange(this.value);
+          this.liveDataUrl = dataUrl; // показываем на форме
+          this.isLoading = false;
+          this.cdr.detectChanges();
+        });
         // очистим input, чтобы можно было выбрать тот же файл повторно
         setTimeout(() => {
           if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
@@ -429,32 +794,84 @@ export class ImagePickerComponent implements ControlValueAccessor {
     // Режим "crop": загружаем в редактор
     this.img = new Image();
     this.img.onload = () => {
-      this.imgLoaded = true;
-      this.openEditor();
-      this.setupCanvas();
+      this.ngZone.run(() => {
+        this.imgLoaded = true;
+        this.isLoading = false;
+        this.openEditor();
+        this.setupCanvas();
+        this.cdr.detectChanges();
+      });
       setTimeout(() => {
         if (this.fileInputRef) this.fileInputRef.nativeElement.value = '';
       }, 0);
     };
     this.img.onerror = () => {
-      this.imgLoaded = false;
+      this.ngZone.run(() => {
+        this.imgLoaded = false;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      });
     };
     this.img.src = this.objectUrlToRevoke;
   }
 
   onDragOver(e: DragEvent) {
     e.preventDefault();
+    this.isDragOver = true;
   }
+
+  onDragLeave(e: DragEvent) {
+    e.preventDefault();
+    this.isDragOver = false;
+  }
+
   onDrop(e: DragEvent) {
     e.preventDefault();
+    this.isDragOver = false;
     const file = e.dataTransfer?.files?.[0];
     if (!file) return;
     const fake = { target: { files: [file] } } as any as Event;
     this.onFileChange(fake);
   }
 
+  onModalClick(e: Event) {
+    if (e.target === e.currentTarget) {
+      this.closeEditor();
+    }
+  }
+
   openEditor() {
-    if (!this.imgLoaded || this.mode !== 'crop') return;
+    if (this.mode !== 'crop') {
+      return;
+    }
+
+    // Если изображение еще не загружено, загружаем его
+    if (!this.imgLoaded && (this.rawPreviewUrl || this.value)) {
+      this.img = new Image();
+      this.img.onload = () => {
+        this.ngZone.run(() => {
+          this.imgLoaded = true;
+          this.resetCropState(); // Сбрасываем состояние кропа
+          this.showEditor = true;
+          this.setupCanvas();
+          this.cdr.detectChanges();
+        });
+      };
+      this.img.onerror = () => {
+        this.ngZone.run(() => {
+          this.imgLoaded = false;
+          this.cdr.detectChanges();
+        });
+      };
+      this.img.src = this.rawPreviewUrl || this.value || '';
+      return;
+    }
+
+    if (!this.imgLoaded) {
+      return;
+    }
+
+    this.resetCropState(); // Сбрасываем состояние кропа
     this.showEditor = true;
     setTimeout(() => this.setupCanvas(), 0);
   }
@@ -463,16 +880,42 @@ export class ImagePickerComponent implements ControlValueAccessor {
     this.pointers.clear();
   }
 
+  private resetCropState() {
+    // Сбрасываем состояние кропа к оригинальному
+    this.zoom = 1; // Будет переустановлен в setupCanvas()
+    this.minZoom = 1; // Будет переустановлен в setupCanvas()
+    this.maxZoom = 8;
+    this.posX = 0; // Будет переустановлен в setupCanvas()
+    this.posY = 0; // Будет переустановлен в setupCanvas()
+    this.isDragging = false;
+    this.pointers.clear();
+    this.pinchStartDist = 0;
+    this.pinchStartZoom = 1;
+    this.pinchCenterX = 0;
+    this.pinchCenterY = 0;
+  }
+
   apply() {
-    // финализируем кроп в точном размере (outW × outH)
-    const data = this.renderToOutput();
-    if (data) {
-      this.value = data;
-      this.onChange(this.value);
-      this.changed.emit(this.value);
-      this.liveDataUrl = data;
-    }
-    this.closeEditor();
+    this.isProcessing = true;
+    this.cdr.detectChanges();
+
+    // Используем requestAnimationFrame для плавной обработки
+    requestAnimationFrame(() => {
+      try {
+        // финализируем кроп в точном размере (outW × outH)
+        const data = this.renderToOutput();
+        if (data) {
+          this.value = data;
+          this.onChange(this.value);
+          this.changed.emit(this.value);
+          this.liveDataUrl = data;
+        }
+      } finally {
+        this.isProcessing = false;
+        this.closeEditor();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   clear() {
@@ -500,12 +943,20 @@ export class ImagePickerComponent implements ControlValueAccessor {
     const sx = cw / this.img.width;
     const sy = ch / this.img.height;
     this.minZoom = Math.max(sx, sy);
-    this.zoom = this.minZoom;
+
+    // Устанавливаем зум только если он еще не был установлен (при первом открытии)
+    if (this.zoom === 1) {
+      this.zoom = this.minZoom;
+    }
 
     const drawW = this.img.width * this.zoom;
     const drawH = this.img.height * this.zoom;
-    this.posX = (cw - drawW) / 2;
-    this.posY = (ch - drawH) / 2;
+
+    // Устанавливаем позицию только если она еще не была установлена
+    if (this.posX === 0 && this.posY === 0) {
+      this.posX = (cw - drawW) / 2;
+      this.posY = (ch - drawH) / 2;
+    }
 
     const rect = canvas.getBoundingClientRect();
     this.pointerScale = canvas.width / rect.width;
@@ -526,6 +977,16 @@ export class ImagePickerComponent implements ControlValueAccessor {
   }
 
   private render() {
+    const now = performance.now();
+    if (now - this.lastRenderTime < this.RENDER_THROTTLE) {
+      // Throttle rendering для лучшей производительности
+      if (this.renderTimeout) {
+        clearTimeout(this.renderTimeout);
+      }
+      this.renderTimeout = window.setTimeout(() => this.render(), this.RENDER_THROTTLE);
+      return;
+    }
+
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas || !this.imgLoaded) return;
     const ctx = canvas.getContext('2d');
@@ -546,8 +1007,12 @@ export class ImagePickerComponent implements ControlValueAccessor {
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(this.img, this.posX, this.posY, drawW, drawH);
 
-    // live превью — сразу в целевом размере и формате
-    this.liveDataUrl = this.renderToOutput();
+    this.lastRenderTime = now;
+
+    // live превью — только при необходимости
+    if (!this.isDragging && this.pointers.size === 0) {
+      this.liveDataUrl = this.renderToOutput();
+    }
   }
 
   /** Рендер в offscreen-канвас точного размера outW×outH */
@@ -650,6 +1115,9 @@ export class ImagePickerComponent implements ControlValueAccessor {
     if (!this.pointers.has(ev.pointerId)) return;
     this.pointers.set(ev.pointerId, ev);
 
+    // Предотвращаем скролл страницы при перетаскивании
+    ev.preventDefault();
+
     if (this.pointers.size === 1 && this.isDragging) {
       const dx = (ev.clientX - this.dragStartX) * this.pointerScale;
       const dy = (ev.clientY - this.dragStartY) * this.pointerScale;
@@ -673,6 +1141,8 @@ export class ImagePickerComponent implements ControlValueAccessor {
     if (this.pointers.size <= 1) {
       this.isDragging = false;
       this.pinchStartDist = 0;
+      // Финальный рендер с live preview
+      this.liveDataUrl = this.renderToOutput();
     }
   }
 
