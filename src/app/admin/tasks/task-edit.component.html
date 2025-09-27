@@ -53,6 +53,7 @@
           <label class="text-sm font-medium">Task image</label>
           <app-image-picker
             formControlName="taskImagePath"
+            [mode]="'original'"
             label="Image (optional)"
           ></app-image-picker>
         </div>
@@ -70,6 +71,7 @@
           <label class="text-sm font-medium">Result image</label>
           <app-image-picker
             formControlName="resultImagePath"
+            [mode]="'original'"
             label="Image (optional)"
           ></app-image-picker>
         </div>

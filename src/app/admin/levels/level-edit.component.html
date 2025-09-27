@@ -43,7 +43,8 @@
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Level image</label>
-          <app-image-picker formControlName="imagePath" label="Level image"></app-image-picker>
+          <app-image-picker formControlName="imagePath" [mode]="'original'" label="Level image">
+          </app-image-picker>
         </div>
 
         <div class="grid gap-1.5">
@@ -60,6 +61,7 @@
           <label class="text-sm font-medium">Preface moving image</label>
           <app-image-picker
             formControlName="animationImagePath"
+            [mode]="'original'"
             label="Moving image (sprite)"
           ></app-image-picker>
         </div>

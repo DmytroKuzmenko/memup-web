@@ -198,6 +198,43 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         font-size: 16px;
       }
 
+      .btn.icon-only svg {
+        width: 16px;
+        height: 16px;
+        transition: var(--transition);
+        margin: 0; /* Убираем отступы для иконок */
+      }
+
+      .btn.icon-only:hover svg {
+        transform: scale(1.1);
+      }
+
+      .btn svg {
+        width: 16px;
+        height: 16px;
+        margin-right: 6px;
+        transition: var(--transition);
+      }
+
+      .btn:hover svg {
+        transform: scale(1.05);
+      }
+
+      /* Специальные стили для кнопок масштабирования */
+      .icon-btn {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--gray-800);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .icon-btn:hover {
+        color: var(--primary-color);
+        transform: scale(1.1);
+      }
+
       .hidden {
         display: none !important;
       }
@@ -213,6 +250,8 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         backdrop-filter: blur(4px);
         z-index: 9999;
         animation: modalFadeIn 0.2s ease-out;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       @keyframes modalFadeIn {
@@ -305,7 +344,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         height: auto;
         background: var(--gray-900);
         border-radius: var(--border-radius-lg);
-        touch-action: none;
+        touch-action: manipulation;
         border: 1px solid var(--gray-200);
         box-shadow: var(--shadow-lg);
         transition: var(--transition);
@@ -442,19 +481,47 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
 
         .card-foot {
           padding: 16px 20px;
-          flex-direction: column;
+          flex-direction: row;
+          gap: 12px;
+        }
+
+        .card-foot .btn {
+          flex: 1;
         }
 
         .ctrls {
-          grid-template-columns: 1fr;
-          gap: 16px;
-          text-align: center;
+          grid-template-columns: 1fr auto auto;
+          gap: 12px;
+          align-items: center;
         }
 
         .icon-btn {
           width: 40px;
           height: 40px;
           font-size: 16px;
+        }
+      }
+
+      /* Очень маленькие экраны */
+      @media (max-width: 480px) {
+        .ctrls {
+          gap: 8px;
+        }
+
+        .icon-btn {
+          width: 36px;
+          height: 36px;
+          font-size: 14px;
+        }
+
+        .card-foot {
+          padding: 12px 16px;
+          gap: 8px;
+        }
+
+        .card-foot .btn {
+          font-size: 14px;
+          padding: 10px 12px;
         }
       }
 
@@ -573,7 +640,23 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
           (click)="clear(); $event.stopPropagation()"
           title="Remove image"
         >
-          🗑️
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="3,6 5,6 21,6"></polyline>
+            <path
+              d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"
+            ></path>
+            <line x1="10" y1="11" x2="10" y2="17"></line>
+            <line x1="14" y1="11" x2="14" y2="17"></line>
+          </svg>
         </button>
       </div>
     </div>
@@ -582,8 +665,23 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
     <div class="modal" *ngIf="showEditor && mode === 'crop'" (click)="onModalClick($event)">
       <div class="card" (click)="$event.stopPropagation()">
         <div class="card-head">
-          <span>✂️ Crop Image</span>
-          <button class="btn btn-secondary" type="button" (click)="closeEditor()">✕ Close</button>
+          <span>Crop Image</span>
+          <button class="btn btn-secondary" type="button" (click)="closeEditor()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Close
+          </button>
         </div>
 
         <div class="card-body">
@@ -611,20 +709,62 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
                 (input)="onSliderZoom()"
               />
               <button class="btn icon-btn" type="button" (click)="bumpZoom(-0.1)" title="Zoom out">
-                🔍−
+                −
               </button>
               <button class="btn icon-btn" type="button" (click)="bumpZoom(+0.1)" title="Zoom in">
-                🔍+
+                +
               </button>
             </div>
           </div>
         </div>
 
         <div class="card-foot">
-          <button class="btn btn-secondary" type="button" (click)="closeEditor()">Cancel</button>
+          <button class="btn btn-secondary" type="button" (click)="closeEditor()">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Cancel
+          </button>
           <button class="btn btn-primary" type="button" (click)="apply()" [disabled]="isProcessing">
-            <span *ngIf="!isProcessing">✅ Apply</span>
-            <span *ngIf="isProcessing">⏳ Processing...</span>
+            <svg
+              *ngIf="!isProcessing"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="20,6 9,17 4,12"></polyline>
+            </svg>
+            <svg
+              *ngIf="isProcessing"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="m12 6v6l4 2"></path>
+            </svg>
+            <span *ngIf="!isProcessing">Apply</span>
+            <span *ngIf="isProcessing">Processing...</span>
           </button>
         </div>
       </div>
@@ -728,6 +868,19 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout);
     }
+    this.restoreBodyScroll();
+  }
+
+  private preventBodyScroll() {
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+  }
+
+  private restoreBodyScroll() {
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
   }
 
   /* === Вычисления размеров/пропорций === */
@@ -873,11 +1026,13 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
 
     this.resetCropState(); // Сбрасываем состояние кропа
     this.showEditor = true;
+    this.preventBodyScroll();
     setTimeout(() => this.setupCanvas(), 0);
   }
   closeEditor() {
     this.showEditor = false;
     this.pointers.clear();
+    this.restoreBodyScroll();
   }
 
   private resetCropState() {
