@@ -344,7 +344,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
         height: auto;
         background: var(--gray-900);
         border-radius: var(--border-radius-lg);
-        touch-action: manipulation;
+        touch-action: none;
         border: 1px solid var(--gray-200);
         box-shadow: var(--shadow-lg);
         transition: var(--transition);
@@ -854,9 +854,8 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
   isDragOver = false;
 
   // Оптимизация производительности
-  private renderTimeout?: number;
-  private lastRenderTime = 0;
-  private readonly RENDER_THROTTLE = 16; // ~60fps
+  private rafId: number | null = null;
+  private pendingLivePreview = false;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -865,8 +864,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
 
   ngOnDestroy() {
     this.revokeObjectUrl();
-    if (this.renderTimeout) {
-      clearTimeout(this.renderTimeout);
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
     }
     this.restoreBodyScroll();
   }
@@ -1033,6 +1033,11 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.showEditor = false;
     this.pointers.clear();
     this.restoreBodyScroll();
+    this.pendingLivePreview = false;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   private resetCropState() {
@@ -1048,6 +1053,11 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.pinchStartZoom = 1;
     this.pinchCenterX = 0;
     this.pinchCenterY = 0;
+    this.pendingLivePreview = false;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   apply() {
@@ -1064,6 +1074,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
           this.onChange(this.value);
           this.changed.emit(this.value);
           this.liveDataUrl = data;
+          this.pendingLivePreview = false;
         }
       } finally {
         this.isProcessing = false;
@@ -1081,6 +1092,11 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.imgLoaded = false;
     this.pointers.clear();
     this.revokeObjectUrl();
+    this.pendingLivePreview = false;
+    if (this.rafId !== null) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
   }
 
   /* === Canvas === */
@@ -1116,7 +1132,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     const rect = canvas.getBoundingClientRect();
     this.pointerScale = canvas.width / rect.width;
 
-    this.render(); // показать live превью сразу
+    this.scheduleRender(true); // показать live превью сразу
   }
 
   private clampPosition() {
@@ -1131,17 +1147,20 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.posY = Math.min(0, Math.max(this.posY, ch - drawH));
   }
 
-  private render() {
-    const now = performance.now();
-    if (now - this.lastRenderTime < this.RENDER_THROTTLE) {
-      // Throttle rendering для лучшей производительности
-      if (this.renderTimeout) {
-        clearTimeout(this.renderTimeout);
-      }
-      this.renderTimeout = window.setTimeout(() => this.render(), this.RENDER_THROTTLE);
+  private scheduleRender(updateLivePreview = false) {
+    if (updateLivePreview) {
+      this.pendingLivePreview = true;
+    }
+    if (this.rafId !== null) {
       return;
     }
+    this.rafId = requestAnimationFrame(() => {
+      this.rafId = null;
+      this.ngZone.runOutsideAngular(() => this.renderFrame());
+    });
+  }
 
+  private renderFrame() {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas || !this.imgLoaded) return;
     const ctx = canvas.getContext('2d');
@@ -1162,11 +1181,15 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(this.img, this.posX, this.posY, drawW, drawH);
 
-    this.lastRenderTime = now;
-
     // live превью — только при необходимости
-    if (!this.isDragging && this.pointers.size === 0) {
-      this.liveDataUrl = this.renderToOutput();
+    if (this.pendingLivePreview && !this.isDragging && this.pointers.size === 0) {
+      const data = this.renderToOutput();
+      this.pendingLivePreview = false;
+      if (data !== null) {
+        this.ngZone.run(() => {
+          this.liveDataUrl = data;
+        });
+      }
     }
   }
 
@@ -1214,7 +1237,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.posX = cx - imgX * this.zoom;
     this.posY = cy - imgY * this.zoom;
 
-    this.render();
+    this.scheduleRender(true);
   }
   onSliderZoom() {
     const canvas = this.canvasRef?.nativeElement;
@@ -1233,6 +1256,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
 
   // Pointer gestures
   onPointerDown(ev: PointerEvent) {
+    this.ngZone.runOutsideAngular(() => this.handlePointerDown(ev));
+  }
+  private handlePointerDown(ev: PointerEvent) {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas || !this.imgLoaded) return;
     canvas.setPointerCapture(ev.pointerId);
@@ -1264,6 +1290,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     }
   }
   onPointerMove(ev: PointerEvent) {
+    this.ngZone.runOutsideAngular(() => this.handlePointerMove(ev));
+  }
+  private handlePointerMove(ev: PointerEvent) {
     const canvas = this.canvasRef?.nativeElement;
     if (!canvas || !this.imgLoaded) return;
 
@@ -1278,7 +1307,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
       const dy = (ev.clientY - this.dragStartY) * this.pointerScale;
       this.posX = this.startPosX + dx;
       this.posY = this.startPosY + dy;
-      this.render();
+      this.scheduleRender();
     } else if (this.pointers.size === 2) {
       const [p1, p2] = Array.from(this.pointers.values());
       const dist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY) * this.pointerScale;
@@ -1290,6 +1319,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     }
   }
   onPointerUp(ev: PointerEvent) {
+    this.ngZone.runOutsideAngular(() => this.handlePointerUp(ev));
+  }
+  private handlePointerUp(ev: PointerEvent) {
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) canvas.releasePointerCapture(ev.pointerId);
     this.pointers.delete(ev.pointerId);
@@ -1297,7 +1329,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
       this.isDragging = false;
       this.pinchStartDist = 0;
       // Финальный рендер с live preview
-      this.liveDataUrl = this.renderToOutput();
+      this.scheduleRender(true);
     }
   }
 
