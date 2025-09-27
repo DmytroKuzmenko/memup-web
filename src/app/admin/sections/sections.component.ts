@@ -36,7 +36,9 @@ export class AdminSectionsComponent {
   }
 
   refresh() {
-    this.sections.set(this.svc.getSections());
+    this.svc.getSections().subscribe((sections) => {
+      this.sections.set(sections);
+    });
   }
 
   onAdd() {

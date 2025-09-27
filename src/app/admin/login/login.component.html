@@ -1,24 +1,54 @@
-<form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="max-w-xs mx-auto mt-24 p-6 bg-white border border-gray-200 rounded-lg shadow flex flex-col gap-4">
+<form
+  [formGroup]="loginForm"
+  (ngSubmit)="onSubmit()"
+  class="mx-auto mt-24 flex max-w-xs flex-col gap-4 rounded-lg border border-gray-200 bg-white p-6 shadow"
+  [class.opacity-75]="loading"
+>
+  <h1 class="text-xl font-semibold text-gray-900">Admin Login</h1>
+
+  <!-- Email -->
   <label class="text-sm">Email</label>
   <input
     type="email"
     formControlName="email"
     required
-    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+    autocomplete="username"
+    class="rounded border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  />
+  <div
+    class="text-xs text-red-500"
+    *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid"
   >
+    <span *ngIf="loginForm.controls.email.errors?.['required']">Email is required.</span>
+    <span *ngIf="loginForm.controls.email.errors?.['email']">Enter a valid email.</span>
+  </div>
+
+  <!-- Password -->
   <label class="text-sm">Password</label>
   <input
     type="password"
     formControlName="password"
     required
-    class="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800"
+    autocomplete="current-password"
+    class="rounded border border-gray-300 px-3 py-2 text-gray-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+  />
+  <div
+    class="text-xs text-red-500"
+    *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid"
   >
+    <span *ngIf="loginForm.controls.password.errors?.['required']">Password is required.</span>
+  </div>
+
+  <!-- Submit -->
   <button
     type="submit"
-    [disabled]="loginForm.invalid"
-    class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
+    [disabled]="loginForm.invalid || loading"
+    class="rounded bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 disabled:opacity-50"
   >
-    Login
+    <span *ngIf="!loading">Login</span>
+    <span *ngIf="loading">Signing in…</span>
   </button>
-  <div *ngIf="loginError" class="text-red-500 text-sm">{{loginError}}</div>
+
+  <!-- Server error -->
+  <div *ngIf="loginError" class="text-sm text-red-500">{{ loginError }}</div>
 </form>

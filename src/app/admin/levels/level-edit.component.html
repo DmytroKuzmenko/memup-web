@@ -25,7 +25,11 @@
             formControlName="sectionId"
           >
             <option [ngValue]="null" disabled>Select section</option>
-            <option *ngFor="let s of sections" [ngValue]="s.id">{{ s.name }}</option>
+            <ng-container *ngIf="sections$ | async as sections">
+              <option *ngFor="let s of sections" [ngValue]="s.id">
+                {{ s.name }}
+              </option>
+            </ng-container>
           </select>
         </div>
 

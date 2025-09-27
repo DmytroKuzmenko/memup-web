@@ -53,9 +53,13 @@
           </select>
         </div>
 
-        <div *ngIf="sectionDates" class="grid gap-1.5 text-sm text-neutral-600">
-          <div>Created: {{ sectionDates!.createdAt | date: 'yyyy-MM-dd HH:mm' }}</div>
-          <div>Updated: {{ sectionDates!.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+        <!-- Метаданные секции из API -->
+        <div
+          *ngIf="isEdit && (section$ | async) as section"
+          class="grid gap-1.5 text-sm text-neutral-600"
+        >
+          <div>Created: {{ section.createdAt | date: 'yyyy-MM-dd HH:mm' }}</div>
+          <div>Updated: {{ section.updatedAt | date: 'yyyy-MM-dd HH:mm' }}</div>
         </div>
 
         <div class="mt-2 flex flex-col gap-2 md:flex-row">

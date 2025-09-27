@@ -8,6 +8,7 @@ import { LevelService, Level } from '../../level.service';
 import { TaskService, Task } from '../../task.service';
 
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-level-edit',
@@ -24,7 +25,11 @@ export class LevelEditComponent {
   private taskSvc = inject(TaskService);
 
   id: number | null = null;
-  sections: Section[] = [];
+
+  /** Секции теперь как поток из API */
+  sections$!: Observable<Section[]>;
+
+  /** Пока задачи остаются синхронно из TaskService */
   tasks: Task[] = [];
 
   form = this.fb.group({
@@ -43,14 +48,19 @@ export class LevelEditComponent {
   }
 
   ngOnInit() {
-    this.sections = this.sectionsSvc.getSections();
+    // Загружаем список секций из API (Observable)
+    this.sections$ = this.sectionsSvc.getSections();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     this.id = idParam ? Number(idParam) : null;
 
     const qpSectionId = this.route.snapshot.queryParamMap.get('sectionId');
-    if (!this.id && qpSectionId) this.form.patchValue({ sectionId: Number(qpSectionId) });
+    if (!this.id && qpSectionId) {
+      this.form.patchValue({ sectionId: Number(qpSectionId) });
+    }
 
     if (this.id) {
+      // Пока LevelService у тебя синхронный — читаем как раньше
       const lvl = this.levelsSvc.getLevelById(this.id);
       if (lvl) {
         this.form.patchValue({
@@ -61,6 +71,7 @@ export class LevelEditComponent {
           animationImagePath: lvl.animationImagePath ?? '',
           orderIndex: lvl.orderIndex ?? null,
           status: lvl.status,
+          timeLimitSeconds: (lvl as any).timeLimitSeconds ?? null,
         });
       }
       this.loadTasks();
@@ -89,10 +100,17 @@ export class LevelEditComponent {
       animationImagePath: v.animationImagePath || '',
       orderIndex: v.orderIndex != null ? Number(v.orderIndex) : undefined,
       status: Number(v.status),
+      // timeLimitSeconds зависит от твоей модели уровня; добавь в Level при необходимости
+      ...(v.timeLimitSeconds != null
+        ? ({ timeLimitSeconds: Number(v.timeLimitSeconds) } as any)
+        : {}),
     };
 
-    if (this.isEdit) this.levelsSvc.updateLevel(this.id!, dto);
-    else this.levelsSvc.addLevel(dto);
+    if (this.isEdit) {
+      this.levelsSvc.updateLevel(this.id!, dto);
+    } else {
+      this.levelsSvc.addLevel(dto);
+    }
 
     const sid = dto.sectionId!;
     this.router.navigate(['/admin/sections', sid]);
@@ -128,7 +146,7 @@ export class LevelEditComponent {
 
   trackByTaskId = (_: number, x: Task) => x.id;
 
-  // даты уровня для read-only отображения
+  // даты уровня для read-only отображения (пока синхронно)
   get levelDates() {
     if (!this.id) return null;
     return this.levelsSvc.getLevelById(this.id) ?? null;

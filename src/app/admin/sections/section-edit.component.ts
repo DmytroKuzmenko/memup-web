@@ -3,6 +3,8 @@ import { Component, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, take } from 'rxjs';
+
 import { SectionService, Section } from '../../section.service';
 import { LevelService, Level } from '../../level.service';
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
@@ -23,6 +25,9 @@ export class SectionEditComponent {
   @ViewChild('sectionImagePicker') sectionImagePicker?: ImagePickerComponent;
 
   id: number | null = null;
+
+  // Секция теперь как поток (при отсутствии id — undefined)
+  section$?: Observable<Section>;
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -49,23 +54,27 @@ export class SectionEditComponent {
     this.id = idParam ? Number(idParam) : null;
 
     if (this.id) {
-      const s = this.sectionService.getSectionById(this.id);
-      if (s) {
+      // грузим секцию из API
+      this.section$ = this.sectionService.getSectionById(this.id);
+
+      // один раз патчим форму значениями из API
+      this.section$.pipe(take(1)).subscribe((s) => {
         this.form.patchValue({
           name: s.name ?? '',
           imagePath: s.imagePath ?? '',
           orderIndex: s.orderIndex ?? 0,
           status: s.status ?? 0,
         });
-      }
+      });
+
       this.loadLevels();
     }
   }
 
   get levelsSorted(): Level[] {
     return [...this.levels].sort((a, b) => {
-      const ao = a.orderIndex ?? Number.MAX_SAFE_INTEGER;
-      const bo = b.orderIndex ?? Number.MAX_SAFE_INTEGER;
+      const ao = (a as any).orderIndex ?? Number.MAX_SAFE_INTEGER;
+      const bo = (b as any).orderIndex ?? Number.MAX_SAFE_INTEGER;
       if (ao !== bo) return ao - bo;
       return a.name.localeCompare(b.name);
     });
@@ -85,10 +94,21 @@ export class SectionEditComponent {
       status: Number(v.status),
     };
 
-    if (this.isEdit) this.sectionService.updateSection(this.id!, dto);
-    else this.sectionService.addSection(dto);
-
-    this.router.navigate(['/admin/sections']);
+    if (this.isEdit) {
+      this.sectionService
+        .updateSection(this.id!, dto)
+        .pipe(take(1))
+        .subscribe({
+          next: () => this.router.navigate(['/admin/sections']),
+        });
+    } else {
+      this.sectionService
+        .addSection(dto)
+        .pipe(take(1))
+        .subscribe({
+          next: () => this.router.navigate(['/admin/sections']),
+        });
+    }
   }
 
   cancel() {
@@ -97,6 +117,7 @@ export class SectionEditComponent {
 
   private loadLevels() {
     if (!this.id) return;
+    // пока LevelService у тебя синхронный — оставляю так
     this.levels = this.levelService.getLevels(this.id);
   }
 
@@ -106,7 +127,7 @@ export class SectionEditComponent {
   }
 
   openEditLevel(lvl: Level) {
-    const sectionId = this.id ?? lvl.sectionId;
+    const sectionId = this.id ?? (lvl as any).sectionId;
     this.router.navigate(['/admin/levels', lvl.id], { queryParams: { sectionId } });
   }
 
@@ -118,9 +139,4 @@ export class SectionEditComponent {
   }
 
   trackByLevelId = (_: number, x: Level) => x.id;
-
-  get sectionDates() {
-    if (!this.id) return null;
-    return this.sectionService.getSectionById(this.id) ?? null;
-  }
 }
