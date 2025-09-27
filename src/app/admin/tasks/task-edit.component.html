@@ -196,22 +196,26 @@
               [formGroupName]="i"
               class="grid gap-2 rounded-xl border border-neutral-200 p-2"
             >
-              <div class="grid gap-1.5 md:grid-cols-3 md:gap-3">
-                <input
-                  class="rounded-xl border border-neutral-300 px-3 py-2"
-                  formControlName="label"
-                  placeholder="Label"
-                />
-                <input
-                  *ngIf="form.value.type === 'image_choice'"
-                  class="rounded-xl border border-neutral-300 px-3 py-2"
-                  formControlName="imageUrl"
-                  placeholder="https://image..."
-                />
-                <label class="inline-flex items-center gap-2">
-                  <input type="checkbox" formControlName="isCorrect" />
-                  Correct answer
-                </label>
+              <div class="grid gap-3">
+                <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
+                  <input
+                    class="rounded-xl border border-neutral-300 px-3 py-2"
+                    formControlName="label"
+                    placeholder="Label"
+                  />
+                  <label class="inline-flex items-center gap-2">
+                    <input type="checkbox" formControlName="isCorrect" />
+                    Correct answer
+                  </label>
+                </div>
+                <div *ngIf="form.value.type === 'image_choice'">
+                  <app-image-picker
+                    formControlName="imageUrl"
+                    [mode]="'original'"
+                    [previewWidth]="200"
+                    [previewHeight]="120"
+                  ></app-image-picker>
+                </div>
               </div>
 
               <div class="flex justify-end">
