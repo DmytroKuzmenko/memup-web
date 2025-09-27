@@ -9,20 +9,25 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponse {
-  accessToken: string;
-  refreshToken?: string;
-  role?: string; // сервер может отдать роль прямо в ответе
-  expiresIn?: number; // (опционально) секунды жизни accessToken
+/** Фактический ответ memeup-api */
+export interface ApiLoginResponse {
+  token: string; // JWT
+  expiresAt: string; // ISO-строка (UTC), например "2025-09-27T23:59:20.332563Z"
 }
 
+/** Если появится refresh — можно раскомментить и использовать */
 export interface RefreshResponse {
   accessToken: string;
   refreshToken?: string;
 }
 
-type StoredAuth = Required<Pick<LoginResponse, 'accessToken'>> &
-  Partial<Pick<LoginResponse, 'refreshToken' | 'role'>>;
+type StoredAuth = {
+  accessToken: string;
+  role?: string | null;
+  /** fallback, если в токене вдруг нет exp */
+  expiresAtIso?: string;
+  refreshToken?: string | null;
+};
 
 const LS_KEY = 'memup_auth';
 
@@ -31,64 +36,58 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly base = inject<AppConfig>(APP_CONFIG).apiBaseUrl; // '/api'
 
+  /** реактивная роль пользователя (для guard/шапки и т.п.) */
   userRole = signal<string | null>(
     this.restore()?.role ?? this.roleFromToken(this.restore()?.accessToken) ?? null,
   );
 
-  /** ===== Public API ===== */
+  /** === Публичное API === */
 
-  /** POST /auth/login */
+  /** POST /auth/login — маппим token/expiresAt */
   login(payload: LoginRequest): Observable<void> {
-    return this.http.post<LoginResponse>(`${this.base}/auth/login`, payload).pipe(
-      tap((resp) => this.persist(resp)),
+    return this.http.post<ApiLoginResponse>(`${this.base}/auth/login`, payload).pipe(
+      tap((resp) => this.persistFromApi(resp)),
       map(() => void 0),
+      catchError((err) => {
+        // аккуратно пробрасываем ошибку наверх
+        throw err;
+      }),
     );
   }
 
-  /** POST /auth/refresh */
+  /** POST /auth/refresh — если у бэка нет, просто возвращаем null */
   refresh(): Observable<string | null> {
     const current = this.restore();
     if (!current?.refreshToken) return of(null);
-
     return this.http
       .post<RefreshResponse>(`${this.base}/auth/refresh`, {
         refreshToken: current.refreshToken,
       })
       .pipe(
-        tap((resp) => this.persist({ ...current, ...resp })),
+        tap((resp) => {
+          const next: StoredAuth = {
+            accessToken: resp.accessToken,
+            refreshToken: resp.refreshToken ?? current.refreshToken ?? null,
+            role: this.roleFromToken(resp.accessToken),
+            // expiresAtIso может не прийти — оставим прежнее
+            expiresAtIso: current.expiresAtIso,
+          };
+          localStorage.setItem(LS_KEY, JSON.stringify(next));
+          this.userRole.set(next.role ?? null);
+        }),
         map((resp) => resp.accessToken ?? null),
         catchError(() => of(null)),
       );
   }
 
-  /** POST /auth/logout (опционально, если есть на бэке), + локальная очистка */
-  logout(callApi = false): Observable<void> {
-    const current = this.restore();
-    const performLocal = () => {
-      localStorage.removeItem(LS_KEY);
-      this.userRole.set(null);
-    };
-
-    if (callApi && current?.refreshToken) {
-      return this.http
-        .post<void>(`${this.base}/auth/logout`, {
-          refreshToken: current.refreshToken,
-        })
-        .pipe(
-          tap(() => performLocal()),
-          catchError(() => {
-            // даже если API не ответил — чистим локально
-            performLocal();
-            return of(void 0);
-          }),
-        );
-    }
-
-    performLocal();
+  /** Логаут (локально, при желании можно добавить вызов /auth/logout на бэке) */
+  logout(): Observable<void> {
+    localStorage.removeItem(LS_KEY);
+    this.userRole.set(null);
     return of(void 0);
   }
 
-  /** Есть ли валидный (не протухший) accessToken */
+  /** Есть ли валидный (не истёкший) токен */
   hasValidToken(): boolean {
     const token = this.accessToken;
     if (!token) return false;
@@ -100,12 +99,27 @@ export class AuthService {
     return this.restore()?.accessToken ?? null;
   }
 
-  /** Быстрая проверка роли */
+  /** Проверка роли администратора */
   isAdmin(): boolean {
     return (this.userRole() ?? '').toLowerCase() === 'admin';
   }
 
-  /** ===== Internal helpers ===== */
+  /** === Внутреннее === */
+
+  /** Сохраняем ответ логина из API в хранилище */
+  private persistFromApi(resp: ApiLoginResponse) {
+    const accessToken = resp.token;
+    const role = this.roleFromToken(accessToken);
+    const toStore: StoredAuth = {
+      accessToken,
+      role,
+      expiresAtIso: resp.expiresAt ?? undefined,
+      // refreshToken не приходит — оставим null на будущее
+      refreshToken: null,
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(toStore));
+    this.userRole.set(role ?? null);
+  }
 
   private restore(): StoredAuth | null {
     try {
@@ -116,47 +130,42 @@ export class AuthService {
     }
   }
 
-  private persist(resp: Partial<LoginResponse>) {
-    const prev = this.restore() ?? ({} as StoredAuth);
-    const next: StoredAuth = {
-      accessToken: resp.accessToken ?? prev.accessToken!,
-      refreshToken: resp.refreshToken ?? prev.refreshToken,
-      role:
-        resp.role ??
-        prev.role ??
-        this.roleFromToken(resp.accessToken ?? prev.accessToken!) ??
-        undefined,
-    };
-    localStorage.setItem(LS_KEY, JSON.stringify(next));
-    this.userRole.set(next.role ?? null);
-  }
-
+  /** Достаём роль из клеймов JWT */
   private roleFromToken(token?: string): string | null {
     if (!token) return null;
     const payload = this.decodeJwt(token);
-    // популярные варианты клеймов: "role", "roles", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+    if (!payload) return null;
+
+    // Популярные варианты клеймов роли:
+    // role / roles / microsoft-namespace (из твоего примера)
     const claimRole =
       payload?.role ??
       (Array.isArray(payload?.roles) ? payload.roles[0] : payload?.roles) ??
       payload?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+
     if (!claimRole) return null;
     return Array.isArray(claimRole) ? (claimRole[0] ?? null) : String(claimRole);
   }
 
+  /** Проверяем истечение токена: сначала exp из JWT, иначе falls back на expiresAtIso */
   private isJwtExpired(token: string): boolean {
     const payload = this.decodeJwt(token);
-    const exp: number | undefined = payload?.exp;
-    if (!exp) return false; // нет exp — считаем валидным (или поменяй на true, если хочешь жёстче)
-    const nowSec = Math.floor(Date.now() / 1000);
-    return exp <= nowSec;
+    const exp: number | undefined = payload?.exp; // секунды с эпохи
+    if (typeof exp === 'number') {
+      const nowSec = Math.floor(Date.now() / 1000);
+      return exp <= nowSec;
+    }
+    const iso = this.restore()?.expiresAtIso;
+    if (!iso) return false;
+    return new Date(iso).getTime() <= Date.now();
   }
 
   private decodeJwt(token: string): any | null {
     try {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
-      // atob безопасно в браузере; заменяем url-safe символы
       const json = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
+      // escape/unescape устаревшие, но для ASCII payload обычно ок; если будут юникод-символы — можно заменить на более надёжный декодер
       return JSON.parse(decodeURIComponent(escape(json)));
     } catch {
       return null;
