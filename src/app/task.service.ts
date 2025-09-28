@@ -1,4 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { APP_CONFIG, AppConfig } from './shared/app-config';
 
 export type TaskType = 'anagram' | 'image_choice' | 'text_choice';
 
@@ -9,21 +13,21 @@ export interface TaskOption {
 }
 
 export interface Task {
-  id: number;
-  levelId: number;
-  title: string; // internal name
+  id: string; // UUID
+  levelId: string; // UUID
+  internalName: string; // было title
   type: TaskType;
-  topText?: string;
-  taskImagePath?: string;
+  headerText?: string; // было topText
+  imagePath?: string; // было taskImagePath
   taskImageSource?: string;
   resultImagePath?: string;
   resultImageSource?: string;
   orderIndex?: number;
   status: number; // 0 draft, 1 published
-  timeLimitSeconds?: number;
-  pointsFirst?: number;
-  pointsSecond?: number;
-  pointsThird?: number;
+  timeLimitSec?: number; // было timeLimitSeconds
+  pointsAttempt1?: number; // было pointsFirst
+  pointsAttempt2?: number; // было pointsSecond
+  pointsAttempt3?: number; // было pointsThird
   explanationText?: string;
 
   // anagram
@@ -37,98 +41,172 @@ export interface Task {
   updatedAt: Date;
 }
 
+// Как приходит с API (даты — строки ISO)
+interface TaskDto {
+  id: string;
+  levelId: string;
+  internalName: string;
+  type: number; // API возвращает number
+  headerText?: string | null;
+  imageUrl?: string | null; // API возвращает imageUrl
+  orderIndex?: number;
+  status: number;
+  timeLimitSec?: number;
+  pointsAttempt1?: number;
+  pointsAttempt2?: number;
+  pointsAttempt3?: number;
+  explanationText?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function mapDto(dto: TaskDto): Task {
+  return {
+    id: dto.id,
+    levelId: dto.levelId,
+    internalName: dto.internalName,
+    type: mapTaskType(dto.type), // конвертируем number в TaskType
+    headerText: dto.headerText ?? undefined,
+    imagePath: dto.imageUrl ?? undefined, // маппим imageUrl в imagePath
+    orderIndex: dto.orderIndex,
+    status: dto.status,
+    timeLimitSec: dto.timeLimitSec,
+    pointsAttempt1: dto.pointsAttempt1,
+    pointsAttempt2: dto.pointsAttempt2,
+    pointsAttempt3: dto.pointsAttempt3,
+    explanationText: dto.explanationText ?? undefined,
+    createdAt: new Date(dto.createdAt),
+    updatedAt: new Date(dto.updatedAt),
+  };
+}
+
+function mapTaskType(type: number): TaskType {
+  switch (type) {
+    case 0:
+      return 'text_choice';
+    case 1:
+      return 'image_choice';
+    case 2:
+      return 'anagram';
+    default:
+      return 'text_choice';
+  }
+}
+
+function mapTaskTypeToNumber(type: TaskType): number {
+  switch (type) {
+    case 'text_choice':
+      return 0;
+    case 'image_choice':
+      return 1;
+    case 'anagram':
+      return 2;
+    default:
+      return 0;
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class TaskService {
-  private tasks: Task[] = [
-    {
-      id: 5001,
-      levelId: 101,
-      title: 'Basic terms #1',
-      type: 'text_choice',
-      status: 1,
-      orderIndex: 0,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      options: [
-        { label: 'A', isCorrect: true },
-        { label: 'B', isCorrect: false },
-      ],
-    },
-    {
-      id: 5002,
-      levelId: 101,
-      title: 'Compose city',
-      type: 'anagram',
-      status: 0,
-      orderIndex: 1,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      charsCsv: 'B,E,R,L,I,N',
-      correctAnswer: 'BERLIN',
-    },
-  ];
+  private readonly http = inject(HttpClient);
+  private readonly base = inject<AppConfig>(APP_CONFIG).apiBaseUrl; // '/api'
+  private readonly tasksUrl = `${this.base}/Tasks`; // API использует Tasks с заглавной буквы
 
-  getTasks(levelId?: number): Task[] {
-    return levelId ? this.tasks.filter((t) => t.levelId === levelId) : this.tasks.slice();
+  /** GET /api/levels/{levelId}/tasks */
+  getTasks(levelId: string): Observable<Task[]> {
+    console.log('=== TASK SERVICE GET TASKS ===');
+    console.log('Level ID:', levelId);
+    const url = `${this.base}/levels/${levelId}/tasks`;
+    console.log('Request URL:', url);
+
+    return this.http.get<TaskDto[]>(url).pipe(
+      map((list) => {
+        console.log('✅ Raw tasks list from API:', JSON.stringify(list, null, 2));
+        const mapped = list.map(mapDto);
+        console.log('✅ Mapped tasks list:', JSON.stringify(mapped, null, 2));
+        mapped.forEach((task: Task, index: number) => {
+          console.log(`✅ Task ${index}: imagePath =`, task.imagePath);
+        });
+        return mapped;
+      }),
+    );
   }
 
-  getTaskById(id: number): Task | undefined {
-    return this.tasks.find((t) => t.id === id);
+  /** GET /api/Tasks/{id} */
+  getTaskById(id: string): Observable<Task> {
+    console.log('=== TASK SERVICE GET BY ID ===');
+    console.log('Requesting task with ID:', id);
+    console.log('Request URL:', `${this.tasksUrl}/${id}`);
+
+    return this.http.get<TaskDto>(`${this.tasksUrl}/${id}`).pipe(
+      map((dto) => {
+        console.log('✅ Raw API response:', JSON.stringify(dto, null, 2));
+        console.log('✅ imageUrl from API:', dto.imageUrl);
+        const mapped = mapDto(dto);
+        console.log('✅ Mapped task:', JSON.stringify(mapped, null, 2));
+        console.log('✅ imagePath after mapping:', mapped.imagePath);
+        return mapped;
+      }),
+    );
   }
 
-  addTask(data: Partial<Task>) {
-    const now = new Date();
-    const t: Task = {
-      id: Date.now(),
-      levelId: data.levelId ?? 0,
-      title: data.title ?? '',
-      type: data.type ?? 'text_choice',
-      topText: data.topText,
-      taskImagePath: data.taskImagePath,
-      taskImageSource: data.taskImageSource,
-      resultImagePath: data.resultImagePath,
-      resultImageSource: data.resultImageSource,
-      orderIndex: data.orderIndex,
+  /** POST /api/Tasks */
+  addTask(data: Partial<Task>): Observable<Task> {
+    const payload = {
+      levelId: data.levelId ?? '',
+      internalName: data.internalName ?? '',
+      type: mapTaskTypeToNumber(data.type ?? 'text_choice'),
+      headerText: data.headerText ?? '',
+      imageUrl: data.imagePath ?? '', // API ожидает imageUrl
+      orderIndex: data.orderIndex ?? 0,
+      timeLimitSec: data.timeLimitSec ?? 0,
+      pointsAttempt1: data.pointsAttempt1 ?? 0,
+      pointsAttempt2: data.pointsAttempt2 ?? 0,
+      pointsAttempt3: data.pointsAttempt3 ?? 0,
+      explanationText: data.explanationText ?? '',
       status: data.status ?? 0,
-      timeLimitSeconds: data.timeLimitSeconds,
-      pointsFirst: data.pointsFirst,
-      pointsSecond: data.pointsSecond,
-      pointsThird: data.pointsThird,
-      explanationText: data.explanationText,
-      charsCsv: data.charsCsv,
-      correctAnswer: data.correctAnswer,
-      options: data.options ?? [],
-      createdAt: now,
-      updatedAt: now,
     };
-    this.tasks.push(t);
+    console.log('=== TASK SERVICE ADD ===');
+    console.log('Adding new task');
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    return this.http.post<TaskDto>(this.tasksUrl, payload).pipe(
+      map((dto) => {
+        console.log('✅ Add response:', JSON.stringify(dto, null, 2));
+        return mapDto(dto);
+      }),
+    );
   }
 
-  updateTask(id: number, data: Partial<Task>) {
-    const t = this.tasks.find((x) => x.id === id);
-    if (!t) return;
-    t.levelId = data.levelId ?? t.levelId;
-    t.title = data.title ?? t.title;
-    t.type = data.type ?? t.type;
-    t.topText = data.topText ?? t.topText;
-    t.taskImagePath = data.taskImagePath ?? t.taskImagePath;
-    t.taskImageSource = data.taskImageSource ?? t.taskImageSource;
-    t.resultImagePath = data.resultImagePath ?? t.resultImagePath;
-    t.resultImageSource = data.resultImageSource ?? t.resultImageSource;
-    t.orderIndex = data.orderIndex ?? t.orderIndex;
-    t.status = data.status ?? t.status;
-    t.timeLimitSeconds = data.timeLimitSeconds ?? t.timeLimitSeconds;
-    t.pointsFirst = data.pointsFirst ?? t.pointsFirst;
-    t.pointsSecond = data.pointsSecond ?? t.pointsSecond;
-    t.pointsThird = data.pointsThird ?? t.pointsThird;
-    t.explanationText = data.explanationText ?? t.explanationText;
-    t.charsCsv = data.charsCsv ?? t.charsCsv;
-    t.correctAnswer = data.correctAnswer ?? t.correctAnswer;
-    t.options = data.options ?? t.options;
-    t.updatedAt = new Date();
+  /** PUT /api/Tasks/{id} */
+  updateTask(id: string, data: Partial<Task>): Observable<Task> {
+    const payload = {
+      internalName: data.internalName,
+      type: data.type ? mapTaskTypeToNumber(data.type) : undefined,
+      headerText: data.headerText,
+      imageUrl: data.imagePath, // API ожидает imageUrl
+      orderIndex: data.orderIndex,
+      timeLimitSec: data.timeLimitSec,
+      pointsAttempt1: data.pointsAttempt1,
+      pointsAttempt2: data.pointsAttempt2,
+      pointsAttempt3: data.pointsAttempt3,
+      explanationText: data.explanationText,
+      status: data.status,
+    };
+    console.log('=== TASK SERVICE UPDATE ===');
+    console.log('Updating task with ID:', id);
+    console.log('Payload:', JSON.stringify(payload, null, 2));
+    return this.http.put<TaskDto>(`${this.tasksUrl}/${id}`, payload).pipe(
+      map((dto) => {
+        console.log('✅ Update response:', JSON.stringify(dto, null, 2));
+        return mapDto(dto);
+      }),
+    );
   }
 
-  deleteTask(id: number) {
-    this.tasks = this.tasks.filter((t) => t.id !== id);
+  /** DELETE /api/Tasks/{id} */
+  deleteTask(id: string): Observable<void> {
+    console.log('=== TASK SERVICE DELETE ===');
+    console.log('Deleting task with ID:', id);
+    return this.http.delete<void>(`${this.tasksUrl}/${id}`);
   }
 }

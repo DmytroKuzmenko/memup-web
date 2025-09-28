@@ -106,7 +106,7 @@ export class LevelEditComponent {
       const ao = a.orderIndex ?? Number.MAX_SAFE_INTEGER;
       const bo = b.orderIndex ?? Number.MAX_SAFE_INTEGER;
       if (ao !== bo) return ao - bo;
-      return a.title.localeCompare(b.title);
+      return a.internalName.localeCompare(b.internalName);
     });
   }
 
@@ -188,27 +188,62 @@ export class LevelEditComponent {
 
   private loadTasks() {
     if (!this.id) return;
-    // Временно используем числовой ID для мок-сервиса задач
-    const numericId = parseInt(this.id, 10);
-    if (!isNaN(numericId)) {
-      this.tasks = this.taskSvc.getTasks(numericId);
-    }
+    console.log('=== LOADING TASKS ===');
+    console.log('Level ID:', this.id);
+
+    this.taskSvc.getTasks(this.id).subscribe({
+      next: (tasks) => {
+        console.log('✅ Tasks loaded:', tasks);
+        this.tasks = tasks;
+      },
+      error: (error) => {
+        console.error('❌ Error loading tasks:', error);
+      },
+    });
   }
 
   openAddTask() {
     if (!this.id) return;
-    this.router.navigate(['/admin/tasks/new'], { queryParams: { levelId: this.id } });
+    const sectionId = this.form.value.sectionId;
+    console.log('Opening add task with levelId:', this.id, 'sectionId:', sectionId);
+    this.router.navigate(['/admin/tasks/new'], {
+      queryParams: {
+        levelId: this.id,
+        sectionId: sectionId,
+      },
+    });
   }
 
   openEditTask(t: Task) {
     const levelId = this.id ?? t.levelId;
-    this.router.navigate(['/admin/tasks', t.id], { queryParams: { levelId } });
+    const sectionId = this.form.value.sectionId;
+    console.log(
+      'Opening edit task with taskId:',
+      t.id,
+      'levelId:',
+      levelId,
+      'sectionId:',
+      sectionId,
+    );
+    this.router.navigate(['/admin/tasks', t.id], {
+      queryParams: {
+        levelId: levelId,
+        sectionId: sectionId,
+      },
+    });
   }
 
-  deleteTask(id: number) {
+  deleteTask(id: string) {
     if (confirm('Delete this task?')) {
-      this.taskSvc.deleteTask(id);
-      this.loadTasks();
+      this.taskSvc.deleteTask(id).subscribe({
+        next: () => {
+          console.log('✅ Task deleted successfully');
+          this.loadTasks();
+        },
+        error: (error) => {
+          console.error('❌ Error deleting task:', error);
+        },
+      });
     }
   }
 

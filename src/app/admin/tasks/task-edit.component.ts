@@ -22,25 +22,25 @@ export class TaskEditComponent {
   private taskSvc = inject(TaskService);
   private levelSvc = inject(LevelService);
 
-  id: number | null = null;
+  id: string | null = null;
   /** Секции теперь как поток из API */
   levels$!: Observable<Level[]>;
 
   form = this.fb.group({
-    levelId: [null as number | null, Validators.required],
-    title: ['', [Validators.required, Validators.minLength(1)]],
+    levelId: [null as string | null, Validators.required],
+    internalName: ['', [Validators.required, Validators.minLength(1)]], // было title
     type: ['text_choice' as TaskType, Validators.required],
-    topText: [''],
-    taskImagePath: [''],
+    headerText: [''], // было topText
+    imagePath: [''], // было taskImagePath
     taskImageSource: [''],
     resultImagePath: [''],
     resultImageSource: [''],
     orderIndex: [null as number | null],
     status: [1, Validators.required],
-    timeLimitSeconds: [null as number | null],
-    pointsFirst: [null as number | null],
-    pointsSecond: [null as number | null],
-    pointsThird: [null as number | null],
+    timeLimitSec: [null as number | null], // было timeLimitSeconds
+    pointsAttempt1: [null as number | null], // было pointsFirst
+    pointsAttempt2: [null as number | null], // было pointsSecond
+    pointsAttempt3: [null as number | null], // было pointsThird
     explanationText: [''],
 
     // anagram
@@ -60,55 +60,70 @@ export class TaskEditComponent {
   }
 
   ngOnInit() {
+    console.log('=== TASK EDIT COMPONENT INIT ===');
+
     // Получаем sectionId из query параметров или из текущей задачи
     const qpSectionId = this.route.snapshot.queryParamMap.get('sectionId');
     const qpLevelId = this.route.snapshot.queryParamMap.get('levelId');
 
+    console.log('Query params - sectionId:', qpSectionId, 'levelId:', qpLevelId);
+
     if (qpSectionId) {
+      console.log('Loading levels for section:', qpSectionId);
       this.levels$ = this.levelSvc.getLevels(qpSectionId);
     } else {
-      // Если нет sectionId, загружаем все уровни
+      console.log('Loading all levels');
       this.levels$ = this.levelSvc.getAllLevels();
     }
 
     const idParam = this.route.snapshot.paramMap.get('id');
-    this.id = idParam ? Number(idParam) : null;
+    this.id = idParam || null;
+    console.log('Task ID:', this.id, 'Is edit mode:', this.isEdit);
 
-    if (!this.id && qpLevelId) this.form.patchValue({ levelId: Number(qpLevelId) });
+    if (!this.id && qpLevelId) {
+      console.log('Setting levelId from query param:', qpLevelId);
+      this.form.patchValue({ levelId: qpLevelId });
+    }
 
     if (this.id) {
-      const t = this.taskSvc.getTaskById(this.id);
-      if (t) {
-        this.form.patchValue({
-          levelId: t.levelId,
-          title: t.title,
-          type: t.type,
-          topText: t.topText ?? '',
-          taskImagePath: t.taskImagePath ?? '',
-          taskImageSource: t.taskImageSource ?? '',
-          resultImagePath: t.resultImagePath ?? '',
-          resultImageSource: t.resultImageSource ?? '',
-          orderIndex: t.orderIndex ?? null,
-          status: t.status,
-          timeLimitSeconds: t.timeLimitSeconds ?? null,
-          pointsFirst: t.pointsFirst ?? null,
-          pointsSecond: t.pointsSecond ?? null,
-          pointsThird: t.pointsThird ?? null,
-          explanationText: t.explanationText ?? '',
-          charsCsv: t.charsCsv ?? '',
-          correctAnswer: t.correctAnswer ?? '',
-        });
+      this.taskSvc.getTaskById(this.id).subscribe({
+        next: (task) => {
+          console.log('✅ Task data received:', task);
+          this.form.patchValue({
+            levelId: task.levelId,
+            internalName: task.internalName,
+            type: task.type,
+            headerText: task.headerText ?? '',
+            imagePath: task.imagePath ?? '',
+            taskImageSource: task.taskImageSource ?? '',
+            resultImagePath: task.resultImagePath ?? '',
+            resultImageSource: task.resultImageSource ?? '',
+            orderIndex: task.orderIndex ?? null,
+            status: task.status,
+            timeLimitSec: task.timeLimitSec ?? null,
+            pointsAttempt1: task.pointsAttempt1 ?? null,
+            pointsAttempt2: task.pointsAttempt2 ?? null,
+            pointsAttempt3: task.pointsAttempt3 ?? null,
+            explanationText: task.explanationText ?? '',
+            charsCsv: task.charsCsv ?? '',
+            correctAnswer: task.correctAnswer ?? '',
+          });
 
-        (t.options ?? []).forEach((o) => {
-          this.options.push(
-            this.fb.group({
-              label: [o.label, Validators.required],
-              isCorrect: [o.isCorrect],
-              imageUrl: [o.imageUrl ?? ''],
-            }),
-          );
-        });
-      }
+          (task.options ?? []).forEach((o) => {
+            this.options.push(
+              this.fb.group({
+                label: [o.label, Validators.required],
+                isCorrect: [o.isCorrect],
+                imageUrl: [o.imageUrl ?? ''],
+              }),
+            );
+          });
+          console.log('Form values after patch:', this.form.getRawValue());
+        },
+        error: (error) => {
+          console.error('❌ Error loading task:', error);
+        },
+      });
     }
 
     if (
@@ -117,6 +132,8 @@ export class TaskEditComponent {
     ) {
       this.addOption();
     }
+
+    console.log('=== END TASK EDIT INIT ===');
   }
 
   addOption() {
@@ -133,9 +150,27 @@ export class TaskEditComponent {
     this.options.removeAt(i);
   }
 
-  save() {
-    if (this.form.invalid) return;
+  async save() {
+    console.log('=== TASK SAVE ===');
+    console.log('Form valid:', this.form.valid);
+    console.log('Form errors:', this.form.errors);
+    console.log('Form value:', this.form.value);
+
+    if (this.form.invalid) {
+      console.log('Form is invalid');
+      console.log('Form status:', this.form.status);
+      // Логируем ошибки каждого поля
+      Object.keys(this.form.controls).forEach((key) => {
+        const control = this.form.get(key);
+        if (control && control.errors) {
+          console.log(`Field ${key} errors:`, control.errors);
+        }
+      });
+      return;
+    }
+
     const v = this.form.getRawValue();
+    console.log('Form values:', v);
 
     const mappedOptions = (this.options.controls as FormGroup[]).map((g) => {
       const val = g.getRawValue() as { label: string; isCorrect: boolean; imageUrl?: string };
@@ -147,36 +182,53 @@ export class TaskEditComponent {
     });
 
     const dto: Partial<Task> = {
-      levelId: Number(v.levelId),
-      title: v.title!,
+      levelId: v.levelId!,
+      internalName: v.internalName!,
       type: v.type!,
-      topText: v.topText || '',
-      taskImagePath: v.taskImagePath || '',
+      headerText: v.headerText || '',
+      imagePath: v.imagePath || '',
       taskImageSource: v.taskImageSource || '',
       resultImagePath: v.resultImagePath || '',
       resultImageSource: v.resultImageSource || '',
       orderIndex: v.orderIndex != null ? Number(v.orderIndex) : undefined,
       status: Number(v.status),
-      timeLimitSeconds: v.timeLimitSeconds != null ? Number(v.timeLimitSeconds) : undefined,
-      pointsFirst: v.pointsFirst != null ? Number(v.pointsFirst) : undefined,
-      pointsSecond: v.pointsSecond != null ? Number(v.pointsSecond) : undefined,
-      pointsThird: v.pointsThird != null ? Number(v.pointsThird) : undefined,
+      timeLimitSec: v.timeLimitSec != null ? Number(v.timeLimitSec) : undefined,
+      pointsAttempt1: v.pointsAttempt1 != null ? Number(v.pointsAttempt1) : undefined,
+      pointsAttempt2: v.pointsAttempt2 != null ? Number(v.pointsAttempt2) : undefined,
+      pointsAttempt3: v.pointsAttempt3 != null ? Number(v.pointsAttempt3) : undefined,
       explanationText: v.explanationText || '',
       charsCsv: v.charsCsv || '',
       correctAnswer: v.correctAnswer || '',
       options: mappedOptions,
     };
 
-    if (this.isEdit) this.taskSvc.updateTask(this.id!, dto);
-    else this.taskSvc.addTask(dto);
-
-    this.router.navigate(['/admin/levels', dto.levelId!]);
+    if (this.isEdit) {
+      this.taskSvc.updateTask(this.id!, dto).subscribe({
+        next: () => {
+          console.log('✅ Task updated successfully');
+          this.router.navigate(['/admin/levels', dto.levelId!]);
+        },
+        error: (error) => {
+          console.error('❌ Error updating task:', error);
+        },
+      });
+    } else {
+      this.taskSvc.addTask(dto).subscribe({
+        next: () => {
+          console.log('✅ Task created successfully');
+          this.router.navigate(['/admin/levels', dto.levelId!]);
+        },
+        error: (error) => {
+          console.error('❌ Error creating task:', error);
+        },
+      });
+    }
   }
 
   cancel() {
     const qpLevelId = this.route.snapshot.queryParamMap.get('levelId');
-    const currentLevelId = this.form.value.levelId ?? (qpLevelId ? Number(qpLevelId) : null);
-    if (currentLevelId) this.router.navigate(['/admin/levels', Number(currentLevelId)]);
+    const currentLevelId = this.form.value.levelId ?? qpLevelId;
+    if (currentLevelId) this.router.navigate(['/admin/levels', currentLevelId]);
     else this.router.navigate(['/admin/sections']);
   }
 }

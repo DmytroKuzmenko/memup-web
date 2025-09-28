@@ -22,11 +22,11 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Title (internal)</label>
+          <label class="text-sm font-medium">Internal name</label>
           <input
             class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-            formControlName="title"
-            placeholder="Task title"
+            formControlName="internalName"
+            placeholder="Task internal name"
           />
         </div>
 
@@ -43,18 +43,18 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Top text</label>
+          <label class="text-sm font-medium">Header text</label>
           <textarea
             rows="2"
             class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-            formControlName="topText"
+            formControlName="headerText"
           ></textarea>
         </div>
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Task image</label>
           <app-image-picker
-            formControlName="taskImagePath"
+            formControlName="imagePath"
             [mode]="'original'"
             label="Image (optional)"
           ></app-image-picker>
@@ -116,7 +116,7 @@
               inputmode="numeric"
               min="0"
               class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-              formControlName="timeLimitSeconds"
+              formControlName="timeLimitSec"
               placeholder="e.g., 90"
             />
           </div>
@@ -130,7 +130,7 @@
               inputmode="numeric"
               min="0"
               class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-              formControlName="pointsFirst"
+              formControlName="pointsAttempt1"
             />
           </div>
           <div>
@@ -140,7 +140,7 @@
               inputmode="numeric"
               min="0"
               class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-              formControlName="pointsSecond"
+              formControlName="pointsAttempt2"
             />
           </div>
           <div>
@@ -150,7 +150,7 @@
               inputmode="numeric"
               min="0"
               class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-              formControlName="pointsThird"
+              formControlName="pointsAttempt3"
             />
           </div>
         </div>
