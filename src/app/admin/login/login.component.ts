@@ -37,15 +37,25 @@ export class AdminLoginComponent implements OnInit {
   }
 
   onSubmit(): void {
-    console.log('onSubmit called');
+    console.log('=== onSubmit() CALLED ===');
+    console.log('Form valid:', this.loginForm.valid);
+    console.log('Form invalid:', this.loginForm.invalid);
+    console.log('Form errors:', this.loginForm.errors);
+    console.log('Email errors:', this.loginForm.controls.email.errors);
+    console.log('Password errors:', this.loginForm.controls.password.errors);
+
     this.loginError = '';
+
     if (this.loginForm.invalid) {
+      console.log('❌ Form is invalid, marking as touched and returning');
       this.loginForm.markAllAsTouched();
       return;
     }
 
     const { email, password } = this.loginForm.getRawValue();
+    console.log('✅ Form is valid, proceeding with login');
     console.log('Form values:', { email, password });
+    console.log('Setting loading to true');
     this.loading = true;
 
     this.authService

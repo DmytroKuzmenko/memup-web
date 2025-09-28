@@ -45,10 +45,19 @@ export class AuthService {
 
   /** POST /auth/login — маппим token/expiresAt */
   login(payload: LoginRequest): Observable<void> {
+    console.log('=== AUTH SERVICE LOGIN CALLED ===');
+    console.log('AuthService.login called with payload:', payload);
+    console.log('Making request to:', `${this.base}/auth/login`);
+    console.log('Base URL:', this.base);
+
     return this.http.post<ApiLoginResponse>(`${this.base}/auth/login`, payload).pipe(
-      tap((resp) => this.persistFromApi(resp)),
+      tap((resp) => {
+        console.log('✅ Server response received:', resp);
+        this.persistFromApi(resp);
+      }),
       map(() => void 0),
       catchError((err) => {
+        console.error('❌ Login error:', err);
         // аккуратно пробрасываем ошибку наверх
         throw err;
       }),
@@ -108,8 +117,15 @@ export class AuthService {
 
   /** Сохраняем ответ логина из API в хранилище */
   private persistFromApi(resp: ApiLoginResponse) {
+    console.log('=== PERSIST FROM API ===');
+    console.log('API response:', resp);
+
     const accessToken = resp.token;
     const role = this.roleFromToken(accessToken);
+
+    console.log('Extracted token:', accessToken);
+    console.log('Extracted role:', role);
+
     const toStore: StoredAuth = {
       accessToken,
       role,
@@ -117,8 +133,12 @@ export class AuthService {
       // refreshToken не приходит — оставим null на будущее
       refreshToken: null,
     };
+
+    console.log('Data to store:', toStore);
     localStorage.setItem(LS_KEY, JSON.stringify(toStore));
     this.userRole.set(role ?? null);
+    console.log('User role signal set to:', role);
+    console.log('=== END PERSIST ===');
   }
 
   private restore(): StoredAuth | null {
@@ -132,9 +152,21 @@ export class AuthService {
 
   /** Достаём роль из клеймов JWT */
   private roleFromToken(token?: string): string | null {
-    if (!token) return null;
+    if (!token) {
+      console.log('No token provided to roleFromToken');
+      return null;
+    }
+
+    console.log('=== EXTRACTING ROLE FROM TOKEN ===');
+    console.log('Token:', token);
+
     const payload = this.decodeJwt(token);
-    if (!payload) return null;
+    console.log('JWT payload:', payload);
+
+    if (!payload) {
+      console.log('Failed to decode JWT payload');
+      return null;
+    }
 
     // Популярные варианты клеймов роли:
     // role / roles / microsoft-namespace (из твоего примера)
@@ -143,8 +175,22 @@ export class AuthService {
       (Array.isArray(payload?.roles) ? payload.roles[0] : payload?.roles) ??
       payload?.['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
 
-    if (!claimRole) return null;
-    return Array.isArray(claimRole) ? (claimRole[0] ?? null) : String(claimRole);
+    console.log('Available claims:', Object.keys(payload));
+    console.log(
+      'Looking for role claims: role, roles, http://schemas.microsoft.com/ws/2008/06/identity/claims/role',
+    );
+    console.log('Found claimRole:', claimRole);
+
+    if (!claimRole) {
+      console.log('No role claim found in token');
+      return null;
+    }
+
+    const finalRole = Array.isArray(claimRole) ? (claimRole[0] ?? null) : String(claimRole);
+    console.log('Final extracted role:', finalRole);
+    console.log('=== END ROLE EXTRACTION ===');
+
+    return finalRole;
   }
 
   /** Проверяем истечение токена: сначала exp из JWT, иначе falls back на expiresAtIso */
