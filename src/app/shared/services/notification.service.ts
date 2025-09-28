@@ -5,16 +5,16 @@ import { Injectable } from '@angular/core';
 })
 export class NotificationService {
   showSessionExpired(): void {
-    // Простое уведомление через alert
-    // В будущем можно заменить на toast уведомления
-    alert('Сессия истекла. Пожалуйста, войдите заново.');
+    // Simple notification via alert
+    // Can be replaced with toast notifications in the future
+    alert('Session expired. Please log in again.');
   }
 
   showError(message: string): void {
-    alert(`Ошибка: ${message}`);
+    alert(`Error: ${message}`);
   }
 
   showSuccess(message: string): void {
-    alert(`Успешно: ${message}`);
+    alert(`Success: ${message}`);
   }
 }

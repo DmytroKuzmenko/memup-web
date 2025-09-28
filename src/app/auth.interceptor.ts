@@ -62,9 +62,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
         if (err.status === 413) {
           console.log('413 Payload Too Large - file size exceeds server limit');
-          this.notification.showError(
-            'Файл слишком большой. Пожалуйста, выберите изображение меньшего размера.',
-          );
+          this.notification.showError('File is too large. Please select a smaller image.');
           return throwError(() => err);
         }
 

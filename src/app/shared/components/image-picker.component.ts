@@ -812,14 +812,22 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
   private onChange: (v: string | null) => void = () => {};
   private onTouched: () => void = () => {};
   writeValue(v: string | null): void {
+    console.log('=== ImagePicker writeValue ===');
+    console.log('New value:', v);
+    console.log('Current value:', this.value);
     this.value = v ?? null;
     // Обновляем отображение изображения при изменении значения
     this.updateImageDisplay();
   }
 
   private updateImageDisplay(): void {
+    console.log('=== ImagePicker updateImageDisplay ===');
+    console.log('Value:', this.value);
+    console.log('imgLoaded:', this.imgLoaded);
+
     // Если есть значение, обновляем отображение
     if (this.value) {
+      console.log('Updating image display with URL:', this.value);
       // Сбрасываем состояние загрузки
       this.imgLoaded = false;
       this.cdr.detectChanges();
@@ -827,12 +835,14 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
       // Создаем новое изображение для загрузки
       const img = new Image();
       img.onload = () => {
+        console.log('Image loaded successfully');
         this.ngZone.run(() => {
           this.imgLoaded = true;
           this.cdr.detectChanges();
         });
       };
       img.onerror = () => {
+        console.log('Image failed to load');
         this.ngZone.run(() => {
           this.imgLoaded = false;
           this.cdr.detectChanges();
@@ -840,6 +850,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
       };
       img.src = this.value;
     } else {
+      console.log('No value, resetting image display');
       // Если нет значения, сбрасываем состояние
       this.imgLoaded = false;
       this.cdr.detectChanges();
