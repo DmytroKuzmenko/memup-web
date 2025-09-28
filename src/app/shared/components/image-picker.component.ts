@@ -1404,7 +1404,11 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     console.log('File:', this.pendingFile.name, this.pendingFile.size, 'bytes');
 
     try {
-      const result = await firstValueFrom(this.uploadService.uploadImageResult(this.pendingFile));
+      // Сжимаем файл перед загрузкой
+      const compressedFile = await this.compressImage(this.pendingFile);
+      console.log('Compressed file:', compressedFile.name, compressedFile.size, 'bytes');
+
+      const result = await firstValueFrom(this.uploadService.uploadImageResult(compressedFile));
       console.log('Upload result:', result);
 
       if (result && typeof result === 'object' && 'url' in result) {
@@ -1420,6 +1424,55 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
       console.error('Upload error:', error);
       return null;
     }
+  }
+
+  private async compressImage(file: File): Promise<File> {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Максимальные размеры для сжатия
+        const maxWidth = 1920;
+        const maxHeight = 1080;
+
+        let { width, height } = img;
+
+        // Масштабируем если нужно
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Рисуем изображение на canvas
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Конвертируем в blob с качеством 0.8 (80%)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now(),
+              });
+              resolve(compressedFile);
+            } else {
+              reject(new Error('Failed to compress image'));
+            }
+          },
+          'image/jpeg',
+          0.8,
+        );
+      };
+
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
   }
 
   private convertDataUrlToFile(dataUrl: string): void {
