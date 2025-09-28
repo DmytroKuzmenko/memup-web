@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable, map, filter } from 'rxjs';
 import { APP_CONFIG } from '../app-config';
+import { isDevMode } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class UploadService {
@@ -25,14 +26,19 @@ export class UploadService {
     return this.http.post<{ url: string }>(url, form).pipe(
       map((response) => ({
         ...response,
-        url: this.convertToRelativeUrl(response.url),
+        url: this.convertUrl(response.url),
       })),
     );
   }
 
-  private convertToRelativeUrl(absoluteUrl: string): string {
-    // Конвертируем http://localhost:8080/uploads/file.png в /uploads/file.png
-    const url = new URL(absoluteUrl);
-    return url.pathname;
+  private convertUrl(absoluteUrl: string): string {
+    if (isDevMode()) {
+      // В development конвертируем в относительный URL для прокси
+      const url = new URL(absoluteUrl);
+      return url.pathname;
+    } else {
+      // В production возвращаем полный URL для статических файлов
+      return absoluteUrl;
+    }
   }
 }
