@@ -192,45 +192,46 @@
           <div class="text-sm font-semibold">Answer options</div>
 
           <!-- ВАЖНО: formArrayName + formGroupName вместо [formGroup]="opt" -->
-          <div formArrayName="options">
-            <div
-              *ngFor="let opt of options.controls; let i = index"
-              [formGroupName]="i"
-              class="grid gap-2 rounded-xl border border-neutral-200 p-2"
-            >
-              <div class="grid gap-3">
-                <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
-                  <input
-                    class="rounded-xl border border-neutral-300 px-3 py-2"
-                    formControlName="label"
-                    placeholder="Label"
-                  />
-                  <label class="inline-flex items-center gap-2">
-                    <input type="checkbox" formControlName="isCorrect" />
-                    Correct answer
-                  </label>
+          <ng-container formArrayName="options">
+            <ng-container *ngFor="let opt of options.controls; let i = index">
+              <div
+                [formGroupName]="i"
+                class="grid gap-2 rounded-xl border border-neutral-200 p-2"
+              >
+                <div class="grid gap-3">
+                  <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
+                    <input
+                      class="rounded-xl border border-neutral-300 px-3 py-2"
+                      formControlName="label"
+                      placeholder="Label"
+                    />
+                    <label class="inline-flex items-center gap-2">
+                      <input type="checkbox" formControlName="isCorrect" />
+                      Correct answer
+                    </label>
+                  </div>
+                  <div *ngIf="form.value.type === 'image_choice'">
+                    <app-image-picker
+                      formControlName="imageUrl"
+                      [mode]="'original'"
+                      [previewWidth]="200"
+                      [previewHeight]="120"
+                    ></app-image-picker>
+                  </div>
                 </div>
-                <div *ngIf="form.value.type === 'image_choice'">
-                  <app-image-picker
-                    formControlName="imageUrl"
-                    [mode]="'original'"
-                    [previewWidth]="200"
-                    [previewHeight]="120"
-                  ></app-image-picker>
-                </div>
-              </div>
 
-              <div class="flex justify-end">
-                <button
-                  type="button"
-                  (click)="removeOption(i)"
-                  class="rounded-xl border px-3 py-1 hover:bg-neutral-50"
-                >
-                  Remove option
-                </button>
+                <div class="flex justify-end">
+                  <button
+                    type="button"
+                    (click)="removeOption(i)"
+                    class="rounded-xl border px-3 py-1 hover:bg-neutral-50"
+                  >
+                    Remove option
+                  </button>
+                </div>
               </div>
-            </div>
-          </div>
+            </ng-container>
+          </ng-container>
 
           <button
             type="button"
