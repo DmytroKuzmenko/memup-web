@@ -1,4 +1,4 @@
-version: "3.8"
+version: '3.8'
 
 services:
   memeup-web:
@@ -9,10 +9,20 @@ services:
     container_name: memeup-web
     restart: always
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.memeup-web.rule=Host(`memeup.kuzmenko.dev`)"
-      - "traefik.http.routers.memeup-web.entrypoints=websecure"
-      - "traefik.http.routers.memeup-web.tls.certresolver=myresolver"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.memeup-web.rule=Host(`memeup.kuzmenko.dev`)'
+      - 'traefik.http.routers.memeup-web.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web.tls.certresolver=myresolver'
+      - 'traefik.http.routers.memeup-web-api.rule=Host(`memeup.kuzmenko.dev`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.memeup-web-api.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web-api.tls.certresolver=myresolver'
+      - 'traefik.http.routers.memeup-web-api.service=memeup-web-api'
+      - 'traefik.http.routers.memeup-web-api.middlewares=memeup-web-api-headers'
+      - 'traefik.http.services.memeup-web-api.loadbalancer.server.url=https://memeup-api.kuzmenko.dev'
+      - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.Host=memeup-api.kuzmenko.dev'
+      - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Host=memeup.kuzmenko.dev'
+      - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Proto=https'
+      - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Port=443'
     networks:
       - web
 
