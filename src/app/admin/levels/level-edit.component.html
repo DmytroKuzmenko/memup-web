@@ -47,16 +47,21 @@
 
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Level image</label>
-          <app-image-picker formControlName="imagePath" [mode]="'original'" label="Level image">
+          <app-image-picker
+            #levelImagePicker
+            formControlName="imagePath"
+            [mode]="'original'"
+            label="Level image"
+          >
           </app-image-picker>
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Preface text</label>
+          <label class="text-sm font-medium">Header text</label>
           <textarea
             class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             rows="2"
-            formControlName="prefaceText"
+            formControlName="headerText"
             placeholder="Shown above the Start button"
           ></textarea>
         </div>
@@ -64,6 +69,7 @@
         <div class="grid gap-1.5">
           <label class="text-sm font-medium">Preface moving image</label>
           <app-image-picker
+            #animationImagePicker
             formControlName="animationImagePath"
             [mode]="'original'"
             label="Moving image (sprite)"

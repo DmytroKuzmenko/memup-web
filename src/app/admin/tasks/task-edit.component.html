@@ -15,7 +15,9 @@
             formControlName="levelId"
           >
             <option [ngValue]="null" disabled>Select level</option>
-            <option *ngFor="let l of levels" [ngValue]="l.id">{{ l.name }}</option>
+            <ng-container *ngIf="levels$ | async as levels">
+              <option *ngFor="let l of levels" [ngValue]="l.id">{{ l.name }}</option>
+            </ng-container>
           </select>
         </div>
 

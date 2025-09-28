@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Observable } from 'rxjs';
 
 import { TaskService, Task, TaskType } from '../../task.service';
 import { LevelService, Level } from '../../level.service';
@@ -22,7 +23,8 @@ export class TaskEditComponent {
   private levelSvc = inject(LevelService);
 
   id: number | null = null;
-  levels: Level[] = [];
+  /** Секции теперь как поток из API */
+  levels$!: Observable<Level[]>;
 
   form = this.fb.group({
     levelId: [null as number | null, Validators.required],
@@ -58,11 +60,20 @@ export class TaskEditComponent {
   }
 
   ngOnInit() {
-    this.levels = this.levelSvc.getLevels();
+    // Получаем sectionId из query параметров или из текущей задачи
+    const qpSectionId = this.route.snapshot.queryParamMap.get('sectionId');
+    const qpLevelId = this.route.snapshot.queryParamMap.get('levelId');
+
+    if (qpSectionId) {
+      this.levels$ = this.levelSvc.getLevels(qpSectionId);
+    } else {
+      // Если нет sectionId, загружаем все уровни
+      this.levels$ = this.levelSvc.getAllLevels();
+    }
+
     const idParam = this.route.snapshot.paramMap.get('id');
     this.id = idParam ? Number(idParam) : null;
 
-    const qpLevelId = this.route.snapshot.queryParamMap.get('levelId');
     if (!this.id && qpLevelId) this.form.patchValue({ levelId: Number(qpLevelId) });
 
     if (this.id) {

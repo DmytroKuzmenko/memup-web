@@ -156,12 +156,18 @@ export class SectionEditComponent {
 
   private loadLevels() {
     if (!this.id) return;
-    // пока LevelService у тебя синхронный — оставляю так
-    // Временно используем числовой ID для мок-сервиса
-    const numericId = parseInt(this.id, 10);
-    if (!isNaN(numericId)) {
-      this.levels = this.levelService.getLevels(numericId);
-    }
+    console.log('=== LOADING LEVELS ===');
+    console.log('Section ID:', this.id);
+
+    this.levelService.getLevels(this.id).subscribe({
+      next: (levels) => {
+        console.log('✅ Levels loaded:', levels);
+        this.levels = levels;
+      },
+      error: (error) => {
+        console.error('❌ Error loading levels:', error);
+      },
+    });
   }
 
   openAddLevel() {
@@ -174,10 +180,17 @@ export class SectionEditComponent {
     this.router.navigate(['/admin/levels', lvl.id], { queryParams: { sectionId } });
   }
 
-  deleteLevel(id: number) {
+  deleteLevel(id: string) {
     if (confirm('Delete this level?')) {
-      this.levelService.deleteLevel(id);
-      this.loadLevels();
+      this.levelService.deleteLevel(id).subscribe({
+        next: () => {
+          console.log('✅ Level deleted successfully');
+          this.loadLevels();
+        },
+        error: (error) => {
+          console.error('❌ Error deleting level:', error);
+        },
+      });
     }
   }
 
