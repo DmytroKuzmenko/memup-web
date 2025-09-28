@@ -24,7 +24,7 @@ export class SectionEditComponent {
 
   @ViewChild('sectionImagePicker') sectionImagePicker?: ImagePickerComponent;
 
-  id: number | null = null;
+  id: string | null = null;
 
   // Секция теперь как поток (при отсутствии id — undefined)
   section$?: Observable<Section>;
@@ -50,25 +50,52 @@ export class SectionEditComponent {
   }
 
   ngOnInit() {
+    console.log('=== SECTION EDIT COMPONENT INIT ===');
+
     const idParam = this.route.snapshot.paramMap.get('id');
-    this.id = idParam ? Number(idParam) : null;
+    this.id = idParam || null;
+
+    console.log('ID parameter:', idParam);
+    console.log('Parsed ID:', this.id);
+    console.log('Is edit mode:', this.isEdit);
 
     if (this.id) {
+      console.log('Loading section with ID:', this.id);
+
       // грузим секцию из API
       this.section$ = this.sectionService.getSectionById(this.id);
 
       // один раз патчим форму значениями из API
-      this.section$.pipe(take(1)).subscribe((s) => {
-        this.form.patchValue({
-          name: s.name ?? '',
-          imagePath: s.imagePath ?? '',
-          orderIndex: s.orderIndex ?? 0,
-          status: s.status ?? 0,
-        });
+      this.section$.pipe(take(1)).subscribe({
+        next: (s) => {
+          console.log('✅ Section data received:', s);
+          console.log('Patching form with values:', {
+            name: s.name ?? '',
+            imagePath: s.imagePath ?? '',
+            orderIndex: s.orderIndex ?? 0,
+            status: s.status ?? 0,
+          });
+
+          this.form.patchValue({
+            name: s.name ?? '',
+            imagePath: s.imagePath ?? '',
+            orderIndex: s.orderIndex ?? 0,
+            status: s.status ?? 0,
+          });
+
+          console.log('Form values after patch:', this.form.value);
+        },
+        error: (error) => {
+          console.error('❌ Error loading section:', error);
+        },
       });
 
       this.loadLevels();
+    } else {
+      console.log('Creating new section (no ID)');
     }
+
+    console.log('=== END SECTION EDIT INIT ===');
   }
 
   get levelsSorted(): Level[] {
@@ -81,11 +108,23 @@ export class SectionEditComponent {
   }
 
   async save() {
-    const url = await this.sectionImagePicker?.uploadPendingIfAny();
-    if (url) this.form.patchValue({ imagePath: url });
+    console.log('=== SECTION SAVE ===');
+    console.log('SectionImagePicker:', this.sectionImagePicker);
 
-    if (this.form.invalid) return;
+    const url = await this.sectionImagePicker?.uploadPendingIfAny();
+    console.log('Upload URL result:', url);
+
+    if (url) {
+      console.log('Updating form with URL:', url);
+      this.form.patchValue({ imagePath: url });
+    }
+
+    if (this.form.invalid) {
+      console.log('Form is invalid');
+      return;
+    }
     const v = this.form.getRawValue();
+    console.log('Form values:', v);
 
     const dto: Partial<Section> = {
       name: v.name!,
@@ -118,7 +157,11 @@ export class SectionEditComponent {
   private loadLevels() {
     if (!this.id) return;
     // пока LevelService у тебя синхронный — оставляю так
-    this.levels = this.levelService.getLevels(this.id);
+    // Временно используем числовой ID для мок-сервиса
+    const numericId = parseInt(this.id, 10);
+    if (!isNaN(numericId)) {
+      this.levels = this.levelService.getLevels(numericId);
+    }
   }
 
   openAddLevel() {

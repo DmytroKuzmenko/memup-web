@@ -5,9 +5,17 @@ import { AuthService } from '../auth.service';
 export const adminGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  if (authService.isAdmin()) {
+
+  console.log('=== ADMIN GUARD CHECK ===');
+  console.log('Has valid token:', authService.hasValidToken());
+  console.log('Is admin:', authService.isAdmin());
+
+  if (authService.hasValidToken() && authService.isAdmin()) {
+    console.log('Access granted');
     return true;
   }
+
+  console.log('Access denied, redirecting to login');
   router.navigate(['/admin/login']);
   return false;
 };

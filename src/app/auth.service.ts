@@ -66,27 +66,10 @@ export class AuthService {
 
   /** POST /auth/refresh — если у бэка нет, просто возвращаем null */
   refresh(): Observable<string | null> {
-    const current = this.restore();
-    if (!current?.refreshToken) return of(null);
-    return this.http
-      .post<RefreshResponse>(`${this.base}/auth/refresh`, {
-        refreshToken: current.refreshToken,
-      })
-      .pipe(
-        tap((resp) => {
-          const next: StoredAuth = {
-            accessToken: resp.accessToken,
-            refreshToken: resp.refreshToken ?? current.refreshToken ?? null,
-            role: this.roleFromToken(resp.accessToken),
-            // expiresAtIso может не прийти — оставим прежнее
-            expiresAtIso: current.expiresAtIso,
-          };
-          localStorage.setItem(LS_KEY, JSON.stringify(next));
-          this.userRole.set(next.role ?? null);
-        }),
-        map((resp) => resp.accessToken ?? null),
-        catchError(() => of(null)),
-      );
+    console.log('=== AUTH SERVICE REFRESH ===');
+    console.log('Refresh token not supported by backend, returning null');
+    console.log('=== END REFRESH ===');
+    return of(null);
   }
 
   /** Логаут (локально, при желании можно добавить вызов /auth/logout на бэке) */
@@ -99,8 +82,20 @@ export class AuthService {
   /** Есть ли валидный (не истёкший) токен */
   hasValidToken(): boolean {
     const token = this.accessToken;
-    if (!token) return false;
-    return !this.isJwtExpired(token);
+    if (!token) {
+      console.log('No token found');
+      return false;
+    }
+
+    const isValid = !this.isJwtExpired(token);
+    console.log('Token validation:', { token: token.substring(0, 20) + '...', isValid });
+
+    if (!isValid) {
+      console.log('Token is expired, clearing auth data');
+      this.logout();
+    }
+
+    return isValid;
   }
 
   /** Текущий accessToken (или null) */

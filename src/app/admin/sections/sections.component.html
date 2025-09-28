@@ -72,7 +72,7 @@
 
         <div class="mt-3 grid grid-cols-2 gap-2">
           <button
-            (click)="onEdit(section.id)"
+            (click)="logEditClick(section.id); onEdit(section.id)"
             class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
           >
             Edit
@@ -156,7 +156,7 @@
             <td class="px-3 py-2 align-middle">
               <div class="flex items-center justify-end gap-2">
                 <button
-                  (click)="onEdit(section.id)"
+                  (click)="logEditClick(section.id); onEdit(section.id)"
                   class="inline-flex items-center justify-center rounded-xl border border-neutral-300 px-3 py-2 hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-900"
                 >
                   Edit

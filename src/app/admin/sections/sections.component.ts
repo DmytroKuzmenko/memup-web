@@ -27,17 +27,26 @@ export class AdminSectionsComponent {
     private router: Router,
     private fb: FormBuilder,
   ) {
+    console.log('=== ADMIN SECTIONS COMPONENT CONSTRUCTOR ===');
     this.refresh();
     // Если используешь ВАРИАНТ 2:
     this.search = this.fb.control('', { nonNullable: true });
 
     // ✅ синхронизируем FormControl → сигнал
     this.search.valueChanges.subscribe((v) => this.query.set((v ?? '').toLowerCase().trim()));
+    console.log('=== END ADMIN SECTIONS CONSTRUCTOR ===');
   }
 
   refresh() {
-    this.svc.getSections().subscribe((sections) => {
-      this.sections.set(sections);
+    console.log('=== REFRESHING SECTIONS ===');
+    this.svc.getSections().subscribe({
+      next: (sections) => {
+        console.log('✅ Sections loaded:', sections);
+        this.sections.set(sections);
+      },
+      error: (error) => {
+        console.error('❌ Error loading sections:', error);
+      },
     });
   }
 
@@ -45,11 +54,18 @@ export class AdminSectionsComponent {
     this.router.navigate(['/admin/sections/new']);
   }
 
-  onEdit(id: number) {
+  onEdit(id: string) {
+    console.log('=== NAVIGATING TO EDIT SECTION ===');
+    console.log('Section ID:', id);
+    console.log('Navigation path:', ['/admin/sections', id]);
     this.router.navigate(['/admin/sections', id]);
   }
 
-  onDelete(id: number) {
+  logEditClick(id: string) {
+    console.log('Edit button clicked for section:', id);
+  }
+
+  onDelete(id: string) {
     if (confirm('Delete this section?')) {
       this.svc.deleteSection(id);
       this.refresh();

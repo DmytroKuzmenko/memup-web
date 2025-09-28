@@ -10,8 +10,11 @@ import {
   ChangeDetectorRef,
   OnDestroy,
   NgZone,
+  inject,
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
+import { UploadService } from '../services/upload.service';
 
 @Component({
   selector: 'app-image-picker',
@@ -810,6 +813,37 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
   private onTouched: () => void = () => {};
   writeValue(v: string | null): void {
     this.value = v ?? null;
+    // Обновляем отображение изображения при изменении значения
+    this.updateImageDisplay();
+  }
+
+  private updateImageDisplay(): void {
+    // Если есть значение, обновляем отображение
+    if (this.value) {
+      // Сбрасываем состояние загрузки
+      this.imgLoaded = false;
+      this.cdr.detectChanges();
+
+      // Создаем новое изображение для загрузки
+      const img = new Image();
+      img.onload = () => {
+        this.ngZone.run(() => {
+          this.imgLoaded = true;
+          this.cdr.detectChanges();
+        });
+      };
+      img.onerror = () => {
+        this.ngZone.run(() => {
+          this.imgLoaded = false;
+          this.cdr.detectChanges();
+        });
+      };
+      img.src = this.value;
+    } else {
+      // Если нет значения, сбрасываем состояние
+      this.imgLoaded = false;
+      this.cdr.detectChanges();
+    }
   }
   registerOnChange(fn: any): void {
     this.onChange = fn;
@@ -856,6 +890,10 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
   // Оптимизация производительности
   private rafId: number | null = null;
   private pendingLivePreview = false;
+
+  // Upload service
+  private uploadService = inject(UploadService);
+  private pendingFile: File | null = null;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -917,6 +955,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
 
     this.isLoading = true;
     this.cdr.detectChanges();
+
+    // Сохраняем файл для последующей загрузки
+    this.pendingFile = file;
 
     // Быстрый внешний превью
     this.revokeObjectUrl();
@@ -1075,6 +1116,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
           this.changed.emit(this.value);
           this.liveDataUrl = data;
           this.pendingLivePreview = false;
+
+          // Сохраняем обработанное изображение как файл для загрузки
+          this.convertDataUrlToFile(data);
         }
       } finally {
         this.isProcessing = false;
@@ -1093,6 +1137,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     this.pointers.clear();
     this.revokeObjectUrl();
     this.pendingLivePreview = false;
+    this.pendingFile = null; // Очищаем pending файл
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
@@ -1347,6 +1392,56 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
 
   // совместимость
   async uploadPendingIfAny(): Promise<string | null> {
-    return null;
+    console.log('=== uploadPendingIfAny CALLED ===');
+    console.log('Pending file:', this.pendingFile);
+
+    if (!this.pendingFile) {
+      console.log('No pending file, returning null');
+      return null;
+    }
+
+    console.log('=== UPLOADING PENDING FILE ===');
+    console.log('File:', this.pendingFile.name, this.pendingFile.size, 'bytes');
+
+    try {
+      const result = await firstValueFrom(this.uploadService.uploadImageResult(this.pendingFile));
+      console.log('Upload result:', result);
+
+      if (result && typeof result === 'object' && 'url' in result) {
+        const url = result.url;
+        console.log('Upload successful, URL:', url);
+        this.pendingFile = null; // Очищаем после успешной загрузки
+        return url;
+      }
+
+      console.log('Upload failed - no URL in result');
+      return null;
+    } catch (error) {
+      console.error('Upload error:', error);
+      return null;
+    }
+  }
+
+  private convertDataUrlToFile(dataUrl: string): void {
+    try {
+      // Извлекаем данные из data URL
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+
+      // Создаем файл
+      const file = new File([u8arr], `image.${mime.split('/')[1]}`, { type: mime });
+      this.pendingFile = file;
+
+      console.log('Converted data URL to file:', file.name, file.size, 'bytes');
+    } catch (error) {
+      console.error('Error converting data URL to file:', error);
+    }
   }
 }
