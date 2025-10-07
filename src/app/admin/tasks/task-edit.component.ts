@@ -109,16 +109,18 @@ export class TaskEditComponent {
             correctAnswer: task.correctAnswer ?? '',
           });
 
-          (task.options ?? []).forEach((o) => {
-            this.options.push(
-              this.fb.group({
-                id: [o.id ?? null],
-                label: [o.label, Validators.required],
-                isCorrect: [o.isCorrect],
-                imageUrl: [o.imageUrl ?? ''],
-              }),
-            );
-          });
+          (task.options ?? [])
+            .filter((option) => option.label && option.label.trim() !== '') // Фильтруем пустые опции при загрузке
+            .forEach((o) => {
+              this.options.push(
+                this.fb.group({
+                  id: [o.id ?? null],
+                  label: [o.label, Validators.required],
+                  isCorrect: [o.isCorrect],
+                  imageUrl: [o.imageUrl ?? ''],
+                }),
+              );
+            });
           console.log('Form values after patch:', this.form.getRawValue());
         },
         error: (error) => {
@@ -127,12 +129,8 @@ export class TaskEditComponent {
       });
     }
 
-    if (
-      this.options.length === 0 &&
-      (this.form.value.type === 'text_choice' || this.form.value.type === 'image_choice')
-    ) {
-      this.addOption();
-    }
+    // Убираем автоматическое добавление пустой опции
+    // Пользователь может добавить опции вручную через кнопку "Add option"
 
     console.log('=== END TASK EDIT INIT ===');
   }
@@ -174,26 +172,28 @@ export class TaskEditComponent {
     const v = this.form.getRawValue();
     console.log('Form values:', v);
 
-    const mappedOptions = (this.options.controls as FormGroup[]).map((g) => {
-      const val = g.getRawValue() as {
-        id: string | null;
-        label: string;
-        isCorrect: boolean;
-        imageUrl?: string;
-      };
+    const mappedOptions = (this.options.controls as FormGroup[])
+      .map((g) => {
+        const val = g.getRawValue() as {
+          id: string | null;
+          label: string;
+          isCorrect: boolean;
+          imageUrl?: string;
+        };
 
-      const option: TaskOption = {
-        label: val.label || '',
-        isCorrect: !!val.isCorrect,
-        imageUrl: val.imageUrl || undefined,
-      };
+        const option: TaskOption = {
+          label: val.label || '',
+          isCorrect: !!val.isCorrect,
+          imageUrl: val.imageUrl || undefined,
+        };
 
-      if (val.id) {
-        option.id = val.id;
-      }
+        if (val.id) {
+          option.id = val.id;
+        }
 
-      return option;
-    });
+        return option;
+      })
+      .filter((option) => option.label && option.label.trim() !== ''); // Фильтруем пустые опции
 
     const dto: Partial<Task> = {
       levelId: v.levelId!,
