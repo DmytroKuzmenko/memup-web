@@ -56,6 +56,13 @@ interface TaskDto {
   pointsAttempt2?: number;
   pointsAttempt3?: number;
   explanationText?: string | null;
+  // Новые поля для анаграмм и вариантов ответов
+  options?: TaskOption[];
+  charsCsv?: string | null;
+  correctAnswer?: string | null;
+  taskImageSource?: string | null;
+  resultImagePath?: string | null;
+  resultImageSource?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -75,6 +82,13 @@ function mapDto(dto: TaskDto): Task {
     pointsAttempt2: dto.pointsAttempt2,
     pointsAttempt3: dto.pointsAttempt3,
     explanationText: dto.explanationText ?? undefined,
+    // Новые поля для анаграмм и вариантов ответов
+    options: dto.options ?? undefined,
+    charsCsv: dto.charsCsv ?? undefined,
+    correctAnswer: dto.correctAnswer ?? undefined,
+    taskImageSource: dto.taskImageSource ?? undefined,
+    resultImagePath: dto.resultImagePath ?? undefined,
+    resultImageSource: dto.resultImageSource ?? undefined,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
   };
@@ -165,6 +179,13 @@ export class TaskService {
       pointsAttempt3: data.pointsAttempt3 ?? 0,
       explanationText: data.explanationText ?? '',
       status: data.status ?? 0,
+      // Добавляем поля для анаграмм и вариантов ответов
+      options: data.options ?? [],
+      charsCsv: data.charsCsv ?? '',
+      correctAnswer: data.correctAnswer ?? '',
+      taskImageSource: data.taskImageSource ?? '',
+      resultImagePath: data.resultImagePath ?? '',
+      resultImageSource: data.resultImageSource ?? '',
     };
     console.log('=== TASK SERVICE ADD ===');
     console.log('Adding new task');
@@ -191,6 +212,13 @@ export class TaskService {
       pointsAttempt3: data.pointsAttempt3,
       explanationText: data.explanationText,
       status: data.status,
+      // Добавляем поля для анаграмм и вариантов ответов
+      options: data.options,
+      charsCsv: data.charsCsv,
+      correctAnswer: data.correctAnswer,
+      taskImageSource: data.taskImageSource,
+      resultImagePath: data.resultImagePath,
+      resultImageSource: data.resultImageSource,
     };
     console.log('=== TASK SERVICE UPDATE ===');
     console.log('Updating task with ID:', id);
