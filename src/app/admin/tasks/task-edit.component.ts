@@ -2,12 +2,13 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 
 import { TaskService, Task, TaskOption, TaskType } from '../../task.service';
 import { LevelService, Level } from '../../level.service';
 
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-task-edit',
@@ -21,6 +22,7 @@ export class TaskEditComponent {
   private router = inject(Router);
   private taskSvc = inject(TaskService);
   private levelSvc = inject(LevelService);
+  private uploadSvc = inject(UploadService);
 
   id: string | null = null;
   /** Секции теперь как поток из API */
@@ -172,70 +174,81 @@ export class TaskEditComponent {
     const v = this.form.getRawValue();
     console.log('Form values:', v);
 
-    const mappedOptions = (this.options.controls as FormGroup[])
-      .map((g) => {
-        const val = g.getRawValue() as {
-          id: string | null;
-          label: string;
-          isCorrect: boolean;
-          imageUrl?: string;
-        };
+    try {
+      // Загружаем изображения перед сохранением задачи
+      const [taskImageUrl, resultImageUrl, optionImageUrls] = await Promise.all([
+        this.uploadImageIfNeeded(v.imagePath),
+        this.uploadImageIfNeeded(v.resultImagePath),
+        this.uploadOptionImages(v.options),
+      ]);
 
-        const option: TaskOption = {
-          label: val.label || '',
-          isCorrect: !!val.isCorrect,
-          imageUrl: val.imageUrl || undefined,
-        };
+      const mappedOptions = (this.options.controls as FormGroup[])
+        .map((g, index) => {
+          const val = g.getRawValue() as {
+            id: string | null;
+            label: string;
+            isCorrect: boolean;
+            imageUrl?: string;
+          };
 
-        if (val.id) {
-          option.id = val.id;
-        }
+          const option: TaskOption = {
+            label: val.label || '',
+            isCorrect: !!val.isCorrect,
+            imageUrl: optionImageUrls[index] || undefined,
+          };
 
-        return option;
-      })
-      .filter((option) => option.label && option.label.trim() !== ''); // Фильтруем пустые опции
+          if (val.id) {
+            option.id = val.id;
+          }
 
-    const dto: Partial<Task> = {
-      levelId: v.levelId!,
-      internalName: v.internalName!,
-      type: v.type!,
-      headerText: v.headerText || '',
-      imagePath: v.imagePath || '',
-      taskImageSource: v.taskImageSource || '',
-      resultImagePath: v.resultImagePath || '',
-      resultImageSource: v.resultImageSource || '',
-      orderIndex: v.orderIndex != null ? Number(v.orderIndex) : undefined,
-      status: Number(v.status),
-      timeLimitSec: v.timeLimitSec != null ? Number(v.timeLimitSec) : undefined,
-      pointsAttempt1: v.pointsAttempt1 != null ? Number(v.pointsAttempt1) : undefined,
-      pointsAttempt2: v.pointsAttempt2 != null ? Number(v.pointsAttempt2) : undefined,
-      pointsAttempt3: v.pointsAttempt3 != null ? Number(v.pointsAttempt3) : undefined,
-      explanationText: v.explanationText || '',
-      charsCsv: v.charsCsv || '',
-      correctAnswer: v.correctAnswer || '',
-      options: mappedOptions,
-    };
+          return option;
+        })
+        .filter((option) => option.label && option.label.trim() !== ''); // Фильтруем пустые опции
 
-    if (this.isEdit) {
-      this.taskSvc.updateTask(this.id!, dto).subscribe({
-        next: () => {
-          console.log('✅ Task updated successfully');
-          this.router.navigate(['/admin/levels', dto.levelId!]);
-        },
-        error: (error) => {
-          console.error('❌ Error updating task:', error);
-        },
-      });
-    } else {
-      this.taskSvc.addTask(dto).subscribe({
-        next: () => {
-          console.log('✅ Task created successfully');
-          this.router.navigate(['/admin/levels', dto.levelId!]);
-        },
-        error: (error) => {
-          console.error('❌ Error creating task:', error);
-        },
-      });
+      const dto: Partial<Task> = {
+        levelId: v.levelId!,
+        internalName: v.internalName!,
+        type: v.type!,
+        headerText: v.headerText || '',
+        imagePath: taskImageUrl || '',
+        taskImageSource: v.taskImageSource || '',
+        resultImagePath: resultImageUrl || '',
+        resultImageSource: v.resultImageSource || '',
+        orderIndex: v.orderIndex != null ? Number(v.orderIndex) : undefined,
+        status: Number(v.status),
+        timeLimitSec: v.timeLimitSec != null ? Number(v.timeLimitSec) : undefined,
+        pointsAttempt1: v.pointsAttempt1 != null ? Number(v.pointsAttempt1) : undefined,
+        pointsAttempt2: v.pointsAttempt2 != null ? Number(v.pointsAttempt2) : undefined,
+        pointsAttempt3: v.pointsAttempt3 != null ? Number(v.pointsAttempt3) : undefined,
+        explanationText: v.explanationText || '',
+        charsCsv: v.charsCsv || '',
+        correctAnswer: v.correctAnswer || '',
+        options: mappedOptions,
+      };
+
+      if (this.isEdit) {
+        this.taskSvc.updateTask(this.id!, dto).subscribe({
+          next: () => {
+            console.log('✅ Task updated successfully');
+            this.router.navigate(['/admin/levels', dto.levelId!]);
+          },
+          error: (error) => {
+            console.error('❌ Error updating task:', error);
+          },
+        });
+      } else {
+        this.taskSvc.addTask(dto).subscribe({
+          next: () => {
+            console.log('✅ Task created successfully');
+            this.router.navigate(['/admin/levels', dto.levelId!]);
+          },
+          error: (error) => {
+            console.error('❌ Error creating task:', error);
+          },
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error uploading images:', error);
     }
   }
 
@@ -244,5 +257,66 @@ export class TaskEditComponent {
     const currentLevelId = this.form.value.levelId ?? qpLevelId;
     if (currentLevelId) this.router.navigate(['/admin/levels', currentLevelId]);
     else this.router.navigate(['/admin/sections']);
+  }
+
+  private async uploadImageIfNeeded(imageValue: string | null): Promise<string | null> {
+    if (!imageValue) return null;
+
+    // Если это уже URL (не base64), возвращаем как есть
+    if (!imageValue.startsWith('data:')) {
+      return imageValue;
+    }
+
+    try {
+      // Конвертируем base64 в файл
+      const file = this.dataUrlToFile(imageValue);
+
+      // Загружаем файл на сервер
+      const result = await firstValueFrom(this.uploadSvc.uploadImageResult(file));
+      return result?.url || null;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  }
+
+  private async uploadOptionImages(options: any[]): Promise<(string | null)[]> {
+    const uploadPromises = options.map(async (option) => {
+      if (!option.imageUrl) return null;
+
+      // Если это уже URL (не base64), возвращаем как есть
+      if (!option.imageUrl.startsWith('data:')) {
+        return option.imageUrl;
+      }
+
+      try {
+        // Конвертируем base64 в файл
+        const file = this.dataUrlToFile(option.imageUrl);
+
+        // Загружаем файл на сервер
+        const result = await firstValueFrom(this.uploadSvc.uploadImageResult(file));
+        return result?.url || null;
+      } catch (error) {
+        console.error('Error uploading option image:', error);
+        return null;
+      }
+    });
+
+    return Promise.all(uploadPromises);
+  }
+
+  private dataUrlToFile(dataUrl: string): File {
+    const arr = dataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+
+    const extension = mime.split('/')[1] || 'png';
+    return new File([u8arr], `image.${extension}`, { type: mime });
   }
 }
