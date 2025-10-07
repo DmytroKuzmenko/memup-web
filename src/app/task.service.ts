@@ -6,7 +6,10 @@ import { APP_CONFIG, AppConfig } from './shared/app-config';
 
 export type TaskType = 'anagram' | 'image_choice' | 'text_choice';
 
+export type Guid = string;
+
 export interface TaskOption {
+  id?: Guid; // Guid from .NET backend
   label: string;
   isCorrect: boolean;
   imageUrl?: string;
@@ -42,6 +45,13 @@ export interface Task {
 }
 
 // Как приходит с API (даты — строки ISO)
+interface TaskOptionDto {
+  id?: Guid;
+  label: string;
+  isCorrect: boolean;
+  imageUrl?: string | null;
+}
+
 interface TaskDto {
   id: string;
   levelId: string;
@@ -57,7 +67,7 @@ interface TaskDto {
   pointsAttempt3?: number;
   explanationText?: string | null;
   // Новые поля для анаграмм и вариантов ответов
-  options?: TaskOption[];
+  options?: TaskOptionDto[];
   charsCsv?: string | null;
   correctAnswer?: string | null;
   taskImageSource?: string | null;
@@ -65,6 +75,32 @@ interface TaskDto {
   resultImageSource?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+function mapOptionDto(option: TaskOptionDto): TaskOption {
+  return {
+    id: option.id,
+    label: option.label,
+    isCorrect: option.isCorrect,
+    imageUrl: option.imageUrl ?? undefined,
+  };
+}
+
+function mapOptionToDto(option: TaskOption): TaskOptionDto {
+  const mapped: TaskOptionDto = {
+    label: option.label,
+    isCorrect: option.isCorrect,
+  };
+
+  if (option.id) {
+    mapped.id = option.id;
+  }
+
+  if (option.imageUrl) {
+    mapped.imageUrl = option.imageUrl;
+  }
+
+  return mapped;
 }
 
 function mapDto(dto: TaskDto): Task {
@@ -83,7 +119,7 @@ function mapDto(dto: TaskDto): Task {
     pointsAttempt3: dto.pointsAttempt3,
     explanationText: dto.explanationText ?? undefined,
     // Новые поля для анаграмм и вариантов ответов
-    options: dto.options ?? undefined,
+    options: dto.options?.map(mapOptionDto) ?? undefined,
     charsCsv: dto.charsCsv ?? undefined,
     correctAnswer: dto.correctAnswer ?? undefined,
     taskImageSource: dto.taskImageSource ?? undefined,
@@ -180,7 +216,7 @@ export class TaskService {
       explanationText: data.explanationText ?? '',
       status: data.status ?? 0,
       // Добавляем поля для анаграмм и вариантов ответов
-      options: data.options ?? [],
+      options: (data.options ?? []).map(mapOptionToDto),
       charsCsv: data.charsCsv ?? '',
       correctAnswer: data.correctAnswer ?? '',
       taskImageSource: data.taskImageSource ?? '',
@@ -213,7 +249,7 @@ export class TaskService {
       explanationText: data.explanationText,
       status: data.status,
       // Добавляем поля для анаграмм и вариантов ответов
-      options: data.options,
+      options: data.options?.map(mapOptionToDto),
       charsCsv: data.charsCsv,
       correctAnswer: data.correctAnswer,
       taskImageSource: data.taskImageSource,

@@ -4,7 +4,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { TaskService, Task, TaskType } from '../../task.service';
+import { TaskService, Task, TaskOption, TaskType } from '../../task.service';
 import { LevelService, Level } from '../../level.service';
 
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
@@ -112,6 +112,7 @@ export class TaskEditComponent {
           (task.options ?? []).forEach((o) => {
             this.options.push(
               this.fb.group({
+                id: [o.id ?? null],
                 label: [o.label, Validators.required],
                 isCorrect: [o.isCorrect],
                 imageUrl: [o.imageUrl ?? ''],
@@ -139,6 +140,7 @@ export class TaskEditComponent {
   addOption() {
     this.options.push(
       this.fb.group({
+        id: [null as string | null],
         label: ['', Validators.required],
         isCorrect: [false],
         imageUrl: [''],
@@ -173,12 +175,24 @@ export class TaskEditComponent {
     console.log('Form values:', v);
 
     const mappedOptions = (this.options.controls as FormGroup[]).map((g) => {
-      const val = g.getRawValue() as { label: string; isCorrect: boolean; imageUrl?: string };
-      return {
+      const val = g.getRawValue() as {
+        id: string | null;
+        label: string;
+        isCorrect: boolean;
+        imageUrl?: string;
+      };
+
+      const option: TaskOption = {
         label: val.label || '',
         isCorrect: !!val.isCorrect,
         imageUrl: val.imageUrl || undefined,
       };
+
+      if (val.id) {
+        option.id = val.id;
+      }
+
+      return option;
     });
 
     const dto: Partial<Task> = {
