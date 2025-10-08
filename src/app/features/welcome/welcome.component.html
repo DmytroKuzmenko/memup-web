@@ -1,0 +1,314 @@
+<div
+  class="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4"
+>
+  <!-- Modern geometric background elements -->
+  <div class="pointer-events-none absolute inset-0 overflow-hidden">
+    <!-- Geometric shapes -->
+    <div
+      class="absolute top-20 left-20 h-32 w-32 rotate-45 animate-pulse rounded-lg bg-gradient-to-r from-purple-500/20 to-pink-500/20"
+    ></div>
+    <div
+      class="absolute top-40 right-32 h-24 w-24 animate-bounce rounded-full bg-gradient-to-r from-blue-500/20 to-cyan-500/20"
+    ></div>
+    <div
+      class="absolute bottom-32 left-32 h-40 w-40 rotate-12 animate-pulse rounded-lg bg-gradient-to-r from-emerald-500/20 to-teal-500/20 delay-1000"
+    ></div>
+    <div
+      class="absolute right-20 bottom-20 h-28 w-28 animate-bounce rounded-full bg-gradient-to-r from-orange-500/20 to-red-500/20 delay-500"
+    ></div>
+
+    <!-- Floating particles -->
+    <div class="animate-float absolute top-1/4 left-1/4 h-2 w-2 rounded-full bg-white/30"></div>
+    <div
+      class="animate-wiggle absolute top-1/3 right-1/4 h-3 w-3 rounded-full bg-purple-400/40"
+    ></div>
+    <div
+      class="animate-float absolute bottom-1/4 left-1/3 h-2 w-2 rounded-full bg-cyan-400/30 delay-1000"
+    ></div>
+    <div
+      class="absolute right-1/3 bottom-1/3 h-3 w-3 animate-pulse rounded-full bg-pink-400/40 delay-500"
+    ></div>
+
+    <!-- Grid pattern overlay -->
+    <div
+      class="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"
+    ></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-4xl">
+    <!-- Language Selector -->
+    <div class="absolute top-4 right-4 z-20 md:top-6 md:right-6">
+      <app-language-selector></app-language-selector>
+    </div>
+
+    <!-- Main content container -->
+    <div class="rounded-3xl bg-white/90 p-8 shadow-2xl backdrop-blur-sm md:p-12">
+      <!-- Header with logo and title -->
+      <div class="mb-12 text-center">
+        <div class="mb-6 inline-flex h-24 w-24 items-center justify-center shadow-lg">
+          <img
+            src="assets/icons/icon-512x512.png"
+            alt="MemeUp Logo"
+            class="h-full w-full rounded-2xl"
+          />
+        </div>
+        <h1 class="mb-4 text-5xl font-bold text-purple-600 md:text-6xl">
+          <span
+            class="bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent"
+            >{{ 'welcome.title' | translate }}</span
+          >
+        </h1>
+        <p class="mx-auto max-w-2xl text-xl leading-relaxed font-medium text-gray-700">
+          {{ 'welcome.subtitle' | translate }}
+        </p>
+        <p class="mx-auto mt-4 max-w-2xl text-lg text-gray-600 italic">
+          {{ 'welcome.motto' | translate }}
+        </p>
+      </div>
+
+      <!-- Features section -->
+      <div class="mb-12 grid gap-8 md:grid-cols-3">
+        <div
+          class="rounded-2xl border border-purple-100 bg-gradient-to-br from-purple-50 to-pink-50 p-6 text-center"
+        >
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500"
+          >
+            <span class="text-2xl">😂</span>
+          </div>
+          <h3 class="mb-3 text-xl font-semibold text-gray-800">
+            {{ 'welcome.features.memes.title' | translate }}
+          </h3>
+          <p class="text-gray-600">
+            {{ 'welcome.features.memes.description' | translate }}
+          </p>
+        </div>
+
+        <div
+          class="rounded-2xl border border-blue-100 bg-gradient-to-br from-blue-50 to-cyan-50 p-6 text-center"
+        >
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500"
+          >
+            <span class="text-2xl">🏰</span>
+          </div>
+          <h3 class="mb-3 text-xl font-semibold text-gray-800">
+            {{ 'welcome.features.culture.title' | translate }}
+          </h3>
+          <p class="text-gray-600">
+            {{ 'welcome.features.culture.description' | translate }}
+          </p>
+        </div>
+
+        <div
+          class="rounded-2xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 text-center"
+        >
+          <div
+            class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500"
+          >
+            <span class="text-2xl">👥</span>
+          </div>
+          <h3 class="mb-3 text-xl font-semibold text-gray-800">
+            {{ 'welcome.features.community.title' | translate }}
+          </h3>
+          <p class="text-gray-600">
+            {{ 'welcome.features.community.description' | translate }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="text-center" *ngIf="!showLoginForm && !showSignupForm">
+        <div class="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <button
+            (click)="showLogin()"
+            class="w-full transform rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:w-auto"
+          >
+            {{ 'welcome.actions.login' | translate }}
+          </button>
+          <button
+            (click)="showSignup()"
+            class="w-full transform rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-500 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl sm:w-auto"
+          >
+            {{ 'welcome.actions.signup' | translate }}
+          </button>
+        </div>
+        <p class="mt-4 text-sm font-medium text-gray-600">
+          {{ 'welcome.actions.description' | translate }}
+        </p>
+      </div>
+
+      <!-- Login Form -->
+      <div *ngIf="showLoginForm" #loginFormContainer class="login-form-container mx-auto max-w-md">
+        <div class="mb-6 text-center">
+          <h2 class="mb-2 text-3xl font-bold text-gray-800">
+            {{ 'welcome.forms.login.title' | translate }}
+          </h2>
+          <p class="text-gray-600">{{ 'welcome.forms.login.subtitle' | translate }}</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-6">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.login.email' | translate
+            }}</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter your email"
+            />
+            <div
+              *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              <span *ngIf="loginForm.controls.email.errors?.['required']">Email is required</span>
+              <span *ngIf="loginForm.controls.email.errors?.['email']"
+                >Please enter a valid email</span
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter your password"
+            />
+            <div
+              *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              Password is required
+            </div>
+          </div>
+
+          <div
+            *ngIf="error"
+            class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+          >
+            {{ error }}
+          </div>
+
+          <div class="flex gap-4">
+            <button
+              type="submit"
+              [disabled]="loginForm.invalid || loading"
+              class="flex-1 transform rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 py-3 font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span *ngIf="!loading">{{ 'welcome.forms.login.submit' | translate }}</span>
+              <span *ngIf="loading">{{ 'welcome.forms.login.submitting' | translate }}</span>
+            </button>
+            <button
+              type="button"
+              (click)="hideForms()"
+              class="rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Signup Form -->
+      <div
+        *ngIf="showSignupForm"
+        #signupFormContainer
+        class="signup-form-container mx-auto max-w-md"
+      >
+        <div class="mb-6 text-center">
+          <h2 class="mb-2 text-3xl font-bold text-gray-800">Join MemeUp!</h2>
+          <p class="text-gray-600">Create your account and start learning German</p>
+        </div>
+
+        <form [formGroup]="signupForm" (ngSubmit)="onSignupSubmit()" class="space-y-6">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              formControlName="email"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              placeholder="Enter your email"
+            />
+            <div
+              *ngIf="signupForm.controls.email.touched && signupForm.controls.email.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              <span *ngIf="signupForm.controls.email.errors?.['required']">Email is required</span>
+              <span *ngIf="signupForm.controls.email.errors?.['email']"
+                >Please enter a valid email</span
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              formControlName="password"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              placeholder="Create a password"
+            />
+            <div
+              *ngIf="signupForm.controls.password.touched && signupForm.controls.password.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              <span *ngIf="signupForm.controls.password.errors?.['required']"
+                >Password is required</span
+              >
+              <span *ngIf="signupForm.controls.password.errors?.['minlength']"
+                >Password must be at least 6 characters</span
+              >
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">Confirm Password</label>
+            <input
+              type="password"
+              formControlName="confirmPassword"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              placeholder="Confirm your password"
+            />
+            <div
+              *ngIf="
+                signupForm.controls.confirmPassword.touched &&
+                signupForm.controls.confirmPassword.invalid
+              "
+              class="mt-1 text-sm text-red-500"
+            >
+              Please confirm your password
+            </div>
+          </div>
+
+          <div
+            *ngIf="error"
+            class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+          >
+            {{ error }}
+          </div>
+
+          <div class="flex gap-4">
+            <button
+              type="submit"
+              [disabled]="signupForm.invalid || loading"
+              class="flex-1 transform rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3 font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <span *ngIf="!loading">Create Account</span>
+              <span *ngIf="loading">Creating account...</span>
+            </button>
+            <button
+              type="button"
+              (click)="hideForms()"
+              class="rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
