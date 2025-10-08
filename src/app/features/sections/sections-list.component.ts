@@ -19,6 +19,8 @@ export class SectionsListComponent implements OnInit {
   constructor(private sectionService: SectionService) {}
 
   ngOnInit(): void {
+    // Прокрутка к верху страницы
+    window.scrollTo(0, 0);
     this.loadSections();
   }
 
