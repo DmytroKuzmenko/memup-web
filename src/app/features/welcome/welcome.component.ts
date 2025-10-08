@@ -35,6 +35,7 @@ export class WelcomeComponent {
 
   signupForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
+    userName: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
     confirmPassword: ['', [Validators.required]],
   });
@@ -112,7 +113,7 @@ export class WelcomeComponent {
       return;
     }
 
-    const { password, confirmPassword } = this.signupForm.getRawValue();
+    const { email, userName, password, confirmPassword } = this.signupForm.getRawValue();
     if (password !== confirmPassword) {
       this.error = this.languageService.translate('welcome.forms.signup.errors.passwordsMismatch');
       return;
@@ -121,12 +122,57 @@ export class WelcomeComponent {
     this.loading = true;
     this.error = '';
 
-    // For now, just show a success message since we don't have a signup API
-    setTimeout(() => {
-      this.loading = false;
-      this.error = '';
-      alert(this.languageService.translate('welcome.forms.signup.errors.signupComingSoon'));
-      this.hideForms();
-    }, 1000);
+    this.authService.register({ email, userName, password }).subscribe({
+      next: (response) => {
+        this.loading = false;
+        this.error = '';
+        // Show success message and redirect to login
+        alert(this.languageService.translate('welcome.forms.signup.success'));
+        this.showLogin();
+        // Pre-fill email in login form
+        this.loginForm.patchValue({ email });
+      },
+      error: (err) => {
+        this.loading = false;
+        console.error('Registration error:', err);
+
+        // Handle different error types
+        if (err.status === 409 || (err.error && err.error.message === 'EmailAlreadyInUse')) {
+          this.error = this.languageService.translate('welcome.forms.signup.errors.emailExists');
+        } else if (err.status === 400) {
+          // Check if there are specific validation errors
+          if (err.error && err.error.errors && Array.isArray(err.error.errors)) {
+            // Translate common password validation errors
+            const translatedErrors = err.error.errors.map((error: string) => {
+              if (error.includes('lowercase')) {
+                return this.languageService.translate(
+                  'welcome.forms.signup.errors.passwordLowercase',
+                );
+              } else if (error.includes('uppercase')) {
+                return this.languageService.translate(
+                  'welcome.forms.signup.errors.passwordUppercase',
+                );
+              } else if (error.includes('digit') || error.includes('number')) {
+                return this.languageService.translate('welcome.forms.signup.errors.passwordNumber');
+              } else if (error.includes('special')) {
+                return this.languageService.translate(
+                  'welcome.forms.signup.errors.passwordSpecial',
+                );
+              }
+              return error; // Return original error if no translation found
+            });
+            this.error = translatedErrors.join('\n');
+          } else {
+            this.error = this.languageService.translate(
+              'welcome.forms.signup.errors.validationFailed',
+            );
+          }
+        } else {
+          this.error = this.languageService.translate(
+            'welcome.forms.signup.errors.registrationFailed',
+          );
+        }
+      },
+    });
   }
 }

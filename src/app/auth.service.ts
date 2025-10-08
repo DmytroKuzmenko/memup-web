@@ -9,6 +9,17 @@ export interface LoginRequest {
   password: string;
 }
 
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  userName: string;
+}
+
+export interface RegisterResponse {
+  id: string;
+  email: string;
+}
+
 /** Фактический ответ memeup-api */
 export interface ApiLoginResponse {
   token: string; // JWT
@@ -42,6 +53,23 @@ export class AuthService {
   );
 
   /** === Публичное API === */
+
+  /** POST /auth/register — регистрация нового пользователя */
+  register(payload: RegisterRequest): Observable<RegisterResponse> {
+    console.log('=== AUTH SERVICE REGISTER CALLED ===');
+    console.log('AuthService.register called with payload:', payload);
+    console.log('Making request to:', `${this.base}/auth/register`);
+
+    return this.http.post<RegisterResponse>(`${this.base}/auth/register`, payload).pipe(
+      tap((resp) => {
+        console.log('✅ Registration response received:', resp);
+      }),
+      catchError((err) => {
+        console.error('❌ Registration error:', err);
+        throw err;
+      }),
+    );
+  }
 
   /** POST /auth/login — маппим token/expiresAt */
   login(payload: LoginRequest): Observable<void> {

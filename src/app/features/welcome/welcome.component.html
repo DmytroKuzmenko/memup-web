@@ -253,6 +253,29 @@
 
           <div>
             <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.signup.userName' | translate
+            }}</label>
+            <input
+              type="text"
+              formControlName="userName"
+              class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
+              [placeholder]="'welcome.forms.signup.userNamePlaceholder' | translate"
+            />
+            <div
+              *ngIf="signupForm.controls.userName.touched && signupForm.controls.userName.invalid"
+              class="mt-1 text-sm text-red-500"
+            >
+              <span *ngIf="signupForm.controls.userName.errors?.['required']">{{
+                'welcome.forms.signup.errors.userNameRequired' | translate
+              }}</span>
+              <span *ngIf="signupForm.controls.userName.errors?.['minlength']">{{
+                'welcome.forms.signup.errors.userNameMinLength' | translate
+              }}</span>
+            </div>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
               'welcome.forms.signup.password' | translate
             }}</label>
             <input

@@ -47,12 +47,23 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('Error URL:', err.url);
 
         if (err.status === 401) {
-          console.log('401 Unauthorized - token expired, redirecting to login');
+          console.log('401 Unauthorized - token expired');
+
+          // Проверяем, является ли это запросом аутентификации
+          const isAuthRequest =
+            req.url.includes('/api/auth/login') || req.url.includes('/api/auth/register');
+
+          if (isAuthRequest) {
+            console.log('401 on auth request - not redirecting, letting component handle error');
+            return throwError(() => err);
+          }
+
+          console.log('401 on protected request - redirecting to admin login');
           this.notification.showSessionExpired();
 
           // Проверяем, не находимся ли мы уже на странице логина
           if (!this.router.url.includes('/admin/login')) {
-            console.log('Redirecting to login page');
+            console.log('Redirecting to admin login page');
             this.auth.logout().subscribe();
             this.router.navigate(['/admin/login']);
           }
