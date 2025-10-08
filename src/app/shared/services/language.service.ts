@@ -217,6 +217,18 @@ export class LanguageService {
           },
         },
       },
+      sections: {
+        title: 'Learning Sections',
+        subtitle: 'Choose a section to start learning',
+        loading: 'Loading sections...',
+        error: 'Failed to load sections',
+        retry: 'Try again',
+        empty: 'No sections found',
+        emptyDescription: 'There are currently no available sections for learning',
+        levels: 'levels',
+        completed: 'completed',
+        progress: 'progress',
+      },
     };
 
     // Ukrainian translations
@@ -303,6 +315,18 @@ export class LanguageService {
             },
           },
         },
+      },
+      sections: {
+        title: 'Секції навчання',
+        subtitle: 'Оберіть секцію для початку навчання',
+        loading: 'Завантаження секцій...',
+        error: 'Не вдалося завантажити секції',
+        retry: 'Спробувати знову',
+        empty: 'Секції не знайдено',
+        emptyDescription: 'Наразі немає доступних секцій для навчання',
+        levels: 'рівнів',
+        completed: 'пройдено',
+        progress: 'прогрес',
       },
     };
 
@@ -392,6 +416,18 @@ export class LanguageService {
             },
           },
         },
+      },
+      sections: {
+        title: 'Lernbereiche',
+        subtitle: 'Wählen Sie einen Bereich zum Lernen',
+        loading: 'Bereiche werden geladen...',
+        error: 'Bereiche konnten nicht geladen werden',
+        retry: 'Erneut versuchen',
+        empty: 'Keine Bereiche gefunden',
+        emptyDescription: 'Derzeit sind keine Lernbereiche verfügbar',
+        levels: 'Level',
+        completed: 'abgeschlossen',
+        progress: 'Fortschritt',
       },
     };
   }

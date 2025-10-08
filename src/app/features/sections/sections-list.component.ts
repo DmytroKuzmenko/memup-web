@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MatCardModule } from '@angular/material/card';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { SectionService, PublicSection } from '../../section.service';
+import { LanguageSelectorComponent } from '../../shared/components/language-selector.component';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-sections-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, MatCardModule, MatProgressBarModule],
+  imports: [CommonModule, RouterModule, LanguageSelectorComponent, TranslatePipe],
   templateUrl: './sections-list.component.html',
   styleUrls: ['./sections-list.component.scss'],
 })
@@ -34,7 +34,7 @@ export class SectionsListComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading sections:', error);
-        this.error = 'Не вдалося завантажити секції';
+        this.error = 'sections.error';
         this.loading = false;
       },
     });

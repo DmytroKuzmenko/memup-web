@@ -1,32 +1,126 @@
-<div class="sections-list">
-  <!-- Состояние загрузки -->
-  <div *ngIf="loading" class="loading">
-    <p>Завантаження секцій...</p>
+<div class="sections-container">
+  <!-- Геометрические элементы фона -->
+  <div class="background-elements">
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+    <div class="bg-shape bg-shape-4"></div>
+    <div class="bg-particle bg-particle-1"></div>
+    <div class="bg-particle bg-particle-2"></div>
+    <div class="bg-particle bg-particle-3"></div>
+    <div class="bg-particle bg-particle-4"></div>
+  </div>
+
+  <!-- Селектор языка -->
+  <div class="language-selector-container">
+    <app-language-selector></app-language-selector>
+  </div>
+
+  <!-- Заголовок -->
+  <div class="sections-header">
+    <h1 class="sections-title">{{ 'sections.title' | translate }}</h1>
+    <p class="sections-subtitle">{{ 'sections.subtitle' | translate }}</p>
+  </div>
+
+  <!-- Состояние загрузки с скелетонами -->
+  <div *ngIf="loading" class="sections-grid">
+    <div *ngFor="let item of [1, 2, 3, 4]" class="section-card skeleton">
+      <div class="skeleton-image"></div>
+      <div class="skeleton-title"></div>
+      <div class="skeleton-progress"></div>
+      <div class="skeleton-text"></div>
+    </div>
   </div>
 
   <!-- Состояние ошибки -->
-  <div *ngIf="error && !loading" class="error">
-    <p>{{ error }}</p>
-    <button (click)="loadSections()">Спробувати знову</button>
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h3>{{ 'sections.error' | translate }}</h3>
+    <button class="retry-button" (click)="loadSections()">
+      <span>{{ 'sections.retry' | translate }}</span>
+    </button>
   </div>
 
   <!-- Список секций -->
-  <mat-card
-    *ngFor="let section of sections"
-    [routerLink]="['/sections', section.id]"
-    class="section-card"
-  >
-    <img [src]="section.imageUrl" class="section-icon" alt="{{ section.name }}" />
-    <h2>{{ section.name }}</h2>
-    <mat-progress-bar mode="determinate" [value]="getProgressPercentage(section)">
-    </mat-progress-bar>
-    <div class="progress-label">
-      Пройдено {{ section.completedLevelsCount }} із {{ section.totalLevelsCount }} рівнів
+  <div *ngIf="!loading && !error && sections.length > 0" class="sections-grid">
+    <div
+      *ngFor="let section of sections; let i = index"
+      [routerLink]="['/sections', section.id]"
+      class="section-card"
+      [style.animation-delay]="i * 0.1 + 's'"
+    >
+      <div class="card-image-container">
+        <img [src]="section.imageUrl" class="section-image" alt="{{ section.name }}" />
+        <div class="card-overlay">
+          <div class="play-icon">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop
+                    offset="0%"
+                    style="stop-color: rgba(255, 255, 255, 0.95); stop-opacity: 1"
+                  />
+                  <stop
+                    offset="100%"
+                    style="stop-color: rgba(255, 255, 255, 0.8); stop-opacity: 1"
+                  />
+                </linearGradient>
+                <linearGradient id="playGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color: rgba(102, 126, 234, 1); stop-opacity: 1" />
+                  <stop offset="100%" style="stop-color: rgba(118, 75, 162, 1); stop-opacity: 1" />
+                </linearGradient>
+              </defs>
+              <circle
+                cx="12"
+                cy="12"
+                r="11"
+                fill="url(#circleGradient)"
+                stroke="rgba(255,255,255,0.4)"
+                stroke-width="1"
+              />
+              <path d="M9.5 7L17.5 12L9.5 17V7Z" fill="url(#playGradient)" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <h3 class="section-name">{{ section.name }}</h3>
+
+        <div class="progress-container">
+          <div class="progress-info">
+            <span class="progress-text">
+              {{ section.completedLevelsCount }} / {{ section.totalLevelsCount }}
+            </span>
+            <span class="progress-percentage">
+              {{ getProgressPercentage(section) | number: '1.0-0' }}%
+            </span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getProgressPercentage(section)"></div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <span class="levels-count"
+            >{{ section.totalLevelsCount }} {{ 'sections.levels' | translate }}</span
+          >
+          <div class="arrow-icon">→</div>
+        </div>
+      </div>
     </div>
-  </mat-card>
+  </div>
 
   <!-- Сообщение если нет секций -->
-  <div *ngIf="!loading && !error && sections.length === 0" class="no-sections">
-    <p>Секції не знайдено</p>
+  <div *ngIf="!loading && !error && sections.length === 0" class="empty-state">
+    <div class="empty-icon">📚</div>
+    <h3>{{ 'sections.empty' | translate }}</h3>
+    <p>{{ 'sections.emptyDescription' | translate }}</p>
   </div>
 </div>
