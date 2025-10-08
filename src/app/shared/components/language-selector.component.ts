@@ -10,9 +10,9 @@ import { LanguageService, Language } from '../services/language.service';
     <div class="relative">
       <button
         (click)="toggleDropdown()"
-        class="flex min-w-[120px] items-center gap-2 rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm font-medium text-gray-800 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white/50"
+        class="flex min-w-[100px] items-center gap-1 rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs font-medium text-gray-800 shadow-xl backdrop-blur-sm transition-all duration-200 hover:bg-white/50 sm:min-w-[120px] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
       >
-        <span class="text-lg">{{ currentLanguage().flag }}</span>
+        <span class="text-sm sm:text-lg">{{ currentLanguage().flag }}</span>
         <span>{{ currentLanguage().nativeName }}</span>
         <svg
           class="h-4 w-4 transition-transform duration-200"
@@ -32,7 +32,7 @@ import { LanguageService, Language } from '../services/language.service';
 
       <div
         *ngIf="isDropdownOpen"
-        class="absolute top-full right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-xl ring-1 ring-black/10"
+        class="absolute top-full right-0 mt-2 w-40 rounded-lg border border-gray-200 bg-white shadow-xl ring-1 ring-black/10 sm:w-48"
       >
         <div class="py-1">
           <button
@@ -42,7 +42,7 @@ import { LanguageService, Language } from '../services/language.service';
             [class.bg-purple-50]="language.code === currentLanguage().code"
             [class.text-purple-700]="language.code === currentLanguage().code"
           >
-            <span class="text-lg">{{ language.flag }}</span>
+            <span class="text-sm sm:text-lg">{{ language.flag }}</span>
             <div class="flex flex-col">
               <span class="font-medium">{{ language.nativeName }}</span>
               <span class="text-xs text-gray-500">{{ language.name }}</span>

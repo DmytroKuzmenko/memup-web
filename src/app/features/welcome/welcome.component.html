@@ -37,7 +37,7 @@
 
   <div class="relative z-10 w-full max-w-4xl">
     <!-- Language Selector -->
-    <div class="absolute top-4 right-4 z-20 md:top-6 md:right-6">
+    <div class="absolute top-2 right-2 z-20 sm:top-4 sm:right-4 md:top-6 md:right-6">
       <app-language-selector></app-language-selector>
     </div>
 
@@ -156,32 +156,36 @@
               type="email"
               formControlName="email"
               class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your email"
+              [placeholder]="'welcome.forms.login.emailPlaceholder' | translate"
             />
             <div
               *ngIf="loginForm.controls.email.touched && loginForm.controls.email.invalid"
               class="mt-1 text-sm text-red-500"
             >
-              <span *ngIf="loginForm.controls.email.errors?.['required']">Email is required</span>
-              <span *ngIf="loginForm.controls.email.errors?.['email']"
-                >Please enter a valid email</span
-              >
+              <span *ngIf="loginForm.controls.email.errors?.['required']">{{
+                'welcome.forms.login.errors.emailRequired' | translate
+              }}</span>
+              <span *ngIf="loginForm.controls.email.errors?.['email']">{{
+                'welcome.forms.login.errors.emailInvalid' | translate
+              }}</span>
             </div>
           </div>
 
           <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.login.password' | translate
+            }}</label>
             <input
               type="password"
               formControlName="password"
               class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your password"
+              [placeholder]="'welcome.forms.login.passwordPlaceholder' | translate"
             />
             <div
               *ngIf="loginForm.controls.password.touched && loginForm.controls.password.invalid"
               class="mt-1 text-sm text-red-500"
             >
-              Password is required
+              {{ 'welcome.forms.login.errors.passwordRequired' | translate }}
             </div>
           </div>
 
@@ -206,7 +210,7 @@
               (click)="hideForms()"
               class="rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50"
             >
-              Cancel
+              {{ 'welcome.forms.signup.cancel' | translate }}
             </button>
           </div>
         </form>
@@ -219,18 +223,22 @@
         class="signup-form-container mx-auto max-w-md"
       >
         <div class="mb-6 text-center">
-          <h2 class="mb-2 text-3xl font-bold text-gray-800">Join MemeUp!</h2>
-          <p class="text-gray-600">Create your account and start learning German</p>
+          <h2 class="mb-2 text-3xl font-bold text-gray-800">
+            {{ 'welcome.forms.signup.title' | translate }}
+          </h2>
+          <p class="text-gray-600">{{ 'welcome.forms.signup.subtitle' | translate }}</p>
         </div>
 
         <form [formGroup]="signupForm" (ngSubmit)="onSignupSubmit()" class="space-y-6">
           <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Email</label>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.signup.email' | translate
+            }}</label>
             <input
               type="email"
               formControlName="email"
               class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-              placeholder="Enter your email"
+              [placeholder]="'welcome.forms.login.emailPlaceholder' | translate"
             />
             <div
               *ngIf="signupForm.controls.email.touched && signupForm.controls.email.invalid"
@@ -244,33 +252,37 @@
           </div>
 
           <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Password</label>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.signup.password' | translate
+            }}</label>
             <input
               type="password"
               formControlName="password"
               class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-              placeholder="Create a password"
+              [placeholder]="'welcome.forms.signup.passwordPlaceholder' | translate"
             />
             <div
               *ngIf="signupForm.controls.password.touched && signupForm.controls.password.invalid"
               class="mt-1 text-sm text-red-500"
             >
-              <span *ngIf="signupForm.controls.password.errors?.['required']"
-                >Password is required</span
-              >
-              <span *ngIf="signupForm.controls.password.errors?.['minlength']"
-                >Password must be at least 6 characters</span
-              >
+              <span *ngIf="signupForm.controls.password.errors?.['required']">{{
+                'welcome.forms.signup.errors.passwordRequired' | translate
+              }}</span>
+              <span *ngIf="signupForm.controls.password.errors?.['minlength']">{{
+                'welcome.forms.signup.errors.passwordMinLength' | translate
+              }}</span>
             </div>
           </div>
 
           <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Confirm Password</label>
+            <label class="mb-2 block text-sm font-medium text-gray-700">{{
+              'welcome.forms.signup.confirmPassword' | translate
+            }}</label>
             <input
               type="password"
               formControlName="confirmPassword"
               class="w-full rounded-xl border border-gray-300 px-4 py-3 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-purple-500"
-              placeholder="Confirm your password"
+              [placeholder]="'welcome.forms.signup.confirmPasswordPlaceholder' | translate"
             />
             <div
               *ngIf="
@@ -279,7 +291,7 @@
               "
               class="mt-1 text-sm text-red-500"
             >
-              Please confirm your password
+              {{ 'welcome.forms.signup.errors.confirmPasswordRequired' | translate }}
             </div>
           </div>
 
@@ -296,15 +308,15 @@
               [disabled]="signupForm.invalid || loading"
               class="flex-1 transform rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 py-3 font-semibold text-white transition-all duration-200 hover:scale-105 hover:shadow-lg disabled:transform-none disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <span *ngIf="!loading">Create Account</span>
-              <span *ngIf="loading">Creating account...</span>
+              <span *ngIf="!loading">{{ 'welcome.forms.signup.submit' | translate }}</span>
+              <span *ngIf="loading">{{ 'welcome.forms.signup.submitting' | translate }}</span>
             </button>
             <button
               type="button"
               (click)="hideForms()"
               class="rounded-xl border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all duration-200 hover:bg-gray-50"
             >
-              Cancel
+              {{ 'welcome.forms.signup.cancel' | translate }}
             </button>
           </div>
         </form>

@@ -171,6 +171,8 @@ export class LanguageService {
             submit: 'Sign In',
             submitting: 'Signing in...',
             cancel: 'Cancel',
+            emailPlaceholder: 'Enter your email',
+            passwordPlaceholder: 'Enter your password',
             errors: {
               emailRequired: 'Email is required',
               emailInvalid: 'Please enter a valid email',
@@ -187,6 +189,9 @@ export class LanguageService {
             submit: 'Create Account',
             submitting: 'Creating account...',
             cancel: 'Cancel',
+            emailPlaceholder: 'Enter your email',
+            passwordPlaceholder: 'Create a password',
+            confirmPasswordPlaceholder: 'Confirm your password',
             errors: {
               emailRequired: 'Email is required',
               emailInvalid: 'Please enter a valid email',
@@ -241,6 +246,8 @@ export class LanguageService {
             submit: 'Увійти',
             submitting: 'Вхід...',
             cancel: 'Скасувати',
+            emailPlaceholder: 'Введіть вашу електронну пошту',
+            passwordPlaceholder: 'Введіть ваш пароль',
             errors: {
               emailRequired: "Електронна пошта обов'язкова",
               emailInvalid: 'Будь ласка, введіть дійсну електронну пошту',
@@ -257,6 +264,9 @@ export class LanguageService {
             submit: 'Створити акаунт',
             submitting: 'Створення акаунту...',
             cancel: 'Скасувати',
+            emailPlaceholder: 'Введіть вашу електронну пошту',
+            passwordPlaceholder: 'Створіть пароль',
+            confirmPasswordPlaceholder: 'Підтвердіть ваш пароль',
             errors: {
               emailRequired: "Електронна пошта обов'язкова",
               emailInvalid: 'Будь ласка, введіть дійсну електронну пошту',
@@ -311,6 +321,8 @@ export class LanguageService {
             submit: 'Anmelden',
             submitting: 'Anmeldung läuft...',
             cancel: 'Abbrechen',
+            emailPlaceholder: 'Geben Sie Ihre E-Mail ein',
+            passwordPlaceholder: 'Geben Sie Ihr Passwort ein',
             errors: {
               emailRequired: 'E-Mail ist erforderlich',
               emailInvalid: 'Bitte gib eine gültige E-Mail ein',
@@ -327,6 +339,9 @@ export class LanguageService {
             submit: 'Konto erstellen',
             submitting: 'Konto wird erstellt...',
             cancel: 'Abbrechen',
+            emailPlaceholder: 'Geben Sie Ihre E-Mail ein',
+            passwordPlaceholder: 'Erstellen Sie ein Passwort',
+            confirmPasswordPlaceholder: 'Bestätigen Sie Ihr Passwort',
             errors: {
               emailRequired: 'E-Mail ist erforderlich',
               emailInvalid: 'Bitte gib eine gültige E-Mail ein',
