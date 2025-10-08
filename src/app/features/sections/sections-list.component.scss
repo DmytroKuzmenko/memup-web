@@ -36,19 +36,6 @@
   }
 }
 
-// Селектор языка
-.language-selector-container {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  z-index: 20;
-
-  @media (max-width: 768px) {
-    top: 0.5rem;
-    right: 0.5rem;
-  }
-}
-
 // Геометрические элементы фона
 .background-elements {
   position: absolute;

@@ -2,13 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { SectionService, PublicSection } from '../../section.service';
-import { LanguageSelectorComponent } from '../../shared/components/language-selector.component';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-sections-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, LanguageSelectorComponent, TranslatePipe],
+  imports: [CommonModule, RouterModule, TranslatePipe],
   templateUrl: './sections-list.component.html',
   styleUrls: ['./sections-list.component.scss'],
 })
