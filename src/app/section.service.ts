@@ -14,6 +14,15 @@ export interface Section {
   updatedAt: Date;
 }
 
+// Интерфейс для публичного API секций
+export interface PublicSection {
+  id: string;
+  name: string;
+  imageUrl: string;
+  completedLevelsCount: number;
+  totalLevelsCount: number;
+}
+
 // Как приходит с API (даты — строки ISO)
 interface SectionDto {
   id: string;
@@ -118,5 +127,19 @@ export class SectionService {
   /** DELETE /api/sections/:id */
   deleteSection(id: string): Observable<void> {
     return this.http.delete<void>(`${this.url}/${id}`);
+  }
+
+  /** GET /api/public/sections */
+  getPublicSections(): Observable<PublicSection[]> {
+    console.log('=== SECTION SERVICE GET PUBLIC SECTIONS ===');
+    const publicUrl = `${this.base}/public/sections`;
+    console.log('Request URL:', publicUrl);
+
+    return this.http.get<PublicSection[]>(publicUrl).pipe(
+      map((sections) => {
+        console.log('✅ Public sections from API:', JSON.stringify(sections, null, 2));
+        return sections;
+      }),
+    );
   }
 }

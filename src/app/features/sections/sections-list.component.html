@@ -1,10 +1,32 @@
 <div class="sections-list">
-  <mat-card *ngFor="let section of sections" [routerLink]="['/sections', section.id]" class="section-card">
-    <img [src]="section.iconUrl" class="section-icon" alt="{{ section.name }}" />
+  <!-- Состояние загрузки -->
+  <div *ngIf="loading" class="loading">
+    <p>Завантаження секцій...</p>
+  </div>
+
+  <!-- Состояние ошибки -->
+  <div *ngIf="error && !loading" class="error">
+    <p>{{ error }}</p>
+    <button (click)="loadSections()">Спробувати знову</button>
+  </div>
+
+  <!-- Список секций -->
+  <mat-card
+    *ngFor="let section of sections"
+    [routerLink]="['/sections', section.id]"
+    class="section-card"
+  >
+    <img [src]="section.imageUrl" class="section-icon" alt="{{ section.name }}" />
     <h2>{{ section.name }}</h2>
-    <p>{{ section.description }}</p>
-    <!-- Заглушка прогресса, заменить на реальный позже -->
-    <mat-progress-bar mode="determinate" value="50"></mat-progress-bar>
-    <div class="progress-label">Пройдено 8 із 16 рівнів</div>
+    <mat-progress-bar mode="determinate" [value]="getProgressPercentage(section)">
+    </mat-progress-bar>
+    <div class="progress-label">
+      Пройдено {{ section.completedLevelsCount }} із {{ section.totalLevelsCount }} рівнів
+    </div>
   </mat-card>
+
+  <!-- Сообщение если нет секций -->
+  <div *ngIf="!loading && !error && sections.length === 0" class="no-sections">
+    <p>Секції не знайдено</p>
+  </div>
 </div>
