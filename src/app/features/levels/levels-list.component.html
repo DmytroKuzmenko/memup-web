@@ -139,10 +139,6 @@
       <div class="card-content">
         <h3 class="level-name">{{ level.name }}</h3>
 
-        <div class="level-header-text" *ngIf="level.headerText">
-          <p>{{ level.headerText }}</p>
-        </div>
-
         <div class="score-container" *ngIf="level.maxScore > 0">
           <div class="score-info">
             <span class="score-text">
@@ -156,12 +152,6 @@
             <div class="score-fill" [style.width.%]="getProgressPercentage(level)"></div>
           </div>
         </div>
-
-        <div class="card-footer">
-          <span class="level-order">{{ 'levels.level' | translate }} {{ level.orderIndex }}</span>
-          <div class="arrow-icon" *ngIf="!isLevelLocked(level)">→</div>
-          <div class="lock-icon" *ngIf="isLevelLocked(level)">🔒</div>
-        </div>
       </div>
     </div>
   </div>
@@ -171,5 +161,49 @@
     <div class="empty-icon">🎯</div>
     <h3>{{ 'levels.empty' | translate }}</h3>
     <p>{{ 'levels.emptyDescription' | translate }}</p>
+  </div>
+</div>
+
+<!-- Locked Level Modal -->
+<div *ngIf="showLockedModal" class="locked-modal-overlay" (click)="closeLockedModal()">
+  <div class="locked-modal" (click)="$event.stopPropagation()">
+    <div class="locked-modal-content">
+      <div class="locked-icon">
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="lockModalGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color: rgba(245, 158, 11, 1); stop-opacity: 1" />
+              <stop offset="100%" style="stop-color: rgba(217, 119, 6, 1); stop-opacity: 1" />
+            </linearGradient>
+          </defs>
+          <path
+            d="M18 8H17V6C17 3.24 14.76 1 12 1C9.24 1 7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 3C13.66 3 15 4.34 15 6V8H9V6C9 4.34 10.34 3 12 3ZM18 20H6V10H18V20Z"
+            fill="url(#lockModalGradient)"
+          />
+          <path
+            d="M12 17C13.1 17 14 16.1 14 15C14 13.9 13.1 13 12 13C10.9 13 10 13.9 10 15C10 16.1 10.9 17 12 17Z"
+            fill="url(#lockModalGradient)"
+          />
+        </svg>
+      </div>
+
+      <h3 class="locked-title">{{ 'levels.locked.title' | translate }}</h3>
+      <p class="locked-message">{{ 'levels.locked.message' | translate }}</p>
+
+      <div class="locked-actions">
+        <button class="locked-button primary" (click)="closeLockedModal()">
+          {{ 'levels.locked.action' | translate }}
+        </button>
+        <button class="locked-button secondary" (click)="closeLockedModal()">
+          {{ 'common.close' | translate }}
+        </button>
+      </div>
+    </div>
   </div>
 </div>

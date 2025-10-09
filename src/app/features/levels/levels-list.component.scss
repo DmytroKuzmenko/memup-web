@@ -143,10 +143,13 @@
 
 .levels-title {
   font-size: 2.5rem;
-  font-weight: 700;
-  color: white;
-  margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-weight: 300;
+  margin: 0 0 0.5rem 0;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.1em;
+  text-transform: lowercase;
+  font-variant: small-caps;
 }
 
 .levels-grid {
@@ -199,11 +202,29 @@
 .level-card.level-locked {
   opacity: 0.6;
   cursor: not-allowed;
-}
 
-.level-card.level-locked:hover {
-  transform: none;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  // Полностью отключаем hover эффекты для заблокированных уровней
+  &:hover {
+    transform: none !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+
+    .card-overlay {
+      opacity: 0 !important;
+    }
+
+    .play-icon {
+      transform: none !important;
+
+      svg {
+        transform: none !important;
+        filter: none !important;
+      }
+    }
+
+    .arrow-icon {
+      transform: none !important;
+    }
+  }
 }
 
 .level-card.level-completed {
@@ -510,5 +531,158 @@
   50% {
     transform: scale(1.05);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Locked Level Modal Styles
+.locked-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.locked-modal {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  padding: 3rem 2rem;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  animation: modalSlideIn 0.3s ease-out;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #d97706, #f59e0b);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+}
+
+.locked-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.locked-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  animation: lockIconPulse 2s ease-in-out infinite;
+
+  svg {
+    filter: drop-shadow(0 4px 8px rgba(245, 158, 11, 0.3));
+  }
+}
+
+.locked-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.locked-message {
+  font-size: 1.1rem;
+  color: #6b7280;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 400px;
+}
+
+.locked-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.locked-button {
+  padding: 0.875rem 2rem;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Share Tech Mono', monospace;
+  min-width: 140px;
+
+  &.primary {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    }
+  }
+
+  &.secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: #1f2937;
+    border: 2px solid rgba(31, 41, 55, 0.2);
+
+    &:hover {
+      background: rgba(31, 41, 55, 0.1);
+      border-color: rgba(31, 41, 55, 0.3);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
   }
 }

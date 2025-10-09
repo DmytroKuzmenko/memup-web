@@ -5,6 +5,7 @@ import { GameService } from '../../services/game.service';
 import { LevelVm, LevelStatus } from '../../shared/models/game.models';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { NotificationService } from '../../shared/services/notification.service';
+import { LanguageService } from '../../shared/services/language.service';
 
 @Component({
   selector: 'app-levels-list',
@@ -18,12 +19,14 @@ export class LevelsListComponent implements OnInit {
   sectionId: string = '';
   loading = true;
   error: string | null = null;
+  showLockedModal = false;
 
   constructor(
     private gameService: GameService,
     private route: ActivatedRoute,
     public router: Router,
     private notification: NotificationService,
+    private languageService: LanguageService,
   ) {}
 
   ngOnInit(): void {
@@ -83,12 +86,20 @@ export class LevelsListComponent implements OnInit {
 
   onLevelClick(level: LevelVm): void {
     if (this.isLevelLocked(level)) {
-      this.notification.showError('This level is locked.');
+      this.showLockedLevelMessage();
       return;
     }
 
     // Navigate to level intro
     this.router.navigate(['/levels', level.id, 'intro']);
+  }
+
+  private showLockedLevelMessage(): void {
+    this.showLockedModal = true;
+  }
+
+  closeLockedModal(): void {
+    this.showLockedModal = false;
   }
 
   getLevelStatusIcon(level: LevelVm): string {

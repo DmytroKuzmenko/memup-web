@@ -229,6 +229,19 @@ export class LanguageService {
         completed: 'completed',
         progress: 'progress',
       },
+      levels: {
+        title: 'Levels',
+        empty: 'No levels found',
+        emptyDescription: 'There are currently no available levels for learning',
+        locked: {
+          title: 'Level Locked',
+          message: 'This level is currently locked. Complete the previous levels to unlock it.',
+          action: 'Continue Learning',
+        },
+      },
+      common: {
+        close: 'Close',
+      },
     };
 
     // Ukrainian translations
@@ -327,6 +340,19 @@ export class LanguageService {
         levels: 'рівнів',
         completed: 'пройдено',
         progress: 'прогрес',
+      },
+      levels: {
+        title: 'Рівні',
+        empty: 'Рівні не знайдено',
+        emptyDescription: 'Наразі немає доступних рівнів для навчання',
+        locked: {
+          title: 'Рівень заблоковано',
+          message: 'Цей рівень зараз заблоковано. Пройдіть попередні рівні, щоб розблокувати його.',
+          action: 'Продовжити навчання',
+        },
+      },
+      common: {
+        close: 'Закрити',
       },
     };
 
@@ -428,6 +454,20 @@ export class LanguageService {
         levels: 'Level',
         completed: 'abgeschlossen',
         progress: 'Fortschritt',
+      },
+      levels: {
+        title: 'Level',
+        empty: 'Keine Level gefunden',
+        emptyDescription: 'Derzeit sind keine Lernlevel verfügbar',
+        locked: {
+          title: 'Level gesperrt',
+          message:
+            'Dieses Level ist derzeit gesperrt. Schließe die vorherigen Level ab, um es freizuschalten.',
+          action: 'Weiter lernen',
+        },
+      },
+      common: {
+        close: 'Schließen',
       },
     };
   }

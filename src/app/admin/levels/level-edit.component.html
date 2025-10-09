@@ -50,8 +50,13 @@
           <app-image-picker
             #levelImagePicker
             formControlName="imagePath"
-            [mode]="'original'"
-            label="Level image"
+            [mode]="'crop'"
+            [outputWidth]="400"
+            [outputHeight]="267"
+            [editorCanvasWidth]="400"
+            [editorMaxCssWidth]="267"
+            [previewWidth]="400"
+            [previewHeight]="267"
           >
           </app-image-picker>
         </div>

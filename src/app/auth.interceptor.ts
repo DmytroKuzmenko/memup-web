@@ -34,13 +34,21 @@ export class AuthInterceptor implements HttpInterceptor {
         console.log('Game request with expired token - letting server handle it');
         // Просто отправляем запрос без токена, пусть сервер вернет 401
       } else {
-        console.log('Admin request with expired token - redirecting to login');
-        this.notification.showSessionExpired();
-        if (!this.router.url.includes('/admin/login')) {
-          this.auth.logout().subscribe();
-          this.router.navigate(['/admin/login']);
+        // Проверяем, находимся ли мы в admin разделе
+        const isInAdminSection = this.router.url.includes('/admin');
+
+        if (isInAdminSection) {
+          console.log('Admin request with expired token - redirecting to login');
+          this.notification.showSessionExpired();
+          if (!this.router.url.includes('/admin/login')) {
+            this.auth.logout().subscribe();
+            this.router.navigate(['/admin/login']);
+          }
+          return throwError(() => new Error('Token expired'));
+        } else {
+          console.log('Non-admin request with expired token - letting server handle it');
+          // Просто отправляем запрос без токена, пусть сервер вернет 401
         }
-        return throwError(() => new Error('Token expired'));
       }
     }
 
@@ -90,14 +98,23 @@ export class AuthInterceptor implements HttpInterceptor {
             return throwError(() => err);
           }
 
-          console.log('401 on protected request - redirecting to admin login');
-          this.notification.showSessionExpired();
+          // Проверяем, находимся ли мы в admin разделе
+          const isInAdminSection = this.router.url.includes('/admin');
 
-          // Проверяем, не находимся ли мы уже на странице логина
-          if (!this.router.url.includes('/admin/login')) {
-            console.log('Redirecting to admin login page');
-            this.auth.logout().subscribe();
-            this.router.navigate(['/admin/login']);
+          if (isInAdminSection) {
+            console.log('401 on admin request - redirecting to admin login');
+            this.notification.showSessionExpired();
+
+            // Проверяем, не находимся ли мы уже на странице логина
+            if (!this.router.url.includes('/admin/login')) {
+              console.log('Redirecting to admin login page');
+              this.auth.logout().subscribe();
+              this.router.navigate(['/admin/login']);
+            }
+          } else {
+            console.log('401 on non-admin request - letting component handle error');
+            // Не показываем сообщение и не перенаправляем для не-admin запросов
+            // Пусть компоненты сами решают, что делать с 401 ошибкой
           }
 
           return throwError(() => err);
