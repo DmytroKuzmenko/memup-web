@@ -90,8 +90,8 @@ export class LevelsListComponent implements OnInit {
       return;
     }
 
-    // Navigate to level intro
-    this.router.navigate(['/levels', level.id, 'intro']);
+    // Navigate to level play
+    this.router.navigate(['/levels', level.id, 'play']);
   }
 
   private showLockedLevelMessage(): void {
