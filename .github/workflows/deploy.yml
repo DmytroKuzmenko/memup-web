@@ -33,6 +33,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script_stop: true # ⬅️ Остановить шаг при первой ошибке
+          envs: GITHUB_SHA # ← прокинуть env на удалёнку
           script: |
             set -euo pipefail           # ⬅️ Строгий режим оболочки
             cd /opt
