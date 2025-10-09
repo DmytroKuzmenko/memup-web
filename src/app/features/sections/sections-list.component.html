@@ -91,7 +91,7 @@
         <div class="progress-container">
           <div class="progress-info">
             <span class="progress-text">
-              {{ section.completedLevelsCount }} / {{ section.totalLevelsCount }}
+              {{ section.levelsCompleted }} / {{ section.totalLevels }}
             </span>
             <span class="progress-percentage">
               {{ getProgressPercentage(section) | number: '1.0-0' }}%
@@ -102,9 +102,23 @@
           </div>
         </div>
 
+        <div class="score-container" *ngIf="section.maxScore > 0">
+          <div class="score-info">
+            <span class="score-text">
+              {{ section.score }} / {{ section.maxScore }} {{ 'sections.points' | translate }}
+            </span>
+            <span class="score-percentage">
+              {{ getScorePercentage(section) | number: '1.0-0' }}%
+            </span>
+          </div>
+          <div class="score-bar">
+            <div class="score-fill" [style.width.%]="getScorePercentage(section)"></div>
+          </div>
+        </div>
+
         <div class="card-footer">
           <span class="levels-count"
-            >{{ section.totalLevelsCount }} {{ 'sections.levels' | translate }}</span
+            >{{ section.totalLevels }} {{ 'sections.levels' | translate }}</span
           >
           <div class="arrow-icon">→</div>
         </div>

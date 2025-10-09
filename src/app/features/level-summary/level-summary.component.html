@@ -1,0 +1,89 @@
+<div class="summary-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading summary...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadLevelSummary()">Retry</button>
+  </div>
+
+  <!-- Main summary content -->
+  <div *ngIf="!loading && !error && levelIntro" class="summary-content">
+    <!-- Header -->
+    <div class="summary-header">
+      <h1 class="summary-title">Level Complete! 🎉</h1>
+      <h2 class="level-name">{{ levelIntro.levelName }}</h2>
+    </div>
+
+    <!-- Score display -->
+    <div class="score-display">
+      <div class="score-circle">
+        <div class="score-grade" [style.color]="getScoreGradeColor()">
+          {{ getScoreGrade() }}
+        </div>
+        <div class="score-percentage">{{ getScorePercentage() | number: '1.0-0' }}%</div>
+      </div>
+
+      <div class="score-details">
+        <div class="score-item">
+          <span class="score-label">Score</span>
+          <span class="score-value">{{ earnedScore }} / {{ maxScore }}</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Tasks</span>
+          <span class="score-value">{{ levelIntro.tasksCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="progress-section">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getScorePercentage()"></div>
+      </div>
+    </div>
+
+    <!-- Replay cooldown info -->
+    <div *ngIf="replayCooldown" class="cooldown-info">
+      <div class="cooldown-icon">⏰</div>
+      <p>Replay available in: {{ replayCooldown }}</p>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-buttons">
+      <button
+        class="action-button replay-button"
+        [disabled]="!!replayCooldown"
+        (click)="onReplay()"
+      >
+        <span class="button-icon">🔄</span>
+        <span class="button-text">Replay</span>
+        <span *ngIf="replayCooldown" class="cooldown-text">{{ replayCooldown }}</span>
+      </button>
+
+      <button class="action-button next-button" (click)="onNextLevel()">
+        <span class="button-icon">➡️</span>
+        <span class="button-text">Next Level</span>
+      </button>
+
+      <button class="action-button back-button" (click)="onBackToSections()">
+        <span class="button-icon">📚</span>
+        <span class="button-text">Back to Sections</span>
+      </button>
+    </div>
+
+    <!-- Celebration animation -->
+    <div class="celebration">
+      <div class="confetti confetti-1">🎉</div>
+      <div class="confetti confetti-2">🎊</div>
+      <div class="confetti confetti-3">⭐</div>
+      <div class="confetti confetti-4">🏆</div>
+      <div class="confetti confetti-5">🎈</div>
+    </div>
+  </div>
+</div>

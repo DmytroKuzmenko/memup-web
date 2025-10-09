@@ -13,12 +13,24 @@ import { SectionEditComponent } from './admin/sections/section-edit.component';
 import { LevelEditComponent } from './admin/levels/level-edit.component';
 import { TaskEditComponent } from './admin/tasks/task-edit.component';
 
+// Game components
+import { LevelIntroComponent } from './shared/components/level-intro/level-intro.component';
+import { TaskViewComponent } from './features/task/task-view.component';
+import { LevelSummaryComponent } from './features/level-summary/level-summary.component';
+import { LeaderboardComponent } from './features/leaderboard/leaderboard.component';
+
 export const routes: Routes = [
   { path: '', component: WelcomeComponent },
   { path: 'welcome', component: WelcomeComponent },
   { path: 'sections', component: SectionsListComponent },
   { path: 'sections/:id', component: LevelsListComponent },
   { path: 'levels/:id', component: MemesCarouselComponent },
+
+  // Game routes
+  { path: 'levels/:id/intro', component: LevelIntroComponent },
+  { path: 'levels/:id/play', component: TaskViewComponent },
+  { path: 'levels/:id/summary', component: LevelSummaryComponent },
+  { path: 'leaderboard', component: LeaderboardComponent },
   {
     path: 'admin',
     children: [

@@ -27,18 +27,40 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // Проверяем, не истек ли токен перед отправкой запроса
     if (token && !this.auth.hasValidToken()) {
-      console.log('Token expired, redirecting to login before request');
-      this.notification.showSessionExpired();
-      if (!this.router.url.includes('/admin/login')) {
-        this.auth.logout().subscribe();
-        this.router.navigate(['/admin/login']);
+      console.log('Token expired, checking if this is a game request');
+
+      // Если это игровой запрос, не показываем сообщение и не перенаправляем
+      if (req.url.includes('/api/game/')) {
+        console.log('Game request with expired token - letting server handle it');
+        // Просто отправляем запрос без токена, пусть сервер вернет 401
+      } else {
+        console.log('Admin request with expired token - redirecting to login');
+        this.notification.showSessionExpired();
+        if (!this.router.url.includes('/admin/login')) {
+          this.auth.logout().subscribe();
+          this.router.navigate(['/admin/login']);
+        }
+        return throwError(() => new Error('Token expired'));
       }
-      return throwError(() => new Error('Token expired'));
     }
 
-    const authReq = token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
+    // Add headers for game API calls
+    let headers: { [key: string]: string } = {};
+
+    // Add authorization header if token exists and is valid
+    if (token && this.auth.hasValidToken()) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // Add no-cache headers for game API calls
+    if (req.url.includes('/api/game/')) {
+      headers['Cache-Control'] = 'no-store';
+    }
+
+    const authReq = Object.keys(headers).length > 0 ? req.clone({ setHeaders: headers }) : req;
     console.log('Request headers:', authReq.headers.keys());
     console.log('Authorization header:', authReq.headers.get('Authorization'));
+    console.log('Cache-Control header:', authReq.headers.get('Cache-Control'));
 
     return next.handle(authReq).pipe(
       catchError((err: HttpErrorResponse) => {
@@ -55,6 +77,16 @@ export class AuthInterceptor implements HttpInterceptor {
 
           if (isAuthRequest) {
             console.log('401 on auth request - not redirecting, letting component handle error');
+            return throwError(() => err);
+          }
+
+          // Check if this is a game API call
+          const isGameRequest = req.url.includes('/api/game/');
+
+          if (isGameRequest) {
+            console.log('401 on game request - letting component handle it');
+            // Не показываем сообщение и не перенаправляем для игровых запросов
+            // Пусть компоненты сами решают, что делать с 401 ошибкой
             return throwError(() => err);
           }
 

@@ -1,0 +1,89 @@
+<div class="task-container">
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading task...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadCurrentTask()">Retry</button>
+  </div>
+
+  <!-- Main task content -->
+  <div *ngIf="!loading && !error && task" class="task-content">
+    <!-- Timer -->
+    <div *ngIf="task.timeLimitSecEffective" class="timer-container">
+      <div class="timer" [class]="getTimerClass()">
+        {{ formatTime(timeRemaining) }}
+      </div>
+      <div class="timer-bar">
+        <div
+          class="timer-fill"
+          [style.width.%]="(timeRemaining / task.timeLimitSecEffective) * 100"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Task header -->
+    <div class="task-header">
+      <h2 class="task-title">{{ task.headerText || 'Task' }}</h2>
+    </div>
+
+    <!-- Task image -->
+    <div *ngIf="task.imageUrl" class="task-image-container">
+      <img [src]="task.imageUrl" alt="Task image" class="task-image" />
+    </div>
+
+    <!-- Options -->
+    <div class="options-container">
+      <div
+        *ngFor="let option of task.options; let i = index"
+        class="option-item"
+        [class.selected]="selectedOptionId === option.id"
+        (click)="onOptionSelect(option.id)"
+      >
+        <div class="option-number">{{ i + 1 }}</div>
+        <div class="option-content">
+          <div class="option-label">{{ option.label }}</div>
+          <img
+            *ngIf="option.imageUrl"
+            [src]="option.imageUrl"
+            alt="Option image"
+            class="option-image"
+          />
+        </div>
+        <div class="option-radio">
+          <div class="radio-circle" [class.checked]="selectedOptionId === option.id"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit button -->
+    <div class="submit-container">
+      <button
+        class="submit-button"
+        [disabled]="!selectedOptionId || submitting"
+        (click)="onSubmit()"
+      >
+        <span *ngIf="!submitting">Submit</span>
+        <span *ngIf="submitting">Submitting...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Explanation overlay -->
+  <div *ngIf="showingExplanation" class="explanation-overlay">
+    <div class="explanation-content">
+      <div class="explanation-header">
+        <h3>Correct! 🎉</h3>
+      </div>
+      <div class="explanation-text">
+        {{ explanationText }}
+      </div>
+      <button class="continue-button" (click)="onContinue()">Continue</button>
+    </div>
+  </div>
+</div>

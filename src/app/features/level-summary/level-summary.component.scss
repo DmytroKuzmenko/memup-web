@@ -1,0 +1,382 @@
+.summary-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-state,
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.retry-button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.summary-content {
+  max-width: 600px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  padding: 3rem 2rem;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.summary-header {
+  margin-bottom: 2rem;
+}
+
+.summary-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.level-name {
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+}
+
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.score-circle::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  z-index: -1;
+}
+
+.score-grade {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.score-percentage {
+  font-size: 1rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.score-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.score-value {
+  font-size: 1.2rem;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+.progress-section {
+  margin-bottom: 2rem;
+}
+
+.progress-bar {
+  height: 12px;
+  background: #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  border-radius: 6px;
+  transition: width 1s ease-out;
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.cooldown-info {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.cooldown-icon {
+  font-size: 1.2rem;
+}
+
+.cooldown-info p {
+  margin: 0;
+  color: #92400e;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 25px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.replay-button {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.replay-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.next-button {
+  background: linear-gradient(135deg, #059669, #10b981);
+  color: white;
+}
+
+.back-button {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  color: white;
+}
+
+.action-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.button-icon {
+  font-size: 1.2rem;
+}
+
+.button-text {
+  flex: 1;
+}
+
+.cooldown-text {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.celebration {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.confetti {
+  position: absolute;
+  font-size: 2rem;
+  animation: confetti-fall 3s ease-out infinite;
+}
+
+.confetti-1 {
+  top: -50px;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.confetti-2 {
+  top: -50px;
+  left: 30%;
+  animation-delay: 0.5s;
+}
+
+.confetti-3 {
+  top: -50px;
+  left: 50%;
+  animation-delay: 1s;
+}
+
+.confetti-4 {
+  top: -50px;
+  left: 70%;
+  animation-delay: 1.5s;
+}
+
+.confetti-5 {
+  top: -50px;
+  left: 90%;
+  animation-delay: 2s;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-50px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .summary-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .summary-content {
+    padding: 2rem 1.5rem;
+  }
+
+  .summary-title {
+    font-size: 2rem;
+  }
+
+  .level-name {
+    font-size: 1.25rem;
+  }
+
+  .score-display {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .score-circle {
+    width: 100px;
+    height: 100px;
+  }
+
+  .score-grade {
+    font-size: 1.5rem;
+  }
+
+  .action-button {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+}

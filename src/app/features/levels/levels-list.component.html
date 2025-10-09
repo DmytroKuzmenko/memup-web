@@ -1,9 +1,175 @@
-<div class="levels-list">
-    <mat-card *ngFor="let level of levels" [routerLink]="['/levels', level.id]" class="level-card">
-      <img [src]="level.backgroundUrl" class="level-bg" alt="{{ level.name }}" />
-      <div class="level-info">
-        <h2>{{ level.name }}</h2>
-        <p>Мінімальний % для проходження: {{ level.minPercentToPass }}%</p>
-      </div>
-    </mat-card>
+<div class="levels-container">
+  <!-- Геометрические элементы фона -->
+  <div class="background-elements">
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
+    <div class="bg-shape bg-shape-3"></div>
+    <div class="bg-shape bg-shape-4"></div>
+    <div class="bg-particle bg-particle-1"></div>
+    <div class="bg-particle bg-particle-2"></div>
+    <div class="bg-particle bg-particle-3"></div>
+    <div class="bg-particle bg-particle-4"></div>
   </div>
+
+  <!-- Заголовок -->
+  <div class="levels-header">
+    <button class="back-button" (click)="router.navigate(['/sections'])">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M19 12H5M12 19L5 12L12 5"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+    <h1 class="levels-title">{{ 'levels.title' | translate }}</h1>
+  </div>
+
+  <!-- Состояние загрузки с скелетонами -->
+  <div *ngIf="loading" class="levels-grid">
+    <div *ngFor="let item of [1, 2, 3, 4, 5, 6]" class="level-card skeleton">
+      <div class="skeleton-image"></div>
+      <div class="skeleton-title"></div>
+      <div class="skeleton-progress"></div>
+      <div class="skeleton-text"></div>
+    </div>
+  </div>
+
+  <!-- Состояние ошибки -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <h3>{{ 'levels.error' | translate }}</h3>
+    <button class="retry-button" (click)="loadLevels()">
+      <span>{{ 'levels.retry' | translate }}</span>
+    </button>
+  </div>
+
+  <!-- Список уровней -->
+  <div *ngIf="!loading && !error && levels.length > 0" class="levels-grid">
+    <div
+      *ngFor="let level of levels; let i = index"
+      (click)="onLevelClick(level)"
+      class="level-card"
+      [class.level-locked]="isLevelLocked(level)"
+      [class.level-completed]="isLevelCompleted(level)"
+      [class.level-in-progress]="isLevelInProgress(level)"
+      [style.animation-delay]="i * 0.1 + 's'"
+    >
+      <!-- Lock icon for locked levels -->
+      <div *ngIf="isLevelLocked(level)" class="lock-overlay">
+        <div class="lock-icon">
+          <svg
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="lockGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color: rgba(245, 158, 11, 1); stop-opacity: 1" />
+                <stop offset="100%" style="stop-color: rgba(217, 119, 6, 1); stop-opacity: 1" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M18 8H17V6C17 3.24 14.76 1 12 1C9.24 1 7 3.24 7 6V8H6C4.9 8 4 8.9 4 10V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V10C20 8.9 19.1 8 18 8ZM12 3C13.66 3 15 4.34 15 6V8H9V6C9 4.34 10.34 3 12 3ZM18 20H6V10H18V20Z"
+              fill="url(#lockGradient)"
+            />
+            <path
+              d="M12 17C13.1 17 14 16.1 14 15C14 13.9 13.1 13 12 13C10.9 13 10 13.9 10 15C10 16.1 10.9 17 12 17Z"
+              fill="url(#lockGradient)"
+            />
+          </svg>
+        </div>
+      </div>
+      <div class="card-image-container">
+        <img
+          [src]="level.imageUrl"
+          class="level-image"
+          alt="{{ level.name }}"
+          *ngIf="level.imageUrl"
+        />
+        <div class="card-overlay">
+          <div class="play-icon">
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <defs>
+                <linearGradient id="circleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop
+                    offset="0%"
+                    style="stop-color: rgba(255, 255, 255, 0.95); stop-opacity: 1"
+                  />
+                  <stop
+                    offset="100%"
+                    style="stop-color: rgba(255, 255, 255, 0.8); stop-opacity: 1"
+                  />
+                </linearGradient>
+                <linearGradient id="playGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color: rgba(102, 126, 234, 1); stop-opacity: 1" />
+                  <stop offset="100%" style="stop-color: rgba(118, 75, 162, 1); stop-opacity: 1" />
+                </linearGradient>
+              </defs>
+              <circle
+                cx="12"
+                cy="12"
+                r="11"
+                fill="url(#circleGradient)"
+                stroke="rgba(255,255,255,0.4)"
+                stroke-width="1"
+              />
+              <path d="M9.5 7L17.5 12L9.5 17V7Z" fill="url(#playGradient)" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-content">
+        <h3 class="level-name">{{ level.name }}</h3>
+
+        <div class="level-header-text" *ngIf="level.headerText">
+          <p>{{ level.headerText }}</p>
+        </div>
+
+        <div class="score-container" *ngIf="level.maxScore > 0">
+          <div class="score-info">
+            <span class="score-text">
+              {{ level.score }} / {{ level.maxScore }} {{ 'levels.points' | translate }}
+            </span>
+            <span class="score-percentage">
+              {{ getProgressPercentage(level) | number: '1.0-0' }}%
+            </span>
+          </div>
+          <div class="score-bar">
+            <div class="score-fill" [style.width.%]="getProgressPercentage(level)"></div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <span class="level-order">{{ 'levels.level' | translate }} {{ level.orderIndex }}</span>
+          <div class="arrow-icon" *ngIf="!isLevelLocked(level)">→</div>
+          <div class="lock-icon" *ngIf="isLevelLocked(level)">🔒</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Сообщение если нет уровней -->
+  <div *ngIf="!loading && !error && levels.length === 0" class="empty-state">
+    <div class="empty-icon">🎯</div>
+    <h3>{{ 'levels.empty' | translate }}</h3>
+    <p>{{ 'levels.emptyDescription' | translate }}</p>
+  </div>
+</div>

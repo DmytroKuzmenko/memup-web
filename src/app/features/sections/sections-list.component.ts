@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { SectionService, PublicSection } from '../../section.service';
+import { GameService } from '../../services/game.service';
+import { SectionVm } from '../../shared/models/game.models';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { NotificationService } from '../../shared/services/notification.service';
 
 @Component({
   selector: 'app-sections-list',
@@ -12,11 +14,14 @@ import { TranslatePipe } from '../../shared/pipes/translate.pipe';
   styleUrls: ['./sections-list.component.scss'],
 })
 export class SectionsListComponent implements OnInit {
-  sections: PublicSection[] = [];
+  sections: SectionVm[] = [];
   loading = true;
   error: string | null = null;
 
-  constructor(private sectionService: SectionService) {}
+  constructor(
+    private gameService: GameService,
+    private notification: NotificationService,
+  ) {}
 
   ngOnInit(): void {
     // Прокрутка к верху страницы
@@ -28,21 +33,35 @@ export class SectionsListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.sectionService.getPublicSections().subscribe({
+    this.gameService.getSections().subscribe({
       next: (sections) => {
         this.sections = sections;
         this.loading = false;
       },
       error: (error) => {
         console.error('Error loading sections:', error);
-        this.error = 'sections.error';
         this.loading = false;
+
+        // Handle specific error cases
+        if (error.status === 401) {
+          this.error = 'Please log in to view sections';
+          // Не показываем уведомление, просто показываем ошибку в UI
+        } else if (error.status === 403) {
+          this.error = 'This section is locked.';
+        } else {
+          this.error = 'sections.error';
+        }
       },
     });
   }
 
-  getProgressPercentage(section: PublicSection): number {
-    if (section.totalLevelsCount === 0) return 0;
-    return (section.completedLevelsCount / section.totalLevelsCount) * 100;
+  getProgressPercentage(section: SectionVm): number {
+    if (section.totalLevels === 0) return 0;
+    return (section.levelsCompleted / section.totalLevels) * 100;
+  }
+
+  getScorePercentage(section: SectionVm): number {
+    if (section.maxScore === 0) return 0;
+    return (section.score / section.maxScore) * 100;
   }
 }

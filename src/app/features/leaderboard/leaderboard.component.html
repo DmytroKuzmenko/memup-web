@@ -1,0 +1,106 @@
+<div class="leaderboard-container">
+  <!-- Header -->
+  <div class="leaderboard-header">
+    <h1 class="leaderboard-title">🏆 Leaderboard</h1>
+    <p class="leaderboard-subtitle">See how you rank against other players</p>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-container">
+    <div class="filter-group">
+      <label for="period-select">Period:</label>
+      <select
+        id="period-select"
+        [(ngModel)]="selectedPeriod"
+        (change)="onPeriodChange()"
+        class="filter-select"
+      >
+        <option *ngFor="let period of periods" [value]="period.value">
+          {{ period.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="section-select">Section:</label>
+      <select
+        id="section-select"
+        [(ngModel)]="selectedSectionId"
+        (change)="onSectionChange()"
+        class="filter-select"
+      >
+        <option value="">All Sections</option>
+        <!-- Add section options here if needed -->
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="level-select">Level:</label>
+      <select
+        id="level-select"
+        [(ngModel)]="selectedLevelId"
+        (change)="onLevelChange()"
+        class="filter-select"
+      >
+        <option value="">All Levels</option>
+        <!-- Add level options here if needed -->
+      </select>
+    </div>
+
+    <button class="refresh-button" (click)="onRefresh()">
+      <span class="refresh-icon">🔄</span>
+      Refresh
+    </button>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Loading leaderboard...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !loading" class="error-state">
+    <div class="error-icon">⚠️</div>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadLeaderboard()">Retry</button>
+  </div>
+
+  <!-- Leaderboard content -->
+  <div *ngIf="!loading && !error" class="leaderboard-content">
+    <!-- Empty state -->
+    <div *ngIf="leaderboard.length === 0" class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h3>No scores yet</h3>
+      <p>Be the first to complete a level and appear on the leaderboard!</p>
+    </div>
+
+    <!-- Leaderboard list -->
+    <div *ngIf="leaderboard.length > 0" class="leaderboard-list">
+      <div
+        *ngFor="let entry of leaderboard; let i = index"
+        class="leaderboard-entry"
+        [class]="getRankClass(entry.rank)"
+      >
+        <div class="rank-section">
+          <div class="rank-icon">{{ getRankIcon(entry.rank) }}</div>
+          <div class="rank-number">#{{ entry.rank }}</div>
+        </div>
+
+        <div class="player-section">
+          <div class="player-name">{{ entry.displayName }}</div>
+          <div class="player-id">{{ entry.userId }}</div>
+        </div>
+
+        <div class="score-section">
+          <div class="score-value">{{ formatScore(entry.score) }}</div>
+          <div class="score-label">points</div>
+        </div>
+
+        <div class="date-section">
+          <div class="date-value">{{ formatDate(entry.updatedAt) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

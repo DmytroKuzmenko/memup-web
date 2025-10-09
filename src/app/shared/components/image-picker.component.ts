@@ -1230,8 +1230,9 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     const drawH = this.img.height * this.zoom;
 
     ctx.clearRect(0, 0, cw, ch);
-    ctx.fillStyle = '#111';
-    ctx.fillRect(0, 0, cw, ch);
+    // Не заливаем фон для сохранения прозрачности изображений
+    // ctx.fillStyle = '#111';
+    // ctx.fillRect(0, 0, cw, ch);
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -1273,6 +1274,7 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     const posX = this.posX * ratioX;
     const posY = this.posY * ratioY;
 
+    // Очищаем canvas, но не заливаем фон для сохранения прозрачности
     octx.clearRect(0, 0, outW, outH);
     octx.drawImage(this.img, posX, posY, drawW, drawH);
 
@@ -1460,15 +1462,22 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
         canvas.width = width;
         canvas.height = height;
 
+        // Очищаем canvas для сохранения прозрачности
+        ctx?.clearRect(0, 0, width, height);
+
         // Рисуем изображение на canvas
         ctx?.drawImage(img, 0, 0, width, height);
 
-        // Конвертируем в blob с качеством 0.8 (80%)
+        // Определяем формат на основе исходного файла для сохранения прозрачности
+        const outputFormat = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+        const outputType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+
+        // Конвертируем в blob с качеством 0.8 (80%) для JPEG, без сжатия для PNG
         canvas.toBlob(
           (blob) => {
             if (blob) {
               const compressedFile = new File([blob], file.name, {
-                type: 'image/jpeg',
+                type: outputType,
                 lastModified: Date.now(),
               });
               resolve(compressedFile);
@@ -1476,8 +1485,8 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
               reject(new Error('Failed to compress image'));
             }
           },
-          'image/jpeg',
-          0.8,
+          outputFormat,
+          outputFormat === 'image/jpeg' ? 0.8 : undefined, // Качество только для JPEG
         );
       };
 
