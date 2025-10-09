@@ -23,8 +23,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "memeup-web.tar.gz"
-          target: "/opt"
+          source: 'memeup-web.tar.gz'
+          target: '/opt'
 
       - name: SSH and deploy
         uses: appleboy/ssh-action@v1.0.0
@@ -32,7 +32,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          script_stop: true # ⬅️ Остановить шаг при первой ошибке
           script: |
+            set -euo pipefail           # ⬅️ Строгий режим оболочки
             cd /opt
             rm -rf memeup-web
             mkdir memeup-web
@@ -40,5 +42,6 @@ jobs:
             rm memeup-web.tar.gz
             cd memeup-web
             docker compose down || true
-            docker compose build --no-cache
+            export COMMIT_SHA="${GITHUB_SHA}"   # ⬅️ Пробрасываем SHA для Dockerfile ARG
+            docker compose build --no-cache     # ⬅️ Если билд упадёт — шаг завершится с ошибкой
             docker compose up -d
