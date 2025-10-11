@@ -138,7 +138,9 @@
 }
 
 .task-image-container {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 2rem;
 }
 

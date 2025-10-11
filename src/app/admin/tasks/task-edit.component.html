@@ -194,10 +194,7 @@
           <!-- ВАЖНО: formArrayName + formGroupName вместо [formGroup]="opt" -->
           <ng-container formArrayName="options">
             <ng-container *ngFor="let opt of options.controls; let i = index">
-              <div
-                [formGroupName]="i"
-                class="grid gap-2 rounded-xl border border-neutral-200 p-2"
-              >
+              <div [formGroupName]="i" class="grid gap-2 rounded-xl border border-neutral-200 p-2">
                 <div class="grid gap-3">
                   <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
                     <input

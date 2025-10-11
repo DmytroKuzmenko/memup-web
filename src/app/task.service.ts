@@ -219,9 +219,9 @@ export class TaskService {
       options: (data.options ?? []).map(mapOptionToDto),
       charsCsv: data.charsCsv ?? '',
       correctAnswer: data.correctAnswer ?? '',
-      taskImageSource: data.taskImageSource ?? '',
-      resultImagePath: data.resultImagePath ?? '',
-      resultImageSource: data.resultImageSource ?? '',
+      taskImageSource: data.taskImageSource || '',
+      resultImagePath: data.resultImagePath || '',
+      resultImageSource: data.resultImageSource || '',
     };
     console.log('=== TASK SERVICE ADD ===');
     console.log('Adding new task');
@@ -252,9 +252,9 @@ export class TaskService {
       options: data.options?.map(mapOptionToDto),
       charsCsv: data.charsCsv,
       correctAnswer: data.correctAnswer,
-      taskImageSource: data.taskImageSource,
-      resultImagePath: data.resultImagePath,
-      resultImageSource: data.resultImageSource,
+      taskImageSource: data.taskImageSource || '',
+      resultImagePath: data.resultImagePath || '',
+      resultImageSource: data.resultImageSource || '',
     };
     console.log('=== TASK SERVICE UPDATE ===');
     console.log('Updating task with ID:', id);

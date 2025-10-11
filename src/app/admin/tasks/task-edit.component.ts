@@ -226,6 +226,11 @@ export class TaskEditComponent {
         options: mappedOptions,
       };
 
+      console.log('=== DTO BEFORE SENDING ===');
+      console.log('taskImageSource:', dto.taskImageSource);
+      console.log('resultImageSource:', dto.resultImageSource);
+      console.log('Full DTO:', JSON.stringify(dto, null, 2));
+
       if (this.isEdit) {
         this.taskSvc.updateTask(this.id!, dto).subscribe({
           next: () => {
