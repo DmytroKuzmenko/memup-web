@@ -25,6 +25,7 @@ export class LevelSummaryComponent implements OnInit {
   loading = true;
   error: string | null = null;
   replayCooldown: string | null = null;
+  replayInProgress = false;
 
   private gameService = inject(GameService);
   private route = inject(ActivatedRoute);
@@ -109,18 +110,49 @@ export class LevelSummaryComponent implements OnInit {
   }
 
   onReplay(): void {
-    if (!this.levelId) return;
+    if (!this.levelId || this.replayInProgress) return;
+
+    this.replayInProgress = true;
+
+    const navigateToLevel = () => {
+      this.replayInProgress = false;
+      this.router.navigate(['/levels', this.levelId, 'play']);
+    };
+
+    const handleFallbackStart = () => {
+      this.gameService.startLevel(this.levelId).subscribe({
+        next: () => navigateToLevel(),
+        error: (startError) => {
+          console.error('Error starting level after replay failure:', startError);
+          this.replayInProgress = false;
+
+          if (startError.status === 429) {
+            const retryAfter = startError.error?.retryAfter;
+            if (retryAfter) {
+              this.notification.showError(
+                `Replay available in ${this.formatTime(Math.ceil(new Date(retryAfter).getTime() / 1000))}`,
+              );
+            } else {
+              this.notification.showError('Please wait before replaying.');
+            }
+          } else {
+            this.notification.showError('Failed to replay level');
+          }
+        },
+      });
+    };
 
     this.gameService.replayLevel(this.levelId).subscribe({
       next: (response) => {
         if ('retryAfter' in response) {
           // 429 response - cooldown
+          this.replayInProgress = false;
           this.notification.showError(
             `Replay available in ${this.formatTime(Math.ceil(new Date(response.retryAfter || '').getTime() / 1000))}`,
           );
         } else {
           // Success - navigate to task view
-          this.router.navigate(['/levels', this.levelId, 'play']);
+          navigateToLevel();
         }
       },
       error: (error) => {
@@ -135,9 +167,17 @@ export class LevelSummaryComponent implements OnInit {
           } else {
             this.notification.showError('Please wait before replaying.');
           }
-        } else {
-          this.notification.showError('Failed to replay level');
+          this.replayInProgress = false;
+          return;
         }
+
+        if (error.status === 400 && error.error?.message === 'Level has not been completed yet') {
+          handleFallbackStart();
+          return;
+        }
+
+        this.replayInProgress = false;
+        this.notification.showError('Failed to replay level');
       },
     });
   }

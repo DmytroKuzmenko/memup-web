@@ -58,7 +58,7 @@
     <div class="action-buttons">
       <button
         class="action-button replay-button"
-        [disabled]="!!replayCooldown"
+        [disabled]="!!replayCooldown || replayInProgress"
         (click)="onReplay()"
       >
         <span class="button-icon">🔄</span>
