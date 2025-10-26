@@ -2,8 +2,13 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
-import { LevelIntroVm, NextTaskResponse } from '../../shared/models/game.models';
+import { LevelIntroVm } from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
+
+type LevelSummaryNavigationState = {
+  earnedScore?: number;
+  maxScore?: number;
+};
 
 @Component({
   selector: 'app-level-summary',
@@ -25,6 +30,7 @@ export class LevelSummaryComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notification = inject(NotificationService);
+  private summaryState: LevelSummaryNavigationState | null = null;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -38,12 +44,16 @@ export class LevelSummaryComponent implements OnInit {
   loadLevelSummary(): void {
     this.loading = true;
     this.error = null;
+    this.summaryState = this.extractSummaryState();
 
     this.gameService.getLevelIntro(this.levelId).subscribe({
       next: (intro) => {
         this.levelIntro = intro;
-        this.earnedScore = intro.maxScore; // This should come from the submit response
-        this.maxScore = intro.maxScore;
+        const summaryState = this.summaryState;
+
+        this.maxScore = summaryState?.maxScore ?? intro.maxScore;
+        this.earnedScore =
+          summaryState?.earnedScore !== undefined ? summaryState.earnedScore : this.maxScore;
         this.loading = false;
 
         // Check if replay is available
@@ -163,5 +173,27 @@ export class LevelSummaryComponent implements OnInit {
     if (percentage >= 80) return '#059669';
     if (percentage >= 60) return '#d97706';
     return '#dc2626';
+  }
+
+  private extractSummaryState(): LevelSummaryNavigationState | null {
+    const navigationState = this.router.getCurrentNavigation()?.extras?.state as
+      | LevelSummaryNavigationState
+      | undefined;
+    if (this.hasSummaryValues(navigationState)) {
+      return navigationState;
+    }
+
+    const historyState = history.state as LevelSummaryNavigationState | undefined;
+    if (this.hasSummaryValues(historyState)) {
+      return historyState;
+    }
+
+    return null;
+  }
+
+  private hasSummaryValues(
+    state: LevelSummaryNavigationState | undefined,
+  ): state is LevelSummaryNavigationState {
+    return !!state && (state.earnedScore !== undefined || state.maxScore !== undefined);
   }
 }

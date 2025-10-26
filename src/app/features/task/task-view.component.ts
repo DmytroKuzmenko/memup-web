@@ -65,7 +65,16 @@ export class TaskViewComponent implements OnInit, OnDestroy {
           this.loading = false;
         } else {
           // No more tasks, navigate to level summary
-          this.router.navigate(['/levels', this.levelId, 'summary']);
+          const navigationExtras = response.levelProgress
+            ? {
+                state: {
+                  earnedScore: response.levelProgress.score,
+                  maxScore: response.levelProgress.maxScore,
+                },
+              }
+            : undefined;
+
+          this.router.navigate(['/levels', this.levelId, 'summary'], navigationExtras);
         }
       },
       error: (error) => {
@@ -151,9 +160,18 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       this.explanationText = response.explanationText || '';
 
       if (response.levelCompleted) {
+        const navigationExtras = response.levelSummary
+          ? {
+              state: {
+                earnedScore: response.levelSummary.earnedScore,
+                maxScore: response.levelSummary.maxScore,
+              },
+            }
+          : undefined;
+
         // Level completed, navigate to summary
         setTimeout(() => {
-          this.router.navigate(['/levels', this.levelId, 'summary']);
+          this.router.navigate(['/levels', this.levelId, 'summary'], navigationExtras);
         }, 3000);
       }
     } else if (response.result === 'incorrect') {
