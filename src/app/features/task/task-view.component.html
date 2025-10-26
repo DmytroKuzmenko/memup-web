@@ -37,9 +37,13 @@
     </div>
 
     <!-- Task image -->
-    <div *ngIf="task.imageUrl" class="task-image-container">
-      <img [src]="task.imageUrl" alt="Task image" class="task-image" />
-      <div *ngIf="task.taskImageSource" class="image-source">{{ task.taskImageSource }}</div>
+    <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
+      <img
+        [src]="imageUrl"
+        [alt]="showingExplanation && task?.resultImagePath ? 'Result image' : 'Task image'"
+        class="task-image"
+      />
+      <div *ngIf="displayedImageSource as imageSource" class="image-source" [innerHTML]="imageSource"></div>
     </div>
 
     <!-- Options -->
@@ -94,10 +98,6 @@
 
     <div *ngIf="showingExplanation" class="explanation-panel">
       <div class="explanation-text" [innerHTML]="explanationText"></div>
-      <div *ngIf="task?.resultImagePath" class="result-image-container">
-        <img [src]="task.resultImagePath" alt="Result image" class="result-image" />
-        <div *ngIf="task.resultImageSource" class="image-source">{{ task.resultImageSource }}</div>
-      </div>
       <button class="continue-button" (click)="onContinue()">
         {{ 'game.task.actions.next' | translate }}
       </button>

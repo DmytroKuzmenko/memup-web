@@ -5,6 +5,7 @@ import { GameService } from '../../services/game.service';
 import { TaskVm, SubmitResponse } from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-task-view',
@@ -33,6 +34,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private notification = inject(NotificationService);
+  private sanitizer = inject(DomSanitizer);
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -247,5 +249,25 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
   isOptionCorrect(optionId: string): boolean {
     return this.correctOptionIds.has(optionId);
+  }
+
+  get displayedImageUrl(): string | null {
+    if (!this.task) return null;
+    if (this.showingExplanation && this.task.resultImagePath) {
+      return this.task.resultImagePath;
+    }
+    return this.task.imageUrl || null;
+  }
+
+  get displayedImageSource(): SafeHtml | null {
+    if (!this.task) return null;
+    if (this.showingExplanation && this.task.resultImagePath) {
+      return this.toSafeHtml(this.task.resultImageSource);
+    }
+    return this.toSafeHtml(this.task.taskImageSource);
+  }
+
+  private toSafeHtml(value: string | null | undefined): SafeHtml | null {
+    return value ? this.sanitizer.bypassSecurityTrustHtml(value) : null;
   }
 }
