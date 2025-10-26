@@ -35,6 +35,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private notification = inject(NotificationService);
   private sanitizer = inject(DomSanitizer);
+  private levelCompletionState: { earnedScore?: number; maxScore?: number } | null = null;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -53,6 +54,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
   loadCurrentTask(): void {
     this.resetInteractionState();
+    this.levelCompletionState = null;
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
       this.timerInterval = null;
@@ -172,21 +174,17 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       this.correctOptionIds = new Set(correctIds);
 
       if (response.levelCompleted) {
-        const navigationExtras = response.levelSummary
+        this.levelCompletionState = response.levelSummary
           ? {
-              state: {
-                earnedScore: response.levelSummary.earnedScore,
-                maxScore: response.levelSummary.maxScore,
-              },
+              earnedScore: response.levelSummary.earnedScore,
+              maxScore: response.levelSummary.maxScore,
             }
-          : undefined;
-
-        // Level completed, navigate to summary
-        setTimeout(() => {
-          this.router.navigate(['/levels', this.levelId, 'summary'], navigationExtras);
-        }, 3000);
+          : {};
+      } else {
+        this.levelCompletionState = null;
       }
     } else if (response.result === 'incorrect') {
+      this.levelCompletionState = null;
       if (response.attemptsLeft > 0) {
         if (this.timerInterval) {
           clearInterval(this.timerInterval);
@@ -202,6 +200,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
         this.loadCurrentTask(); // Get next task
       }
     } else if (response.result === 'timeout') {
+      this.levelCompletionState = null;
       this.notification.showError("Time's up!");
       this.loadCurrentTask(); // Get next task
     }
@@ -209,9 +208,19 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
   onContinue(): void {
     if (this.showingExplanation) {
+      const summaryState = this.levelCompletionState;
       this.showingExplanation = false;
       this.correctOptionIds.clear();
-      this.loadCurrentTask(); // Get next task
+
+      if (summaryState) {
+        this.levelCompletionState = null;
+        const navigationExtras = Object.keys(summaryState).length
+          ? { state: summaryState }
+          : undefined;
+        this.router.navigate(['/levels', this.levelId, 'summary'], navigationExtras);
+      } else {
+        this.loadCurrentTask(); // Get next task
+      }
     }
   }
 
