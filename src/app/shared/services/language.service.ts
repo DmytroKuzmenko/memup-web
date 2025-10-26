@@ -239,6 +239,14 @@ export class LanguageService {
           action: 'Continue Learning',
         },
       },
+      game: {
+        task: {
+          defaultTitle: 'Task',
+          actions: {
+            next: 'Next',
+          },
+        },
+      },
       common: {
         close: 'Close',
       },
@@ -349,6 +357,14 @@ export class LanguageService {
           title: 'Рівень заблоковано',
           message: 'Цей рівень зараз заблоковано. Пройдіть попередні рівні, щоб розблокувати його.',
           action: 'Продовжити навчання',
+        },
+      },
+      game: {
+        task: {
+          defaultTitle: 'Завдання',
+          actions: {
+            next: 'Далі',
+          },
         },
       },
       common: {
@@ -464,6 +480,14 @@ export class LanguageService {
           message:
             'Dieses Level ist derzeit gesperrt. Schließe die vorherigen Level ab, um es freizuschalten.',
           action: 'Weiter lernen',
+        },
+      },
+      game: {
+        task: {
+          defaultTitle: 'Aufgabe',
+          actions: {
+            next: 'Weiter',
+          },
         },
       },
       common: {

@@ -2,13 +2,14 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
-import { TaskVm, SubmitResponse, NextTaskResponse } from '../../shared/models/game.models';
+import { TaskVm, SubmitResponse } from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
+import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-task-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslatePipe],
   templateUrl: './task-view.component.html',
   styleUrls: ['./task-view.component.scss'],
 })
@@ -17,6 +18,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   levelId: string = '';
   // Support multiple selected option ids
   selectedOptionIds: Set<string> = new Set<string>();
+  correctOptionIds: Set<string> = new Set<string>();
   incorrectFeedback = false;
   incorrectMessage: string | null = null;
   timeRemaining: number = 0;
@@ -119,7 +121,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   onOptionToggle(optionId: string): void {
-    if (this.incorrectFeedback) return;
+    if (this.incorrectFeedback || this.showingExplanation) return;
 
     if (this.selectedOptionIds.has(optionId)) {
       this.selectedOptionIds.delete(optionId);
@@ -156,8 +158,16 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.submitting = false;
 
     if (response.result === 'correct') {
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+      }
       this.showingExplanation = true;
       this.explanationText = response.explanationText || '';
+      const correctIds = response.correctOptionIds?.length
+        ? response.correctOptionIds
+        : Array.from(this.selectedOptionIds);
+      this.correctOptionIds = new Set(correctIds);
 
       if (response.levelCompleted) {
         const navigationExtras = response.levelSummary
@@ -198,6 +208,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   onContinue(): void {
     if (this.showingExplanation) {
       this.showingExplanation = false;
+      this.correctOptionIds.clear();
       this.loadCurrentTask(); // Get next task
     }
   }
@@ -213,6 +224,9 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.selectedOptionIds.clear();
     this.incorrectFeedback = false;
     this.incorrectMessage = null;
+    this.showingExplanation = false;
+    this.explanationText = '';
+    this.correctOptionIds.clear();
   }
 
   formatTime(seconds: number): string {
@@ -229,5 +243,9 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     if (percentage <= 20) return 'timer-critical';
     if (percentage <= 40) return 'timer-warning';
     return 'timer-normal';
+  }
+
+  isOptionCorrect(optionId: string): boolean {
+    return this.correctOptionIds.has(optionId);
   }
 }

@@ -42,6 +42,7 @@ export interface TaskOptionVm {
   id: string;
   label: string;
   imageUrl?: string | null;
+  isCorrect?: boolean | null;
 }
 
 export type SubmitResult = 'correct' | 'incorrect' | 'timeout';
@@ -51,6 +52,9 @@ export interface TaskVm {
   type: string;
   headerText?: string | null;
   imageUrl?: string | null;
+  taskImageSource?: string | null;
+  resultImagePath?: string | null;
+  resultImageSource?: string | null;
   options: TaskOptionVm[];
   orderIndex: number;
   timeLimitSecEffective?: number | null;
@@ -81,6 +85,7 @@ export interface SubmitResponse {
   levelSummary: { earnedScore: number; maxScore: number } | null;
   nextAction: 'nextTask' | 'levelSummary';
   explanationText?: string; // present only when result === 'correct'
+  correctOptionIds?: string[];
 }
 
 export interface LeaderboardEntryVm {

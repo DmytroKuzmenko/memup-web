@@ -29,7 +29,7 @@
 
     <!-- Task header -->
     <div class="task-header">
-      <h2 class="task-title">{{ task.headerText || 'Task' }}</h2>
+      <h2 class="task-title" [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"></h2>
     </div>
 
     <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
@@ -39,6 +39,7 @@
     <!-- Task image -->
     <div *ngIf="task.imageUrl" class="task-image-container">
       <img [src]="task.imageUrl" alt="Task image" class="task-image" />
+      <div *ngIf="task.taskImageSource" class="image-source">{{ task.taskImageSource }}</div>
     </div>
 
     <!-- Options -->
@@ -48,12 +49,13 @@
         class="option-item"
         [class.selected]="selectedOptionIds.has(option.id)"
         [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
-        [class.disabled]="incorrectFeedback"
+        [class.correct]="showingExplanation && isOptionCorrect(option.id)"
+        [class.disabled]="incorrectFeedback || showingExplanation"
         (click)="onOptionToggle(option.id)"
       >
         <div class="option-number">{{ i + 1 }}</div>
         <div class="option-content">
-          <div class="option-label">{{ option.label }}</div>
+          <div class="option-label" [innerHTML]="option.label"></div>
           <img
             *ngIf="option.imageUrl"
             [src]="option.imageUrl"
@@ -71,7 +73,7 @@
     </div>
 
     <!-- Submit button -->
-    <div class="submit-container">
+    <div class="submit-container" *ngIf="!showingExplanation">
       <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
         <button
           class="submit-button"
@@ -89,18 +91,16 @@
         </button>
       </ng-template>
     </div>
-  </div>
 
-  <!-- Explanation overlay -->
-  <div *ngIf="showingExplanation" class="explanation-overlay">
-    <div class="explanation-content">
-      <div class="explanation-header">
-        <h3>Correct! 🎉</h3>
+    <div *ngIf="showingExplanation" class="explanation-panel">
+      <div class="explanation-text" [innerHTML]="explanationText"></div>
+      <div *ngIf="task?.resultImagePath" class="result-image-container">
+        <img [src]="task.resultImagePath" alt="Result image" class="result-image" />
+        <div *ngIf="task.resultImageSource" class="image-source">{{ task.resultImageSource }}</div>
       </div>
-      <div class="explanation-text">
-        {{ explanationText }}
-      </div>
-      <button class="continue-button" (click)="onContinue()">Continue</button>
+      <button class="continue-button" (click)="onContinue()">
+        {{ 'game.task.actions.next' | translate }}
+      </button>
     </div>
   </div>
 </div>
