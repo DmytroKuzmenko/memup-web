@@ -29,7 +29,10 @@
 
     <!-- Task header -->
     <div class="task-header">
-      <h2 class="task-title" [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"></h2>
+      <h2
+        class="task-title"
+        [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"
+      ></h2>
     </div>
 
     <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
@@ -40,10 +43,14 @@
     <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
       <img
         [src]="imageUrl"
-        [alt]="showingExplanation && task?.resultImagePath ? 'Result image' : 'Task image'"
+        [alt]="showingExplanation && task.resultImagePath ? 'Result image' : 'Task image'"
         class="task-image"
       />
-      <div *ngIf="displayedImageSource as imageSource" class="image-source" [innerHTML]="imageSource"></div>
+      <div
+        *ngIf="displayedImageSource as imageSource"
+        class="image-source"
+        [innerHTML]="imageSource"
+      ></div>
     </div>
 
     <!-- Options -->
@@ -89,7 +96,11 @@
         </button>
       </ng-container>
       <ng-template #tryAgainButton>
-        <button class="submit-button try-again-button" (click)="onTryAgain()" [disabled]="submitting">
+        <button
+          class="submit-button try-again-button"
+          (click)="onTryAgain()"
+          [disabled]="submitting"
+        >
           <span *ngIf="!submitting">Try Again</span>
           <span *ngIf="submitting">Processing...</span>
         </button>
