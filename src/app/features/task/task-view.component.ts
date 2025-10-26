@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
-import { TaskVm, SubmitResponse } from '../../shared/models/game.models';
+import { TaskVm, SubmitResponse, LevelIntroVm } from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -17,6 +17,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 export class TaskViewComponent implements OnInit, OnDestroy {
   task: TaskVm | null = null;
   levelId: string = '';
+  levelIntro: LevelIntroVm | null = null;
   // Support multiple selected option ids
   selectedOptionIds: Set<string> = new Set<string>();
   correctOptionIds: Set<string> = new Set<string>();
@@ -27,8 +28,13 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   submitting = false;
   showingExplanation = false;
   explanationText: string = '';
-  loading = true;
+  loading = false;
   error: string | null = null;
+  showIntro = false;
+  introLoading = false;
+  introError: string | null = null;
+  animationPlaying = false;
+  showAnimationImage = false;
 
   private gameService = inject(GameService);
   private route = inject(ActivatedRoute);
@@ -41,7 +47,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.route.params.subscribe((params) => {
       this.levelId = params['id'];
       if (this.levelId) {
-        this.loadCurrentTask();
+        this.prepareForNewLevel();
+        this.loadLevelIntro();
       }
     });
   }
@@ -93,6 +100,84 @@ export class TaskViewComponent implements OnInit, OnDestroy {
         }
       },
     });
+  }
+
+  loadLevelIntro(): void {
+    this.introLoading = true;
+    this.introError = null;
+    this.showIntro = true;
+    this.levelIntro = null;
+    this.gameService.getLevelIntro(this.levelId).subscribe({
+      next: (intro) => {
+        this.levelIntro = intro;
+        this.introLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading level intro:', error);
+        this.introError = 'Не удалось загрузить данные уровня';
+        this.introLoading = false;
+      },
+    });
+  }
+
+  onStartLevel(): void {
+    if (this.introLoading || this.animationPlaying) {
+      return;
+    }
+
+    if (this.levelIntro?.animationImageUrl) {
+      this.animationPlaying = true;
+      this.showAnimationImage = true;
+    } else {
+      this.finishIntro();
+    }
+  }
+
+  onIntroAnimationDone(): void {
+    if (!this.animationPlaying) {
+      return;
+    }
+
+    this.animationPlaying = false;
+    this.showAnimationImage = false;
+    this.finishIntro();
+  }
+
+  onIntroAnimationError(): void {
+    console.warn('Intro animation image failed to load. Skipping animation.');
+    this.animationPlaying = false;
+    this.showAnimationImage = false;
+    this.finishIntro();
+  }
+
+  retryIntro(): void {
+    if (this.introLoading) {
+      return;
+    }
+    this.prepareForNewLevel();
+    this.loadLevelIntro();
+  }
+
+  private finishIntro(): void {
+    this.showIntro = false;
+    this.loadCurrentTask();
+  }
+
+  private prepareForNewLevel(): void {
+    this.resetInteractionState();
+    this.task = null;
+    this.levelIntro = null;
+    this.introError = null;
+    this.introLoading = false;
+    this.showIntro = false;
+    this.animationPlaying = false;
+    this.showAnimationImage = false;
+    this.loading = false;
+    this.error = null;
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
   }
 
   startTimer(): void {

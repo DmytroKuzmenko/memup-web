@@ -1,117 +1,166 @@
 <div class="task-container">
-  <!-- Loading state -->
-  <div *ngIf="loading" class="loading-state">
-    <div class="loading-spinner"></div>
-    <p>Loading task...</p>
-  </div>
-
-  <!-- Error state -->
-  <div *ngIf="error && !loading" class="error-state">
-    <div class="error-icon">⚠️</div>
-    <p>{{ error }}</p>
-    <button class="retry-button" (click)="loadCurrentTask()">Retry</button>
-  </div>
-
-  <!-- Main task content -->
-  <div *ngIf="!loading && !error && task" class="task-content">
-    <!-- Timer -->
-    <div *ngIf="task.timeLimitSecEffective" class="timer-container">
-      <div class="timer" [class]="getTimerClass()">
-        {{ formatTime(timeRemaining) }}
+  <ng-container *ngIf="showIntro; else taskFlow">
+    <div class="intro-overlay">
+      <div *ngIf="introLoading" class="intro-loading">
+        <div class="loading-spinner"></div>
+        <p>Подготавливаем уровень...</p>
       </div>
-      <div class="timer-bar">
-        <div
-          class="timer-fill"
-          [style.width.%]="(timeRemaining / task.timeLimitSecEffective) * 100"
-        ></div>
+
+      <div *ngIf="introError && !introLoading" class="intro-error">
+        <div class="error-icon">⚠️</div>
+        <p>{{ introError }}</p>
+        <button class="retry-button" (click)="retryIntro()">Попробовать ещё раз</button>
       </div>
-    </div>
 
-    <!-- Task header -->
-    <div class="task-header">
-      <h2
-        class="task-title"
-        [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"
-      ></h2>
-    </div>
-
-    <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
-      {{ incorrectMessage }}
-    </div>
-
-    <!-- Task image -->
-    <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
-      <img
-        [src]="imageUrl"
-        [alt]="showingExplanation && task.resultImagePath ? 'Result image' : 'Task image'"
-        class="task-image"
-      />
-      <div
-        *ngIf="displayedImageSource as imageSource"
-        class="image-source"
-        [innerHTML]="imageSource"
-      ></div>
-    </div>
-
-    <!-- Options -->
-    <div class="options-container">
-      <div
-        *ngFor="let option of task.options; let i = index"
-        class="option-item"
-        [class.selected]="selectedOptionIds.has(option.id)"
-        [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
-        [class.correct]="showingExplanation && isOptionCorrect(option.id)"
-        [class.disabled]="incorrectFeedback || showingExplanation"
-        (click)="onOptionToggle(option.id)"
-      >
-        <div class="option-number">{{ i + 1 }}</div>
-        <div class="option-content">
-          <div class="option-label" [innerHTML]="option.label"></div>
-          <img
-            *ngIf="option.imageUrl"
-            [src]="option.imageUrl"
-            alt="Option image"
-            class="option-image"
-          />
+      <div *ngIf="!introLoading && !introError && levelIntro" class="intro-panel">
+        <div class="intro-header">
+          <div class="intro-header-label">{{ levelIntro.headerText || levelIntro.levelName }}</div>
         </div>
-        <div class="option-radio">
-          <!-- checkbox-style indicator for multi-select -->
-          <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
-            <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+
+        <div class="intro-body">
+          <div class="intro-animation-stage" *ngIf="levelIntro.animationImageUrl">
+            <img
+              *ngIf="showAnimationImage"
+              [src]="levelIntro.animationImageUrl"
+              alt="Level intro animation"
+              class="intro-animation-image"
+              [class.playing]="animationPlaying"
+              (animationend)="onIntroAnimationDone()"
+              (error)="onIntroAnimationError()"
+            />
+          </div>
+
+          <button
+            *ngIf="!animationPlaying"
+            class="intro-start-button"
+            (click)="onStartLevel()"
+          >
+            Начать
+          </button>
+
+          <div *ngIf="animationPlaying" class="intro-progress-message">
+            Уровень запускается...
           </div>
         </div>
       </div>
     </div>
+  </ng-container>
 
-    <!-- Submit button -->
-    <div class="submit-container" *ngIf="!showingExplanation">
-      <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
-        <button
-          class="submit-button"
-          [disabled]="selectedOptionIds.size === 0 || submitting"
-          (click)="onSubmit()"
-        >
-          <span *ngIf="!submitting">Submit</span>
-          <span *ngIf="submitting">Submitting...</span>
-        </button>
-      </ng-container>
-      <ng-template #tryAgainButton>
-        <button
-          class="submit-button try-again-button"
-          (click)="onTryAgain()"
-          [disabled]="submitting"
-        >
-          <span *ngIf="!submitting">Try Again</span>
-          <span *ngIf="submitting">Processing...</span>
-        </button>
-      </ng-template>
+  <ng-template #taskFlow>
+    <!-- Loading state -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>Loading task...</p>
     </div>
 
-    <div *ngIf="showingExplanation" class="explanation-panel">
-      <div class="explanation-text" [innerHTML]="explanationText"></div>
-      <button class="continue-button" (click)="onContinue()">
-        {{ 'game.task.actions.next' | translate }}
-      </button>
+    <!-- Error state -->
+    <div *ngIf="error && !loading" class="error-state">
+      <div class="error-icon">⚠️</div>
+      <p>{{ error }}</p>
+      <button class="retry-button" (click)="loadCurrentTask()">Retry</button>
     </div>
-  </div>
+
+    <!-- Main task content -->
+    <div *ngIf="!loading && !error && task" class="task-content">
+      <!-- Timer -->
+      <div *ngIf="task.timeLimitSecEffective" class="timer-container">
+        <div class="timer" [class]="getTimerClass()">
+          {{ formatTime(timeRemaining) }}
+        </div>
+        <div class="timer-bar">
+          <div
+            class="timer-fill"
+            [style.width.%]="(timeRemaining / task.timeLimitSecEffective) * 100"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Task header -->
+      <div class="task-header">
+        <h2
+          class="task-title"
+          [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"
+        ></h2>
+      </div>
+
+      <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
+        {{ incorrectMessage }}
+      </div>
+
+      <!-- Task image -->
+      <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
+        <img
+          [src]="imageUrl"
+          [alt]="showingExplanation && task.resultImagePath ? 'Result image' : 'Task image'"
+          class="task-image"
+        />
+        <div
+          *ngIf="displayedImageSource as imageSource"
+          class="image-source"
+          [innerHTML]="imageSource"
+        ></div>
+      </div>
+
+      <!-- Options -->
+      <div class="options-container">
+        <div
+          *ngFor="let option of task.options; let i = index"
+          class="option-item"
+          [class.selected]="selectedOptionIds.has(option.id)"
+          [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
+          [class.correct]="showingExplanation && isOptionCorrect(option.id)"
+          [class.disabled]="incorrectFeedback || showingExplanation"
+          (click)="onOptionToggle(option.id)"
+        >
+          <div class="option-number">{{ i + 1 }}</div>
+          <div class="option-content">
+            <div class="option-label" [innerHTML]="option.label"></div>
+            <img
+              *ngIf="option.imageUrl"
+              [src]="option.imageUrl"
+              alt="Option image"
+              class="option-image"
+            />
+          </div>
+          <div class="option-radio">
+            <!-- checkbox-style indicator for multi-select -->
+            <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
+              <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit button -->
+      <div class="submit-container" *ngIf="!showingExplanation">
+        <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
+          <button
+            class="submit-button"
+            [disabled]="selectedOptionIds.size === 0 || submitting"
+            (click)="onSubmit()"
+          >
+            <span *ngIf="!submitting">Submit</span>
+            <span *ngIf="submitting">Submitting...</span>
+          </button>
+        </ng-container>
+        <ng-template #tryAgainButton>
+          <button
+            class="submit-button try-again-button"
+            (click)="onTryAgain()"
+            [disabled]="submitting"
+          >
+            <span *ngIf="!submitting">Try Again</span>
+            <span *ngIf="submitting">Processing...</span>
+          </button>
+        </ng-template>
+      </div>
+
+      <div *ngIf="showingExplanation" class="explanation-panel">
+        <div class="explanation-text" [innerHTML]="explanationText"></div>
+        <button class="continue-button" (click)="onContinue()">
+          {{ 'game.task.actions.next' | translate }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
 </div>
