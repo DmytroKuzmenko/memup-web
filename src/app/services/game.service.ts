@@ -97,12 +97,12 @@ export class GameService {
   /** POST /api/game/tasks/{taskId}/submit */
   submitTask(
     taskId: string,
-    selectedOptionId: string,
+    selectedOptionIds: string[],
     attemptToken: string,
   ): Observable<SubmitResponse> {
     console.log('=== GAME SERVICE SUBMIT TASK ===');
     console.log('Task ID:', taskId);
-    console.log('Selected Option ID:', selectedOptionId);
+    console.log('Selected Option IDs:', selectedOptionIds);
     console.log('Attempt Token:', attemptToken);
 
     const idempotencyKey = this.generateIdempotencyKey();
@@ -112,7 +112,8 @@ export class GameService {
       .post<SubmitResponse>(
         `${this.gameUrl}/tasks/${taskId}/submit`,
         {
-          selectedOptionId,
+          // New API contract: send selectedOptionIds collection and attemptToken
+          selectedOptionIds,
           attemptToken,
         },
         {

@@ -15,7 +15,8 @@ import { NotificationService } from '../../shared/services/notification.service'
 export class TaskViewComponent implements OnInit, OnDestroy {
   task: TaskVm | null = null;
   levelId: string = '';
-  selectedOptionId: string | null = null;
+  // Support multiple selected option ids
+  selectedOptionIds: Set<string> = new Set<string>();
   timeRemaining: number = 0;
   timerInterval: any = null;
   submitting = false;
@@ -96,31 +97,40 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   onOptionSelect(optionId: string): void {
-    this.selectedOptionId = optionId;
+    // kept for compatibility if some code calls it; toggle selection
+    this.onOptionToggle(optionId);
+  }
+
+  onOptionToggle(optionId: string): void {
+    if (this.selectedOptionIds.has(optionId)) {
+      this.selectedOptionIds.delete(optionId);
+    } else {
+      this.selectedOptionIds.add(optionId);
+    }
   }
 
   onSubmit(): void {
-    if (!this.task || !this.selectedOptionId || this.submitting) return;
+    if (!this.task || this.selectedOptionIds.size === 0 || this.submitting) return;
 
     this.submitting = true;
 
-    this.gameService
-      .submitTask(this.task.id, this.selectedOptionId, this.task.attemptToken)
-      .subscribe({
-        next: (response: SubmitResponse) => {
-          this.handleSubmitResponse(response);
-        },
-        error: (error) => {
-          console.error('Error submitting task:', error);
-          this.submitting = false;
+    const selected = Array.from(this.selectedOptionIds);
 
-          if (error.status === 403) {
-            this.notification.showError('This task is locked.');
-          } else {
-            this.notification.showError('Failed to submit task');
-          }
-        },
-      });
+    this.gameService.submitTask(this.task.id, selected, this.task.attemptToken).subscribe({
+      next: (response: SubmitResponse) => {
+        this.handleSubmitResponse(response);
+      },
+      error: (error) => {
+        console.error('Error submitting task:', error);
+        this.submitting = false;
+
+        if (error.status === 403) {
+          this.notification.showError('This task is locked.');
+        } else {
+          this.notification.showError('Failed to submit task');
+        }
+      },
+    });
   }
 
   handleSubmitResponse(response: SubmitResponse): void {

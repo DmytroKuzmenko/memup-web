@@ -42,8 +42,8 @@
       <div
         *ngFor="let option of task.options; let i = index"
         class="option-item"
-        [class.selected]="selectedOptionId === option.id"
-        (click)="onOptionSelect(option.id)"
+        [class.selected]="selectedOptionIds.has(option.id)"
+        (click)="onOptionToggle(option.id)"
       >
         <div class="option-number">{{ i + 1 }}</div>
         <div class="option-content">
@@ -56,7 +56,10 @@
           />
         </div>
         <div class="option-radio">
-          <div class="radio-circle" [class.checked]="selectedOptionId === option.id"></div>
+          <!-- checkbox-style indicator for multi-select -->
+          <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
+            <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+          </div>
         </div>
       </div>
     </div>
@@ -65,7 +68,7 @@
     <div class="submit-container">
       <button
         class="submit-button"
-        [disabled]="!selectedOptionId || submitting"
+        [disabled]="selectedOptionIds.size === 0 || submitting"
         (click)="onSubmit()"
       >
         <span *ngIf="!submitting">Submit</span>

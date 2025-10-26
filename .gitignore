@@ -51,3 +51,4 @@ testem.log
 Thumbs.db
 *.zip
 PATCH
+fix.patch
