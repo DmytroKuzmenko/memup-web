@@ -12,37 +12,33 @@
         <button class="retry-button" (click)="retryIntro()">Попробовать ещё раз</button>
       </div>
 
-      <div *ngIf="!introLoading && !introError && levelIntro" class="intro-panel">
-        <div class="intro-header">
-          <div class="intro-header-label">{{ levelIntro.headerText || levelIntro.levelName }}</div>
-        </div>
-
-        <div class="intro-body">
-          <div class="intro-animation-stage" *ngIf="levelIntro.animationImageUrl">
-            <img
-              *ngIf="showAnimationImage"
-              [src]="levelIntro.animationImageUrl"
-              alt="Level intro animation"
-              class="intro-animation-image"
-              [class.playing]="animationPlaying"
-              (animationend)="onIntroAnimationDone()"
-              (error)="onIntroAnimationError()"
-            />
+      <ng-container *ngIf="!introLoading && !introError && levelIntro">
+        <div class="intro-panel" *ngIf="!showAnimationImage">
+          <div class="intro-header">
+            <div class="intro-header-label">{{ levelIntro.headerText || levelIntro.levelName }}</div>
           </div>
 
-          <button
-            *ngIf="!animationPlaying"
-            class="intro-start-button"
-            (click)="onStartLevel()"
-          >
-            Начать
-          </button>
-
-          <div *ngIf="animationPlaying" class="intro-progress-message">
-            Уровень запускается...
+          <div class="intro-body">
+            <button class="intro-start-button" (click)="onStartLevel()" [disabled]="animationPlaying">
+              Начать
+            </button>
           </div>
         </div>
-      </div>
+
+        <div
+          *ngIf="showAnimationImage && levelIntro.animationImageUrl"
+          class="intro-animation-layer"
+        >
+          <img
+            [src]="levelIntro.animationImageUrl"
+            alt="Level intro animation"
+            class="intro-animation-image"
+            [class.playing]="animationPlaying"
+            (animationend)="onIntroAnimationDone()"
+            (error)="onIntroAnimationError()"
+          />
+        </div>
+      </ng-container>
     </div>
   </ng-container>
 

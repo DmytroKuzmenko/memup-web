@@ -89,25 +89,24 @@
   align-items: center;
 }
 
-.intro-animation-stage {
-  position: relative;
-  width: 100%;
-  height: clamp(160px, 28vh, 220px);
-  overflow: hidden;
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.85), rgba(15, 23, 42, 0.75));
-  border: 2px dashed rgba(148, 163, 184, 0.35);
+.intro-animation-layer {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 10;
 }
 
 .intro-animation-image {
   position: absolute;
   top: 50%;
   left: 0;
-  transform: translate(-120%, -50%);
-  max-height: clamp(140px, 25vh, 200px);
+  transform: translate(-150%, -50%);
+  max-height: min(60vh, 360px);
   object-fit: contain;
   opacity: 0;
 }
@@ -140,11 +139,11 @@
   transform: translateY(0);
 }
 
-.intro-progress-message {
-  font-size: 1.1rem;
-  letter-spacing: 0.1rem;
-  color: #bae6fd;
-  text-transform: uppercase;
+.intro-start-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
+  transform: none;
 }
 
 .loading-state,
@@ -181,10 +180,10 @@
 
 @keyframes intro-slide {
   0% {
-    transform: translate(-120%, -50%);
+    transform: translate(-150%, -50%);
   }
   100% {
-    transform: translate(120%, -50%);
+    transform: translate(150%, -50%);
   }
 }
 
