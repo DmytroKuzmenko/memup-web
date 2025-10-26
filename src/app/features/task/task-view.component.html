@@ -32,6 +32,10 @@
       <h2 class="task-title">{{ task.headerText || 'Task' }}</h2>
     </div>
 
+    <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
+      {{ incorrectMessage }}
+    </div>
+
     <!-- Task image -->
     <div *ngIf="task.imageUrl" class="task-image-container">
       <img [src]="task.imageUrl" alt="Task image" class="task-image" />
@@ -43,6 +47,8 @@
         *ngFor="let option of task.options; let i = index"
         class="option-item"
         [class.selected]="selectedOptionIds.has(option.id)"
+        [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
+        [class.disabled]="incorrectFeedback"
         (click)="onOptionToggle(option.id)"
       >
         <div class="option-number">{{ i + 1 }}</div>
@@ -66,14 +72,22 @@
 
     <!-- Submit button -->
     <div class="submit-container">
-      <button
-        class="submit-button"
-        [disabled]="selectedOptionIds.size === 0 || submitting"
-        (click)="onSubmit()"
-      >
-        <span *ngIf="!submitting">Submit</span>
-        <span *ngIf="submitting">Submitting...</span>
-      </button>
+      <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
+        <button
+          class="submit-button"
+          [disabled]="selectedOptionIds.size === 0 || submitting"
+          (click)="onSubmit()"
+        >
+          <span *ngIf="!submitting">Submit</span>
+          <span *ngIf="submitting">Submitting...</span>
+        </button>
+      </ng-container>
+      <ng-template #tryAgainButton>
+        <button class="submit-button try-again-button" (click)="onTryAgain()" [disabled]="submitting">
+          <span *ngIf="!submitting">Try Again</span>
+          <span *ngIf="submitting">Processing...</span>
+        </button>
+      </ng-template>
     </div>
   </div>
 

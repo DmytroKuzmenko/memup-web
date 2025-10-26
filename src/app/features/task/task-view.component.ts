@@ -17,6 +17,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   levelId: string = '';
   // Support multiple selected option ids
   selectedOptionIds: Set<string> = new Set<string>();
+  incorrectFeedback = false;
+  incorrectMessage: string | null = null;
   timeRemaining: number = 0;
   timerInterval: any = null;
   submitting = false;
@@ -46,6 +48,12 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   loadCurrentTask(): void {
+    this.resetInteractionState();
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
+    }
+
     this.loading = true;
     this.error = null;
 
@@ -102,6 +110,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   onOptionToggle(optionId: string): void {
+    if (this.incorrectFeedback) return;
+
     if (this.selectedOptionIds.has(optionId)) {
       this.selectedOptionIds.delete(optionId);
     } else {
@@ -110,7 +120,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (!this.task || this.selectedOptionIds.size === 0 || this.submitting) return;
+    if (!this.task || this.selectedOptionIds.size === 0 || this.submitting || this.incorrectFeedback) return;
 
     this.submitting = true;
 
@@ -148,8 +158,15 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       }
     } else if (response.result === 'incorrect') {
       if (response.attemptsLeft > 0) {
-        this.notification.showError('Try again!');
-        this.loadCurrentTask(); // Get next task with fresh token
+        if (this.timerInterval) {
+          clearInterval(this.timerInterval);
+          this.timerInterval = null;
+        }
+        this.incorrectFeedback = true;
+        this.incorrectMessage =
+          response.attemptsLeft === 1
+            ? 'Incorrect answer. You have 1 attempt remaining.'
+            : `Incorrect answer. You have ${response.attemptsLeft} attempts remaining.`;
       } else {
         this.notification.showError('No attempts left');
         this.loadCurrentTask(); // Get next task
@@ -165,6 +182,19 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       this.showingExplanation = false;
       this.loadCurrentTask(); // Get next task
     }
+  }
+
+  onTryAgain(): void {
+    if (this.submitting || !this.task) return;
+
+    this.resetInteractionState();
+    this.loadCurrentTask();
+  }
+
+  private resetInteractionState(): void {
+    this.selectedOptionIds.clear();
+    this.incorrectFeedback = false;
+    this.incorrectMessage = null;
   }
 
   formatTime(seconds: number): string {

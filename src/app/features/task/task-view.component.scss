@@ -137,6 +137,17 @@
   margin: 0;
 }
 
+.incorrect-feedback {
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: #b91c1c;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+  text-align: center;
+}
+
 .task-image-container {
   display: flex;
   justify-content: center;
@@ -175,6 +186,17 @@
 .option-item.selected {
   background: #eff6ff;
   border-color: #3b82f6;
+}
+
+.option-item.incorrect {
+  border-color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.option-item.disabled {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 .option-number {
@@ -270,6 +292,10 @@
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
+}
+
+.try-again-button {
+  background: linear-gradient(135deg, #dc2626, #f97316);
 }
 
 .explanation-overlay {
