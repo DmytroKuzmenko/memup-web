@@ -1417,11 +1417,15 @@ export class ImagePickerComponent implements ControlValueAccessor, OnDestroy {
     console.log('File:', this.pendingFile.name, this.pendingFile.size, 'bytes');
 
     try {
-      // Сжимаем файл перед загрузкой
-      const compressedFile = await this.compressImage(this.pendingFile);
-      console.log('Compressed file:', compressedFile.name, compressedFile.size, 'bytes');
+      // В режиме "original" загружаем исходный файл без сжатия,
+      // иначе используем сжатую версию
+      const fileToUpload =
+        this.mode === 'original'
+          ? this.pendingFile
+          : await this.compressImage(this.pendingFile);
+      console.log('Prepared file for upload:', fileToUpload.name, fileToUpload.size, 'bytes');
 
-      const result = await firstValueFrom(this.uploadService.uploadImageResult(compressedFile));
+      const result = await firstValueFrom(this.uploadService.uploadImageResult(fileToUpload));
       console.log('Upload result:', result);
 
       if (result && typeof result === 'object' && 'url' in result) {
