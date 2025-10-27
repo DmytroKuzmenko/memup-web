@@ -361,6 +361,10 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     return this.toSafeHtml(this.task.taskImageSource);
   }
 
+  isVideoUrl(url: string | null | undefined): boolean {
+    return typeof url === 'string' && url.toLowerCase().endsWith('.mp4');
+  }
+
   private toSafeHtml(value: string | null | undefined): SafeHtml | null {
     return value ? this.sanitizer.bypassSecurityTrustHtml(value) : null;
   }

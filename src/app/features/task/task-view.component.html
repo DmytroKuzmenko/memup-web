@@ -91,11 +91,23 @@
 
       <!-- Task image -->
       <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
-        <img
-          [src]="imageUrl"
-          [alt]="showingExplanation && task.resultImagePath ? 'Result image' : 'Task image'"
-          class="task-image"
-        />
+        <ng-container *ngIf="isVideoUrl(imageUrl); else taskImage">
+          <video
+            [src]="imageUrl"
+            class="task-image"
+            controls
+            autoplay
+            muted
+            playsinline
+          ></video>
+        </ng-container>
+        <ng-template #taskImage>
+          <img
+            [src]="imageUrl"
+            [alt]="showingExplanation && task.resultImagePath ? 'Result image' : 'Task image'"
+            class="task-image"
+          />
+        </ng-template>
         <div
           *ngIf="displayedImageSource as imageSource"
           class="image-source"
