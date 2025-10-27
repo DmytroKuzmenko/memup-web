@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -211,12 +212,16 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
   private onTouched: () => void = () => {};
   private tempPreviewUrl: string | null = null;
 
-  constructor(private uploadService: UploadService) {}
+  constructor(
+    private uploadService: UploadService,
+    private cdr: ChangeDetectorRef,
+  ) {}
 
   writeValue(value: string | null): void {
     this.value = value;
     this.previewUrl = value;
     this.error = null;
+    this.cdr.markForCheck();
   }
 
   registerOnChange(fn: (value: string | null) => void): void {
@@ -229,6 +234,7 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
 
   setDisabledState(isDisabled: boolean): void {
     this.isDisabled = isDisabled;
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -290,6 +296,7 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
     this.onChange(this.value);
     this.onTouched();
     this.changed.emit(this.value);
+    this.cdr.markForCheck();
   }
 
   private async handleFile(file: File): Promise<void> {
@@ -298,6 +305,7 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
     if (!this.validate(file)) {
       this.error = `Allowed format: MP4 up to ${this.maxSizeMb} MB`;
       this.onTouched();
+      this.cdr.markForCheck();
       return;
     }
 
@@ -305,6 +313,7 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
     this.tempPreviewUrl = URL.createObjectURL(file);
     this.previewUrl = this.tempPreviewUrl;
     this.isUploading = true;
+    this.cdr.markForCheck();
 
     try {
       const result = await firstValueFrom(this.uploadService.uploadFile(file));
@@ -315,11 +324,13 @@ export class VideoPickerComponent implements ControlValueAccessor, OnDestroy {
     } catch (error) {
       console.error('Video upload failed', error);
       this.error = 'Failed to upload video. Please try again.';
+      this.cdr.markForCheck();
     } finally {
       this.isUploading = false;
       this.revokeTempPreview();
       this.previewUrl = this.value;
       this.onTouched();
+      this.cdr.markForCheck();
     }
   }
 
