@@ -246,6 +246,9 @@ export class LanguageService {
             next: 'Next',
           },
         },
+        intro: {
+          start: 'Start',
+        },
       },
       common: {
         close: 'Close',
@@ -365,6 +368,9 @@ export class LanguageService {
           actions: {
             next: 'Далі',
           },
+        },
+        intro: {
+          start: 'Почати',
         },
       },
       common: {
@@ -488,6 +494,9 @@ export class LanguageService {
           actions: {
             next: 'Weiter',
           },
+        },
+        intro: {
+          start: 'Starten',
         },
       },
       common: {

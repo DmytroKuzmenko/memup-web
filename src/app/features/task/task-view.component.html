@@ -15,15 +15,21 @@
       <ng-container *ngIf="!introLoading && !introError && levelIntro">
         <div class="intro-panel" *ngIf="!showAnimationImage">
           <div class="intro-header">
-            <div class="intro-header-label">{{ levelIntro.headerText || levelIntro.levelName }}</div>
-          </div>
-
-          <div class="intro-body">
-            <button class="intro-start-button" (click)="onStartLevel()" [disabled]="animationPlaying">
-              Начать
-            </button>
+            <div class="intro-header-label">
+              {{ levelIntro.headerText || levelIntro.levelName }}
+            </div>
           </div>
         </div>
+
+        <!-- start button moved into intro-overlay (sibling of intro-panel) so it's visually part of the overlay -->
+        <button
+          *ngIf="!showAnimationImage"
+          class="intro-start-button"
+          (click)="onStartLevel()"
+          [disabled]="animationPlaying"
+        >
+          {{ 'game.intro.start' | translate }}
+        </button>
 
         <div
           *ngIf="showAnimationImage && levelIntro.animationImageUrl"

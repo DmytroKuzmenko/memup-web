@@ -48,6 +48,22 @@
   gap: 2.5rem;
 }
 
+/* remove outer border from intro panel (no external frame) and remove padding */
+.intro-panel {
+  border: none;
+  padding: 0;
+}
+
+/* place intro panel at top center of the viewport */
+.intro-overlay .intro-panel {
+  position: fixed;
+  top: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30; /* above animation layer (10) and start button (20) */
+  width: min(720px, 96%);
+}
+
 .intro-header-label {
   display: inline-block;
   width: 100%;
@@ -164,7 +180,8 @@
   left: 50%;
   bottom: 1.5rem;
   transform: translateX(-50%) translateY(0);
-  z-index: 20;
+  /* place above the intro panel so it's always visible at the bottom */
+  z-index: 40;
 }
 
 .intro-overlay .intro-start-button:hover {
