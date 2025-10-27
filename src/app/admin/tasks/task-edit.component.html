@@ -52,16 +52,34 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Task image</label>
-          <app-image-picker
-            formControlName="imagePath"
-            [mode]="'original'"
-            label="Image (optional)"
-          ></app-image-picker>
+          <div class="flex items-center justify-between gap-3">
+            <label class="text-sm font-medium">Task media</label>
+            <select
+              class="rounded-xl border border-neutral-300 px-3 py-1 text-sm"
+              [value]="taskMediaType"
+              (change)="onTaskMediaTypeChange($any($event.target).value)"
+            >
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </div>
+          <ng-container [ngSwitch]="taskMediaType">
+            <app-image-picker
+              *ngSwitchCase="'image'"
+              formControlName="imagePath"
+              [mode]="'original'"
+              label="Image (optional)"
+            ></app-image-picker>
+            <app-video-picker
+              *ngSwitchCase="'video'"
+              formControlName="imagePath"
+              label="Video (optional)"
+            ></app-video-picker>
+          </ng-container>
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Task image source</label>
+          <label class="text-sm font-medium">Task media source</label>
           <input
             class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="taskImageSource"
@@ -70,16 +88,34 @@
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Result image</label>
-          <app-image-picker
-            formControlName="resultImagePath"
-            [mode]="'original'"
-            label="Image (optional)"
-          ></app-image-picker>
+          <div class="flex items-center justify-between gap-3">
+            <label class="text-sm font-medium">Result media</label>
+            <select
+              class="rounded-xl border border-neutral-300 px-3 py-1 text-sm"
+              [value]="resultMediaType"
+              (change)="onResultMediaTypeChange($any($event.target).value)"
+            >
+              <option value="image">Image</option>
+              <option value="video">Video</option>
+            </select>
+          </div>
+          <ng-container [ngSwitch]="resultMediaType">
+            <app-image-picker
+              *ngSwitchCase="'image'"
+              formControlName="resultImagePath"
+              [mode]="'original'"
+              label="Image (optional)"
+            ></app-image-picker>
+            <app-video-picker
+              *ngSwitchCase="'video'"
+              formControlName="resultImagePath"
+              label="Video (optional)"
+            ></app-video-picker>
+          </ng-container>
         </div>
 
         <div class="grid gap-1.5">
-          <label class="text-sm font-medium">Result image source</label>
+          <label class="text-sm font-medium">Result media source</label>
           <input
             class="w-full rounded-xl border border-neutral-300 px-3 py-2"
             formControlName="resultImageSource"

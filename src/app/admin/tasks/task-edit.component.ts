@@ -8,12 +8,13 @@ import { TaskService, Task, TaskOption, TaskType } from '../../task.service';
 import { LevelService, Level } from '../../level.service';
 
 import { ImagePickerComponent } from '../../shared/components/image-picker.component';
+import { VideoPickerComponent } from '../../shared/components/video-picker.component';
 import { UploadService } from '../../shared/services/upload.service';
 
 @Component({
   selector: 'app-task-edit',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, ImagePickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, ImagePickerComponent, VideoPickerComponent],
   templateUrl: './task-edit.component.html',
 })
 export class TaskEditComponent {
@@ -27,6 +28,9 @@ export class TaskEditComponent {
   id: string | null = null;
   /** Секции теперь как поток из API */
   levels$!: Observable<Level[]>;
+
+  taskMediaType: 'image' | 'video' = 'image';
+  resultMediaType: 'image' | 'video' = 'image';
 
   form = this.fb.group({
     levelId: [null as string | null, Validators.required],
@@ -124,6 +128,9 @@ export class TaskEditComponent {
               );
             });
           console.log('Form values after patch:', this.form.getRawValue());
+
+          this.taskMediaType = this.detectMediaType(task.imagePath ?? null);
+          this.resultMediaType = this.detectMediaType(task.resultImagePath ?? null);
         },
         error: (error) => {
           console.error('❌ Error loading task:', error);
@@ -264,6 +271,24 @@ export class TaskEditComponent {
     else this.router.navigate(['/admin/sections']);
   }
 
+  onTaskMediaTypeChange(type: 'image' | 'video') {
+    if (this.taskMediaType === type) return;
+    this.taskMediaType = type;
+    const control = this.form.get('imagePath');
+    control?.setValue('');
+    control?.markAsDirty();
+    control?.markAsTouched();
+  }
+
+  onResultMediaTypeChange(type: 'image' | 'video') {
+    if (this.resultMediaType === type) return;
+    this.resultMediaType = type;
+    const control = this.form.get('resultImagePath');
+    control?.setValue('');
+    control?.markAsDirty();
+    control?.markAsTouched();
+  }
+
   private async uploadImageIfNeeded(imageValue: string | null): Promise<string | null> {
     if (!imageValue) return null;
 
@@ -322,6 +347,24 @@ export class TaskEditComponent {
     }
 
     const extension = mime.split('/')[1] || 'png';
-    return new File([u8arr], `image.${extension}`, { type: mime });
+    return new File([u8arr], `media.${extension}`, { type: mime });
+  }
+
+  private detectMediaType(value: string | null): 'image' | 'video' {
+    if (!value) {
+      return 'image';
+    }
+
+    const lower = value.toLowerCase();
+    if (lower.startsWith('data:video/')) {
+      return 'video';
+    }
+
+    const hasMp4Extension = /\.mp4($|\?)/.test(lower);
+    if (hasMp4Extension) {
+      return 'video';
+    }
+
+    return 'image';
   }
 }
