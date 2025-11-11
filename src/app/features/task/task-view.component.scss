@@ -54,14 +54,11 @@
   padding: 0;
 }
 
-/* place intro panel at top center of the viewport */
+/* center intro panel within the overlay */
 .intro-overlay .intro-panel {
-  position: fixed;
-  top: 1.25rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 30; /* above animation layer (10) and start button (20) */
+  position: relative;
   width: min(720px, 96%);
+  z-index: 30; /* above animation layer (10) and start button (20) */
 }
 
 .intro-header-label {
@@ -77,8 +74,8 @@
     0 18px 30px rgba(15, 23, 42, 0.4);
   font-family: 'Roboto Mono', 'DM Mono', 'Courier New', monospace;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
-  letter-spacing: 0.4rem;
-  text-transform: uppercase;
+  letter-spacing: 0.08rem;
+  text-align: center;
   color: #f8fafc;
   text-shadow:
     0 0 12px rgba(56, 189, 248, 0.45),
