@@ -13,6 +13,7 @@ export interface TaskOption {
   label: string;
   isCorrect: boolean;
   imageUrl?: string;
+  correctAnswer?: string;
 }
 
 export interface Task {
@@ -33,11 +34,7 @@ export interface Task {
   pointsAttempt3?: number; // было pointsThird
   explanationText?: string;
 
-  // anagram
-  charsCsv?: string;
-  correctAnswer?: string;
-
-  // image_choice / text_choice
+  // answer options
   options?: TaskOption[];
 
   createdAt: Date;
@@ -50,6 +47,7 @@ interface TaskOptionDto {
   label: string;
   isCorrect: boolean;
   imageUrl?: string | null;
+  correctAnswer?: string | null;
 }
 
 interface TaskDto {
@@ -66,10 +64,7 @@ interface TaskDto {
   pointsAttempt2?: number;
   pointsAttempt3?: number;
   explanationText?: string | null;
-  // Новые поля для анаграмм и вариантов ответов
   options?: TaskOptionDto[];
-  charsCsv?: string | null;
-  correctAnswer?: string | null;
   taskImageSource?: string | null;
   resultImagePath?: string | null;
   resultImageSource?: string | null;
@@ -83,6 +78,7 @@ function mapOptionDto(option: TaskOptionDto): TaskOption {
     label: option.label,
     isCorrect: option.isCorrect,
     imageUrl: option.imageUrl ?? undefined,
+    correctAnswer: option.correctAnswer ?? undefined,
   };
 }
 
@@ -98,6 +94,10 @@ function mapOptionToDto(option: TaskOption): TaskOptionDto {
 
   if (option.imageUrl) {
     mapped.imageUrl = option.imageUrl;
+  }
+
+  if (option.correctAnswer !== undefined) {
+    mapped.correctAnswer = option.correctAnswer;
   }
 
   return mapped;
@@ -118,10 +118,7 @@ function mapDto(dto: TaskDto): Task {
     pointsAttempt2: dto.pointsAttempt2,
     pointsAttempt3: dto.pointsAttempt3,
     explanationText: dto.explanationText ?? undefined,
-    // Новые поля для анаграмм и вариантов ответов
     options: dto.options?.map(mapOptionDto) ?? undefined,
-    charsCsv: dto.charsCsv ?? undefined,
-    correctAnswer: dto.correctAnswer ?? undefined,
     taskImageSource: dto.taskImageSource ?? undefined,
     resultImagePath: dto.resultImagePath ?? undefined,
     resultImageSource: dto.resultImageSource ?? undefined,
@@ -215,10 +212,7 @@ export class TaskService {
       pointsAttempt3: data.pointsAttempt3 ?? 0,
       explanationText: data.explanationText ?? '',
       status: data.status ?? 0,
-      // Добавляем поля для анаграмм и вариантов ответов
       options: (data.options ?? []).map(mapOptionToDto),
-      charsCsv: data.charsCsv ?? '',
-      correctAnswer: data.correctAnswer ?? '',
       taskImageSource: data.taskImageSource || '',
       resultImagePath: data.resultImagePath || '',
       resultImageSource: data.resultImageSource || '',
@@ -248,10 +242,7 @@ export class TaskService {
       pointsAttempt3: data.pointsAttempt3,
       explanationText: data.explanationText,
       status: data.status,
-      // Добавляем поля для анаграмм и вариантов ответов
       options: data.options?.map(mapOptionToDto),
-      charsCsv: data.charsCsv,
-      correctAnswer: data.correctAnswer,
       taskImageSource: data.taskImageSource || '',
       resultImagePath: data.resultImagePath || '',
       resultImageSource: data.resultImageSource || '',

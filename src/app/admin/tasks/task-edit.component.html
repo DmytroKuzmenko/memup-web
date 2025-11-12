@@ -200,29 +200,9 @@
           ></textarea>
         </div>
 
-        <!-- Type: anagram -->
+        <!-- Answer options -->
         <div
-          *ngIf="form.value.type === 'anagram'"
-          class="grid gap-1.5 rounded-xl border border-neutral-200 p-3"
-        >
-          <div class="text-sm font-semibold">Build the word</div>
-          <label class="text-sm">Characters list (comma-separated)</label>
-          <input
-            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-            formControlName="charsCsv"
-            placeholder="B,E,R,L,I,N"
-          />
-          <label class="text-sm">Correct answer</label>
-          <input
-            class="w-full rounded-xl border border-neutral-300 px-3 py-2"
-            formControlName="correctAnswer"
-            placeholder="BERLIN"
-          />
-        </div>
-
-        <!-- Type: image_choice / text_choice -->
-        <div
-          *ngIf="form.value.type === 'image_choice' || form.value.type === 'text_choice'"
+          *ngIf="form.value.type === 'image_choice' || form.value.type === 'text_choice' || form.value.type === 'anagram'"
           class="grid gap-2 rounded-xl border border-neutral-200 p-3"
         >
           <div class="text-sm font-semibold">Answer options</div>
@@ -232,25 +212,50 @@
             <ng-container *ngFor="let opt of options.controls; let i = index">
               <div [formGroupName]="i" class="grid gap-2 rounded-xl border border-neutral-200 p-2">
                 <div class="grid gap-3">
-                  <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
-                    <input
-                      class="rounded-xl border border-neutral-300 px-3 py-2"
-                      formControlName="label"
-                      placeholder="Label"
-                    />
-                    <label class="inline-flex items-center gap-2">
-                      <input type="checkbox" formControlName="isCorrect" />
-                      Correct answer
-                    </label>
+                  <div *ngIf="form.value.type === 'anagram'; else choiceOption" class="grid gap-1.5 md:grid-cols-2 md:gap-3">
+                    <div class="grid gap-1.5">
+                      <label class="text-sm font-medium">Parts</label>
+                      <textarea
+                        rows="2"
+                        class="rounded-xl border border-neutral-300 px-3 py-2"
+                        formControlName="label"
+                        placeholder="Enter value"
+                      ></textarea>
+                    </div>
+                    <div class="grid gap-1.5">
+                      <label class="text-sm font-medium">Correct answer</label>
+                      <textarea
+                        rows="2"
+                        class="rounded-xl border border-neutral-300 px-3 py-2"
+                        formControlName="correctAnswer"
+                        placeholder="Correct answer"
+                      ></textarea>
+                    </div>
                   </div>
-                  <div *ngIf="form.value.type === 'image_choice'">
-                    <app-image-picker
-                      formControlName="imageUrl"
-                      [mode]="'original'"
-                      [previewWidth]="200"
-                      [previewHeight]="120"
-                    ></app-image-picker>
-                  </div>
+                  <ng-template #choiceOption>
+                    <div class="grid gap-1.5 md:grid-cols-2 md:gap-3">
+                      <div class="grid gap-1.5">
+                        <label class="text-sm font-medium">Label</label>
+                        <input
+                          class="rounded-xl border border-neutral-300 px-3 py-2"
+                          formControlName="label"
+                          placeholder="Label"
+                        />
+                      </div>
+                      <label class="inline-flex items-center gap-2">
+                        <input type="checkbox" formControlName="isCorrect" />
+                        Correct answer
+                      </label>
+                    </div>
+                    <div *ngIf="form.value.type === 'image_choice'">
+                      <app-image-picker
+                        formControlName="imageUrl"
+                        [mode]="'original'"
+                        [previewWidth]="200"
+                        [previewHeight]="120"
+                      ></app-image-picker>
+                    </div>
+                  </ng-template>
                 </div>
 
                 <div class="flex justify-end">

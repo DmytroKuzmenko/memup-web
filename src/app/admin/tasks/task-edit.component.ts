@@ -49,10 +49,6 @@ export class TaskEditComponent {
     pointsAttempt3: [null as number | null], // было pointsThird
     explanationText: [''],
 
-    // anagram
-    charsCsv: [''],
-    correctAnswer: [''],
-
     // options
     options: this.fb.array<FormGroup>([]),
   });
@@ -111,8 +107,6 @@ export class TaskEditComponent {
             pointsAttempt2: task.pointsAttempt2 ?? null,
             pointsAttempt3: task.pointsAttempt3 ?? null,
             explanationText: task.explanationText ?? '',
-            charsCsv: task.charsCsv ?? '',
-            correctAnswer: task.correctAnswer ?? '',
           });
 
           (task.options ?? [])
@@ -124,6 +118,7 @@ export class TaskEditComponent {
                   label: [o.label, Validators.required],
                   isCorrect: [o.isCorrect],
                   imageUrl: [o.imageUrl ?? ''],
+                  correctAnswer: [o.correctAnswer ?? ''],
                 }),
               );
             });
@@ -145,15 +140,16 @@ export class TaskEditComponent {
   }
 
   addOption() {
-    this.options.push(
-      this.fb.group({
-        id: [null as string | null],
-        label: ['', Validators.required],
-        isCorrect: [false],
-        imageUrl: [''],
-      }),
-    );
-  }
+      this.options.push(
+        this.fb.group({
+          id: [null as string | null],
+          label: ['', Validators.required],
+          isCorrect: [false],
+          imageUrl: [''],
+          correctAnswer: [''],
+        }),
+      );
+    }
 
   removeOption(i: number) {
     this.options.removeAt(i);
@@ -189,6 +185,8 @@ export class TaskEditComponent {
         this.uploadOptionImages(v.options),
       ]);
 
+      const isAnagram = v.type === 'anagram';
+
       const mappedOptions = (this.options.controls as FormGroup[])
         .map((g, index) => {
           const val = g.getRawValue() as {
@@ -196,6 +194,7 @@ export class TaskEditComponent {
             label: string;
             isCorrect: boolean;
             imageUrl?: string;
+            correctAnswer?: string;
           };
 
           const option: TaskOption = {
@@ -203,6 +202,11 @@ export class TaskEditComponent {
             isCorrect: !!val.isCorrect,
             imageUrl: optionImageUrls[index] || undefined,
           };
+
+          const trimmedCorrectAnswer = val.correctAnswer?.trim() ?? '';
+          if (isAnagram || trimmedCorrectAnswer) {
+            option.correctAnswer = trimmedCorrectAnswer;
+          }
 
           if (val.id) {
             option.id = val.id;
@@ -228,8 +232,6 @@ export class TaskEditComponent {
         pointsAttempt2: v.pointsAttempt2 != null ? Number(v.pointsAttempt2) : undefined,
         pointsAttempt3: v.pointsAttempt3 != null ? Number(v.pointsAttempt3) : undefined,
         explanationText: v.explanationText || '',
-        charsCsv: v.charsCsv || '',
-        correctAnswer: v.correctAnswer || '',
         options: mappedOptions,
       };
 
