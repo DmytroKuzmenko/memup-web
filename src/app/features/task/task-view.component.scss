@@ -123,8 +123,8 @@
   position: absolute;
   top: 50%;
   left: 0;
-  -webkit-transform: translate(-150vw, -50%);
-          transform: translate(-150vw, -50%);
+  -webkit-transform: translate(calc(-100% - 100vw), -50%);
+          transform: translate(calc(-100% - 100vw), -50%);
   will-change: transform;
   /* Display at the image's intrinsic/original size. Remove any CSS size caps. */
   max-width: none;
@@ -232,23 +232,23 @@
 
 @keyframes intro-slide {
   0% {
-    -webkit-transform: translate(-150vw, -50%);
-            transform: translate(-150vw, -50%);
+    -webkit-transform: translate(calc(-100% - 100vw), -50%);
+            transform: translate(calc(-100% - 100vw), -50%);
   }
   100% {
-    -webkit-transform: translate(150vw, -50%);
-            transform: translate(150vw, -50%);
+    -webkit-transform: translate(calc(100vw + 100%), -50%);
+            transform: translate(calc(100vw + 100%), -50%);
   }
 }
 
 @-webkit-keyframes intro-slide {
   0% {
-    -webkit-transform: translate(-150vw, -50%);
-            transform: translate(-150vw, -50%);
+    -webkit-transform: translate(calc(-100% - 100vw), -50%);
+            transform: translate(calc(-100% - 100vw), -50%);
   }
   100% {
-    -webkit-transform: translate(150vw, -50%);
-            transform: translate(150vw, -50%);
+    -webkit-transform: translate(calc(100vw + 100%), -50%);
+            transform: translate(calc(100vw + 100%), -50%);
   }
 }
 
