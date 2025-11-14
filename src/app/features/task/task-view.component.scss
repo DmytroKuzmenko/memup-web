@@ -125,7 +125,8 @@
   left: 0;
   --intro-slide-start: calc(-100% - 15vw);
   --intro-slide-end: calc(100vw + 15vw);
-  transform: translate(var(--intro-slide-start), -50%);
+  -webkit-transform: translate(var(--intro-slide-start), -50%);
+          transform: translate(var(--intro-slide-start), -50%);
   will-change: transform;
   /* Display at the image's intrinsic/original size. Remove any CSS size caps. */
   max-width: none;
