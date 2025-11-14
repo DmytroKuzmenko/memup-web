@@ -130,11 +130,11 @@ function mapDto(dto: TaskDto): Task {
 function mapTaskType(type: number): TaskType {
   switch (type) {
     case 0:
-      return 'text_choice';
+      return 'anagram';
     case 1:
       return 'image_choice';
     case 2:
-      return 'anagram';
+      return 'text_choice';
     default:
       return 'text_choice';
   }
@@ -142,14 +142,14 @@ function mapTaskType(type: number): TaskType {
 
 function mapTaskTypeToNumber(type: TaskType): number {
   switch (type) {
-    case 'text_choice':
+    case 'anagram':
       return 0;
     case 'image_choice':
       return 1;
-    case 'anagram':
+    case 'text_choice':
       return 2;
     default:
-      return 0;
+      return 2;
   }
 }
 

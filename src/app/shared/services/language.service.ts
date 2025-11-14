@@ -245,6 +245,10 @@ export class LanguageService {
           actions: {
             next: 'Next',
           },
+          anagram: {
+            resultHint: 'Tap a part to place it here',
+            availableHint: 'All parts are already used',
+          },
         },
         intro: {
           start: 'Start',
@@ -367,6 +371,10 @@ export class LanguageService {
           defaultTitle: 'Завдання',
           actions: {
             next: 'Далі',
+          },
+          anagram: {
+            resultHint: 'Натисніть частину, щоб додати сюди',
+            availableHint: 'Усі частини вже використано',
           },
         },
         intro: {
@@ -493,6 +501,10 @@ export class LanguageService {
           defaultTitle: 'Aufgabe',
           actions: {
             next: 'Weiter',
+          },
+          anagram: {
+            resultHint: 'Teil antippen, um ihn hier abzulegen',
+            availableHint: 'Alle Teile sind bereits platziert',
           },
         },
         intro: {

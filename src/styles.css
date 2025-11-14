@@ -21,3 +21,8 @@ body {
 .animate-fade-in {
   animation: fade-in 0.5s ease-out forwards;
 }
+
+/* Force light color scheme for built-in controls and form rendering */
+:root {
+  color-scheme: light;
+}

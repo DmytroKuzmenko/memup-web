@@ -116,34 +116,72 @@
       </div>
 
       <!-- Options -->
-      <div class="options-container">
-        <div
-          *ngFor="let option of task.options; let i = index"
-          class="option-item"
-          [class.selected]="selectedOptionIds.has(option.id)"
-          [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
-          [class.correct]="showingExplanation && isOptionCorrect(option.id)"
-          [class.disabled]="incorrectFeedback || showingExplanation"
-          (click)="onOptionToggle(option.id)"
-        >
-          <div class="option-number">{{ i + 1 }}</div>
-          <div class="option-content">
-            <div class="option-label" [innerHTML]="option.label"></div>
-            <img
-              *ngIf="option.imageUrl"
-              [src]="option.imageUrl"
-              alt="Option image"
-              class="option-image"
-            />
+      <ng-container *ngIf="isAnagramTask; else defaultTaskOptions">
+        <div class="anagram-section">
+          <div class="anagram-pieces result-zone">
+            <button
+              type="button"
+              class="anagram-piece"
+              *ngFor="let piece of anagramResultPieces"
+              (click)="movePieceToSource(piece.id)"
+              [disabled]="incorrectFeedback || showingExplanation"
+            >
+              {{ piece.text }}
+            </button>
+            <div *ngIf="anagramResultPieces.length === 0" class="anagram-placeholder">
+              {{ 'game.task.anagram.resultHint' | translate }}
+            </div>
           </div>
-          <div class="option-radio">
-            <!-- checkbox-style indicator for multi-select -->
-            <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
-              <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+          <div *ngIf="anagramAnswer" class="anagram-result-display">
+            <span>{{ anagramAnswer }}</span>
+          </div>
+          <div class="anagram-divider" aria-hidden="true"></div>
+          <div class="anagram-pieces available-zone">
+            <button
+              type="button"
+              class="anagram-piece"
+              *ngFor="let piece of anagramAvailablePieces"
+              (click)="movePieceToResult(piece.id)"
+              [disabled]="incorrectFeedback || showingExplanation"
+            >
+              {{ piece.text }}
+            </button>
+            <div *ngIf="anagramAvailablePieces.length === 0" class="anagram-placeholder">
+              {{ 'game.task.anagram.availableHint' | translate }}
             </div>
           </div>
         </div>
-      </div>
+      </ng-container>
+      <ng-template #defaultTaskOptions>
+        <div class="options-container">
+          <div
+            *ngFor="let option of task.options; let i = index"
+            class="option-item"
+            [class.selected]="selectedOptionIds.has(option.id)"
+            [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
+            [class.correct]="showingExplanation && isOptionCorrect(option.id)"
+            [class.disabled]="incorrectFeedback || showingExplanation"
+            (click)="onOptionToggle(option.id)"
+          >
+            <div class="option-number">{{ i + 1 }}</div>
+            <div class="option-content">
+              <div class="option-label" [innerHTML]="option.label"></div>
+              <img
+                *ngIf="option.imageUrl"
+                [src]="option.imageUrl"
+                alt="Option image"
+                class="option-image"
+              />
+            </div>
+            <div class="option-radio">
+              <!-- checkbox-style indicator for multi-select -->
+              <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
+                <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </ng-template>
 
       <!-- Submit button -->
       <div class="submit-container" *ngIf="!showingExplanation">

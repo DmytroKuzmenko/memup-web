@@ -21,6 +21,9 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   // Support multiple selected option ids
   selectedOptionIds: Set<string> = new Set<string>();
   correctOptionIds: Set<string> = new Set<string>();
+  anagramAvailablePieces: { id: string; text: string }[] = [];
+  anagramResultPieces: { id: string; text: string }[] = [];
+  anagramAnswer: string = '';
   incorrectFeedback = false;
   incorrectMessage: string | null = null;
   timeRemaining: number = 0;
@@ -42,6 +45,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   private notification = inject(NotificationService);
   private sanitizer = inject(DomSanitizer);
   private levelCompletionState: { earnedScore?: number; maxScore?: number } | null = null;
+  private anagramPieceCounter = 0;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -74,6 +78,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       next: (response) => {
         if (response.task) {
           this.task = response.task;
+          this.initializeAnagramState();
           this.startTimer();
           this.loading = false;
         } else {
@@ -323,6 +328,10 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.showingExplanation = false;
     this.explanationText = '';
     this.correctOptionIds.clear();
+    this.anagramAvailablePieces = [];
+    this.anagramResultPieces = [];
+    this.anagramAnswer = '';
+    this.anagramPieceCounter = 0;
   }
 
   formatTime(seconds: number): string {
@@ -367,5 +376,82 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
   private toSafeHtml(value: string | null | undefined): SafeHtml | null {
     return value ? this.sanitizer.bypassSecurityTrustHtml(value) : null;
+  }
+
+  get isAnagramTask(): boolean {
+    return this.task?.type === 'BuildWord';
+  }
+
+  movePieceToResult(pieceId: string): void {
+    if (!this.isAnagramTask || this.incorrectFeedback || this.showingExplanation) {
+      return;
+    }
+
+    const idx = this.anagramAvailablePieces.findIndex((piece) => piece.id === pieceId);
+    if (idx === -1) return;
+
+    const [piece] = this.anagramAvailablePieces.splice(idx, 1);
+    this.anagramResultPieces.push(piece);
+    this.syncAnagramAnswer();
+  }
+
+  movePieceToSource(pieceId: string): void {
+    if (!this.isAnagramTask || this.incorrectFeedback || this.showingExplanation) {
+      return;
+    }
+
+    const idx = this.anagramResultPieces.findIndex((piece) => piece.id === pieceId);
+    if (idx === -1) return;
+
+    const [piece] = this.anagramResultPieces.splice(idx, 1);
+    this.anagramAvailablePieces.push(piece);
+    this.syncAnagramAnswer();
+  }
+
+  private initializeAnagramState(): void {
+    this.anagramAvailablePieces = [];
+    this.anagramResultPieces = [];
+    this.anagramAnswer = '';
+    this.anagramPieceCounter = 0;
+
+    if (!this.isAnagramTask || !this.task) {
+      return;
+    }
+
+    const pieces: { id: string; text: string }[] = [];
+
+    this.task.options.forEach((option, optionIndex) => {
+      const parts = option.label?.split(';') ?? [];
+      parts.forEach((rawPart, partIndex) => {
+        const text = rawPart.trim();
+        if (!text) return;
+        pieces.push({
+          id: `piece-${option.id || optionIndex}-${partIndex}-${this.anagramPieceCounter++}`,
+          text,
+        });
+      });
+    });
+
+    this.shufflePieces(pieces);
+    this.anagramAvailablePieces = pieces;
+    this.syncAnagramAnswer();
+  }
+
+  private syncAnagramAnswer(): void {
+    if (!this.isAnagramTask) return;
+
+    const answer = this.anagramResultPieces.map((piece) => piece.text).join('').trim();
+    this.anagramAnswer = answer;
+    this.selectedOptionIds.clear();
+    if (answer) {
+      this.selectedOptionIds.add(answer);
+    }
+  }
+
+  private shufflePieces(pieces: { id: string; text: string }[]): void {
+    for (let i = pieces.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+    }
   }
 }
