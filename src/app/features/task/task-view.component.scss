@@ -115,6 +115,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   pointer-events: none;
   z-index: 10;
 }
@@ -127,7 +128,8 @@
           transform: translate(-100vw, -50%);
   will-change: transform;
   /* Set fixed height for consistent animation, let width adjust proportionally */
-  height: 60vh;
+  height: clamp(120px, 10vh, 600px);
+  max-width: none;
   width: auto;
   object-fit: contain;
   opacity: 0;
@@ -135,7 +137,38 @@
 
 @media (max-width: 768px) {
   .intro-animation-image {
-    height: 70vh;
+    height: clamp(120px, 10vh, 600px);
+    max-width: none;
+    left: 50%;
+    -webkit-transform: translate(calc(-50vw - 50%), -50%);
+            transform: translate(calc(-50vw - 50%), -50%);
+  }
+
+  .intro-animation-image.playing {
+    -webkit-animation: intro-slide-mobile 3s linear forwards;
+            animation: intro-slide-mobile 3s linear forwards;
+  }
+
+  @keyframes intro-slide-mobile {
+    0% {
+      -webkit-transform: translate(calc(-50vw - 50%), -50%);
+              transform: translate(calc(-50vw - 50%), -50%);
+    }
+    100% {
+      -webkit-transform: translate(calc(50vw + 50%), -50%);
+              transform: translate(calc(50vw + 50%), -50%);
+    }
+  }
+
+  @-webkit-keyframes intro-slide-mobile {
+    0% {
+      -webkit-transform: translate(calc(-50vw - 50%), -50%);
+              transform: translate(calc(-50vw - 50%), -50%);
+    }
+    100% {
+      -webkit-transform: translate(calc(50vw + 50%), -50%);
+              transform: translate(calc(50vw + 50%), -50%);
+    }
   }
 }
 
