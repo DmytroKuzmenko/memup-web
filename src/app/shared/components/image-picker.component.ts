@@ -540,8 +540,8 @@ import { UploadService } from '../services/upload.service';
         }
       }
 
-      /* Темная тема */
-      @media (prefers-color-scheme: dark) {
+      /* Темная тема (только при наличии класса .dark на хосте) */
+      :host(.dark) {
         :host {
           --gray-50: #1f2937;
           --gray-100: #374151;
