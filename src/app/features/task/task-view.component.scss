@@ -123,7 +123,7 @@
   position: absolute;
   top: 50%;
   left: 0;
-  transform: translate3d(-100%, -50%, 0);
+  transform: translate(-120vw, -50%);
   will-change: transform;
   /* Display at the image's intrinsic/original size. Remove any CSS size caps. */
   max-width: none;
@@ -136,7 +136,8 @@
 }
 
 .intro-animation-image.playing {
-  animation: intro-slide 3s linear forwards;
+  -webkit-animation: intro-slide 3s linear forwards;
+          animation: intro-slide 3s linear forwards;
   opacity: 1;
 }
 
@@ -230,10 +231,21 @@
 
 @keyframes intro-slide {
   0% {
-    transform: translate3d(-100%, -50%, 0);
+    transform: translate(-120vw, -50%);
   }
   100% {
-    transform: translate3d(100vw, -50%, 0);
+    transform: translate(120vw, -50%);
+  }
+}
+
+@-webkit-keyframes intro-slide {
+  0% {
+    -webkit-transform: translate(-120vw, -50%);
+            transform: translate(-120vw, -50%);
+  }
+  100% {
+    -webkit-transform: translate(120vw, -50%);
+            transform: translate(120vw, -50%);
   }
 }
 
