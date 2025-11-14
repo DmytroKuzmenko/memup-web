@@ -122,18 +122,21 @@
 .intro-animation-image {
   position: absolute;
   top: 50%;
-  left: 0;
-  -webkit-transform: translate(calc(-100% - 100vw), -50%);
-          transform: translate(calc(-100% - 100vw), -50%);
+  left: -100%;
+  -webkit-transform: translate(-100vw, -50%);
+          transform: translate(-100vw, -50%);
   will-change: transform;
-  /* Display at the image's intrinsic/original size. Remove any CSS size caps. */
-  max-width: none;
-  max-height: none;
+  /* Set fixed height for consistent animation, let width adjust proportionally */
+  height: 60vh;
   width: auto;
-  height: auto;
-  /* object-fit not used when natural size is preserved, but set to 'none' to avoid scaling behaviors */
-  object-fit: none;
+  object-fit: contain;
   opacity: 0;
+}
+
+@media (max-width: 768px) {
+  .intro-animation-image {
+    height: 70vh;
+  }
 }
 
 .intro-animation-image.playing {
@@ -232,23 +235,23 @@
 
 @keyframes intro-slide {
   0% {
-    -webkit-transform: translate(calc(-100% - 100vw), -50%);
-            transform: translate(calc(-100% - 100vw), -50%);
+    -webkit-transform: translate(-100vw, -50%);
+            transform: translate(-100vw, -50%);
   }
   100% {
-    -webkit-transform: translate(calc(100vw + 100%), -50%);
-            transform: translate(calc(100vw + 100%), -50%);
+    -webkit-transform: translate(200vw, -50%);
+            transform: translate(200vw, -50%);
   }
 }
 
 @-webkit-keyframes intro-slide {
   0% {
-    -webkit-transform: translate(calc(-100% - 100vw), -50%);
-            transform: translate(calc(-100% - 100vw), -50%);
+    -webkit-transform: translate(-100vw, -50%);
+            transform: translate(-100vw, -50%);
   }
   100% {
-    -webkit-transform: translate(calc(100vw + 100%), -50%);
-            transform: translate(calc(100vw + 100%), -50%);
+    -webkit-transform: translate(200vw, -50%);
+            transform: translate(200vw, -50%);
   }
 }
 
