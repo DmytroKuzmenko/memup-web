@@ -2,10 +2,26 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
-import { TaskVm, SubmitResponse, LevelIntroVm } from '../../shared/models/game.models';
+import {
+  TaskVm,
+  SubmitResponse,
+  LevelIntroVm,
+  TaskOptionVm,
+} from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+interface AnagramPiece {
+  id: string;
+  text: string;
+}
+
+interface AnagramState {
+  available: AnagramPiece[];
+  result: AnagramPiece[];
+  answer: string;
+}
 
 @Component({
   selector: 'app-task-view',
@@ -21,9 +37,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   // Support multiple selected option ids
   selectedOptionIds: Set<string> = new Set<string>();
   correctOptionIds: Set<string> = new Set<string>();
-  anagramAvailablePieces: { id: string; text: string }[] = [];
-  anagramResultPieces: { id: string; text: string }[] = [];
-  anagramAnswer: string = '';
+  anagramStates: Record<string, AnagramState> = {};
   incorrectFeedback = false;
   incorrectMessage: string | null = null;
   timeRemaining: number = 0;
@@ -328,9 +342,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.showingExplanation = false;
     this.explanationText = '';
     this.correctOptionIds.clear();
-    this.anagramAvailablePieces = [];
-    this.anagramResultPieces = [];
-    this.anagramAnswer = '';
+    this.anagramStates = {};
     this.anagramPieceCounter = 0;
   }
 
@@ -382,45 +394,61 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     return this.task?.type === 'BuildWord';
   }
 
-  movePieceToResult(pieceId: string): void {
-    if (!this.isAnagramTask || this.incorrectFeedback || this.showingExplanation) {
-      return;
-    }
-
-    const idx = this.anagramAvailablePieces.findIndex((piece) => piece.id === pieceId);
-    if (idx === -1) return;
-
-    const [piece] = this.anagramAvailablePieces.splice(idx, 1);
-    this.anagramResultPieces.push(piece);
-    this.syncAnagramAnswer();
+  trackOption(index: number, option: TaskOptionVm): string {
+    return option.id || `option-${index}`;
   }
 
-  movePieceToSource(pieceId: string): void {
+  getAnagramState(option: TaskOptionVm, index: number): AnagramState | null {
+    return this.anagramStates[this.getAnagramKey(option, index)] || null;
+  }
+
+  getAnagramKey(option: TaskOptionVm, index: number): string {
+    return option.id || `option-${index}`;
+  }
+
+  movePieceToResult(optionKey: string, pieceId: string): void {
     if (!this.isAnagramTask || this.incorrectFeedback || this.showingExplanation) {
       return;
     }
 
-    const idx = this.anagramResultPieces.findIndex((piece) => piece.id === pieceId);
+    const state = this.anagramStates[optionKey];
+    if (!state) return;
+
+    const idx = state.available.findIndex((piece) => piece.id === pieceId);
     if (idx === -1) return;
 
-    const [piece] = this.anagramResultPieces.splice(idx, 1);
-    this.anagramAvailablePieces.push(piece);
-    this.syncAnagramAnswer();
+    const [piece] = state.available.splice(idx, 1);
+    state.result.push(piece);
+    this.syncAnagramAnswers();
+  }
+
+  movePieceToSource(optionKey: string, pieceId: string): void {
+    if (!this.isAnagramTask || this.incorrectFeedback || this.showingExplanation) {
+      return;
+    }
+
+    const state = this.anagramStates[optionKey];
+    if (!state) return;
+
+    const idx = state.result.findIndex((piece) => piece.id === pieceId);
+    if (idx === -1) return;
+
+    const [piece] = state.result.splice(idx, 1);
+    state.available.push(piece);
+    this.syncAnagramAnswers();
   }
 
   private initializeAnagramState(): void {
-    this.anagramAvailablePieces = [];
-    this.anagramResultPieces = [];
-    this.anagramAnswer = '';
+    this.anagramStates = {};
     this.anagramPieceCounter = 0;
 
     if (!this.isAnagramTask || !this.task) {
       return;
     }
 
-    const pieces: { id: string; text: string }[] = [];
-
     this.task.options.forEach((option, optionIndex) => {
+      const optionKey = this.getAnagramKey(option, optionIndex);
+      const pieces: AnagramPiece[] = [];
       const parts = option.label?.split(';') ?? [];
       parts.forEach((rawPart, partIndex) => {
         const text = rawPart.trim();
@@ -430,25 +458,39 @@ export class TaskViewComponent implements OnInit, OnDestroy {
           text,
         });
       });
+      this.shufflePieces(pieces);
+      this.anagramStates[optionKey] = {
+        available: pieces,
+        result: [],
+        answer: '',
+      };
     });
 
-    this.shufflePieces(pieces);
-    this.anagramAvailablePieces = pieces;
-    this.syncAnagramAnswer();
+    this.syncAnagramAnswers();
   }
 
-  private syncAnagramAnswer(): void {
-    if (!this.isAnagramTask) return;
+  private syncAnagramAnswers(): void {
+    if (!this.isAnagramTask || !this.task) return;
 
-    const answer = this.anagramResultPieces.map((piece) => piece.text).join('').trim();
-    this.anagramAnswer = answer;
+    Object.values(this.anagramStates).forEach((state) => {
+      state.answer = state.result.map((piece) => piece.text).join('').trim();
+    });
+
     this.selectedOptionIds.clear();
-    if (answer) {
-      this.selectedOptionIds.add(answer);
+    if (!this.task.options.length) return;
+
+    const orderedAnswers = this.task.options.map((option, index) => {
+      const key = this.getAnagramKey(option, index);
+      return this.anagramStates[key]?.answer || '';
+    });
+
+    if (orderedAnswers.every((answer) => !!answer)) {
+      const combinedAnswer = orderedAnswers.join('|');
+      this.selectedOptionIds.add(combinedAnswer);
     }
   }
 
-  private shufflePieces(pieces: { id: string; text: string }[]): void {
+  private shufflePieces(pieces: AnagramPiece[]): void {
     for (let i = pieces.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [pieces[i], pieces[j]] = [pieces[j], pieces[i]];

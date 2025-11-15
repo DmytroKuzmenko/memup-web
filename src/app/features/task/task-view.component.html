@@ -3,13 +3,13 @@
     <div class="intro-overlay">
       <div *ngIf="introLoading" class="intro-loading">
         <div class="loading-spinner"></div>
-        <p>Подготавливаем уровень...</p>
+        <p>Preparing the level...</p>
       </div>
 
       <div *ngIf="introError && !introLoading" class="intro-error">
         <div class="error-icon">⚠️</div>
         <p>{{ introError }}</p>
-        <button class="retry-button" (click)="retryIntro()">Попробовать ещё раз</button>
+        <button class="retry-button" (click)="retryIntro()">Try Again</button>
       </div>
 
       <ng-container *ngIf="!introLoading && !introError && levelIntro">
@@ -117,39 +117,41 @@
 
       <!-- Options -->
       <ng-container *ngIf="isAnagramTask; else defaultTaskOptions">
-        <div class="anagram-section">
-          <div class="anagram-pieces result-zone">
-            <button
-              type="button"
-              class="anagram-piece"
-              *ngFor="let piece of anagramResultPieces"
-              (click)="movePieceToSource(piece.id)"
-              [disabled]="incorrectFeedback || showingExplanation"
-            >
-              {{ piece.text }}
-            </button>
-            <div *ngIf="anagramResultPieces.length === 0" class="anagram-placeholder">
-              {{ 'game.task.anagram.resultHint' | translate }}
+        <div
+          class="anagram-section"
+          *ngFor="let option of task.options; let i = index; trackBy: trackOption"
+        >
+          <ng-container *ngIf="getAnagramState(option, i) as state">
+            <div class="anagram-pieces result-zone">
+              <button
+                type="button"
+                class="anagram-piece"
+                *ngFor="let piece of state.result"
+                (click)="movePieceToSource(getAnagramKey(option, i), piece.id)"
+                [disabled]="incorrectFeedback || showingExplanation"
+              >
+                {{ piece.text }}
+              </button>
+              <div *ngIf="state.result.length === 0" class="anagram-placeholder">
+                {{ 'game.task.anagram.resultHint' | translate }}
+              </div>
             </div>
-          </div>
-          <div *ngIf="anagramAnswer" class="anagram-result-display">
-            <span>{{ anagramAnswer }}</span>
-          </div>
-          <div class="anagram-divider" aria-hidden="true"></div>
-          <div class="anagram-pieces available-zone">
-            <button
-              type="button"
-              class="anagram-piece"
-              *ngFor="let piece of anagramAvailablePieces"
-              (click)="movePieceToResult(piece.id)"
-              [disabled]="incorrectFeedback || showingExplanation"
-            >
-              {{ piece.text }}
-            </button>
-            <div *ngIf="anagramAvailablePieces.length === 0" class="anagram-placeholder">
-              {{ 'game.task.anagram.availableHint' | translate }}
+            <div class="anagram-divider" aria-hidden="true"></div>
+            <div class="anagram-pieces available-zone">
+              <button
+                type="button"
+                class="anagram-piece"
+                *ngFor="let piece of state.available"
+                (click)="movePieceToResult(getAnagramKey(option, i), piece.id)"
+                [disabled]="incorrectFeedback || showingExplanation"
+              >
+                {{ piece.text }}
+              </button>
+              <div *ngIf="state.available.length === 0" class="anagram-placeholder">
+                {{ 'game.task.anagram.availableHint' | translate }}
+              </div>
             </div>
-          </div>
+          </ng-container>
         </div>
       </ng-container>
       <ng-template #defaultTaskOptions>
