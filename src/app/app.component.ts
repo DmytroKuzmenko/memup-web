@@ -10,6 +10,6 @@ import { UpdateService } from './shared/services/update.service'; // ⬅️ до
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  // Сам факт инъекции запускает логику авто-обновления
+  // Injecting the service triggers the auto-update logic
   private _ = inject(UpdateService);
 }

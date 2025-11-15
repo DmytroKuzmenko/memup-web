@@ -207,7 +207,7 @@
         >
           <div class="text-sm font-semibold">Answer options</div>
 
-          <!-- ВАЖНО: formArrayName + formGroupName вместо [formGroup]="opt" -->
+          <!-- IMPORTANT: use formArrayName + formGroupName instead of [formGroup]="opt" -->
           <ng-container formArrayName="options">
             <ng-container *ngFor="let opt of options.controls; let i = index">
               <div [formGroupName]="i" class="grid gap-2 rounded-xl border border-neutral-200 p-2">

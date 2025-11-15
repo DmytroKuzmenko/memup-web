@@ -19,19 +19,19 @@ export interface TaskOption {
 export interface Task {
   id: string; // UUID
   levelId: string; // UUID
-  internalName: string; // было title
+  internalName: string; // was 'title'
   type: TaskType;
-  headerText?: string; // было topText
-  imagePath?: string; // было taskImagePath
+  headerText?: string; // was 'topText'
+  imagePath?: string; // was 'taskImagePath'
   taskImageSource?: string;
   resultImagePath?: string;
   resultImageSource?: string;
   orderIndex?: number;
   status: number; // 0 draft, 1 published
-  timeLimitSec?: number; // было timeLimitSeconds
-  pointsAttempt1?: number; // было pointsFirst
-  pointsAttempt2?: number; // было pointsSecond
-  pointsAttempt3?: number; // было pointsThird
+  timeLimitSec?: number; // was 'timeLimitSeconds'
+  pointsAttempt1?: number; // was 'pointsFirst'
+  pointsAttempt2?: number; // was 'pointsSecond'
+  pointsAttempt3?: number; // was 'pointsThird'
   explanationText?: string;
 
   // answer options
@@ -41,7 +41,7 @@ export interface Task {
   updatedAt: Date;
 }
 
-// Как приходит с API (даты — строки ISO)
+// How it comes from the API (dates are ISO strings)
 interface TaskOptionDto {
   id?: Guid;
   label: string;
@@ -54,9 +54,9 @@ interface TaskDto {
   id: string;
   levelId: string;
   internalName: string;
-  type: number; // API возвращает number
+  type: number; // API returns a number
   headerText?: string | null;
-  imageUrl?: string | null; // API возвращает imageUrl
+  imageUrl?: string | null; // API returns imageUrl
   orderIndex?: number;
   status: number;
   timeLimitSec?: number;
@@ -108,9 +108,9 @@ function mapDto(dto: TaskDto): Task {
     id: dto.id,
     levelId: dto.levelId,
     internalName: dto.internalName,
-    type: mapTaskType(dto.type), // конвертируем number в TaskType
+    type: mapTaskType(dto.type), // convert number to TaskType
     headerText: dto.headerText ?? undefined,
-    imagePath: dto.imageUrl ?? undefined, // маппим imageUrl в imagePath
+    imagePath: dto.imageUrl ?? undefined, // map imageUrl to imagePath
     orderIndex: dto.orderIndex,
     status: dto.status,
     timeLimitSec: dto.timeLimitSec,
@@ -157,7 +157,7 @@ function mapTaskTypeToNumber(type: TaskType): number {
 export class TaskService {
   private readonly http = inject(HttpClient);
   private readonly base = inject<AppConfig>(APP_CONFIG).apiBaseUrl; // '/api'
-  private readonly tasksUrl = `${this.base}/Tasks`; // API использует Tasks с заглавной буквы
+  private readonly tasksUrl = `${this.base}/Tasks`; // API uses 'Tasks' with uppercase
 
   /** GET /api/levels/{levelId}/tasks */
   getTasks(levelId: string): Observable<Task[]> {
@@ -204,7 +204,7 @@ export class TaskService {
       internalName: data.internalName ?? '',
       type: mapTaskTypeToNumber(data.type ?? 'text_choice'),
       headerText: data.headerText ?? '',
-      imageUrl: data.imagePath ?? '', // API ожидает imageUrl
+      imageUrl: data.imagePath ?? '', // API expects imageUrl
       orderIndex: data.orderIndex ?? 0,
       timeLimitSec: data.timeLimitSec ?? 0,
       pointsAttempt1: data.pointsAttempt1 ?? 0,
@@ -234,7 +234,7 @@ export class TaskService {
       internalName: data.internalName,
       type: data.type ? mapTaskTypeToNumber(data.type) : undefined,
       headerText: data.headerText,
-      imageUrl: data.imagePath, // API ожидает imageUrl
+      imageUrl: data.imagePath, // API expects imageUrl
       orderIndex: data.orderIndex,
       timeLimitSec: data.timeLimitSec,
       pointsAttempt1: data.pointsAttempt1,

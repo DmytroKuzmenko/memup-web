@@ -76,14 +76,14 @@ export class PwaInstallPromptComponent implements OnInit {
   canInstall = false;
   showInstallPrompt = true;
   private readonly DISMISS_KEY = 'pwa-install-dismissed';
-  private readonly WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 дней в миллисекундах
+  private readonly WEEK_IN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
   private touchStartY = 0;
   private touchStartX = 0;
 
   constructor(private pwaService: PwaService) {}
 
   ngOnInit() {
-    // Проверяем, не было ли отклонение недавно
+    // Check if the prompt was dismissed recently
     if (this.wasRecentlyDismissed()) {
       this.showInstallPrompt = false;
       return;
@@ -109,7 +109,7 @@ export class PwaInstallPromptComponent implements OnInit {
 
   closePrompt() {
     this.showInstallPrompt = false;
-    // Сохраняем время отклонения
+    // Save the dismiss time
     this.saveDismissTime();
   }
 
@@ -124,7 +124,7 @@ export class PwaInstallPromptComponent implements OnInit {
     const deltaY = this.touchStartY - touchEndY;
     const deltaX = Math.abs(this.touchStartX - touchEndX);
 
-    // Если свайп вверх больше 50px и горизонтальное движение меньше 100px
+    // If swipe up is more than 50px and horizontal movement is less than 100px
     if (deltaY > 50 && deltaX < 100) {
       this.closePrompt();
     }

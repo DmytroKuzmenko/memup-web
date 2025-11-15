@@ -17,7 +17,7 @@ export class UploadService {
     return this.http.post<{ url: string }>(url, form, { reportProgress: true, observe: 'events' });
   }
 
-  // Новый метод для получения только финального результата
+  // New method to obtain only the final result
   uploadFile(file: File): Observable<{ url: string }> {
     const form = new FormData();
     form.append('file', file);
@@ -37,11 +37,11 @@ export class UploadService {
 
   private convertUrl(absoluteUrl: string): string {
     if (isDevMode()) {
-      // В development конвертируем в относительный URL для прокси
+      // In development convert to a relative URL for the proxy
       const url = new URL(absoluteUrl);
       return url.pathname;
     } else {
-      // В production возвращаем полный URL для статических файлов
+      // In production return the full URL for static files
       return absoluteUrl;
     }
   }

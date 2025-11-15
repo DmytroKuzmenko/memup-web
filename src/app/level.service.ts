@@ -8,24 +8,24 @@ export interface Level {
   id: string; // UUID
   sectionId: string; // UUID
   name: string;
-  imagePath?: string; // картинка уровня
-  headerText?: string; // фраза перед рівнем (было prefaceText)
-  animationImagePath?: string; // анімація (gif/webp) ліворуч направо
+  imagePath?: string; // level image
+  headerText?: string; // phrase before the level (was prefaceText)
+  animationImagePath?: string; // animation (gif/webp) left-to-right
   orderIndex?: number;
-  timeLimitSec?: number; // время в секундах (было timeLimitSeconds)
-  status: number; // 0 чернетка, 1 опубліковано
+  timeLimitSec?: number; // time in seconds (was timeLimitSeconds)
+  status: number; // 0 = draft, 1 = published
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Как приходит с API (даты — строки ISO)
+// How it comes from the API (dates are ISO strings)
 interface LevelDto {
   id: string;
   sectionId: string;
   name: string;
-  imageUrl?: string | null; // API возвращает imageUrl
-  headerText?: string | null; // API возвращает headerText
-  animationImageUrl?: string | null; // API возвращает animationImageUrl
+  imageUrl?: string | null; // API returns imageUrl
+  headerText?: string | null; // API returns headerText
+  animationImageUrl?: string | null; // API returns animationImageUrl
   orderIndex?: number;
   timeLimitSec?: number; // API возвращает timeLimitSec
   status: number;
@@ -38,11 +38,11 @@ function mapDto(dto: LevelDto): Level {
     id: dto.id,
     sectionId: dto.sectionId,
     name: dto.name,
-    imagePath: dto.imageUrl ?? undefined, // Маппим imageUrl в imagePath
-    headerText: dto.headerText ?? undefined, // Маппим headerText
-    animationImagePath: dto.animationImageUrl ?? undefined, // Маппим animationImageUrl в animationImagePath
+    imagePath: dto.imageUrl ?? undefined, // map imageUrl to imagePath
+    headerText: dto.headerText ?? undefined, // map headerText
+    animationImagePath: dto.animationImageUrl ?? undefined, // map animationImageUrl to animationImagePath
     orderIndex: dto.orderIndex,
-    timeLimitSec: dto.timeLimitSec, // Маппим timeLimitSec
+    timeLimitSec: dto.timeLimitSec, // map timeLimitSec
     status: dto.status,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
@@ -53,7 +53,7 @@ function mapDto(dto: LevelDto): Level {
 export class LevelService {
   private readonly http = inject(HttpClient);
   private readonly base = inject<AppConfig>(APP_CONFIG).apiBaseUrl; // '/api'
-  private readonly levelsUrl = `${this.base}/Levels`; // API использует Levels с заглавной буквы
+  private readonly levelsUrl = `${this.base}/Levels`; // API uses 'Levels' with uppercase
 
   /** GET /api/sections/{sectionId}/levels */
   getLevels(sectionId: string): Observable<Level[]> {
@@ -75,7 +75,7 @@ export class LevelService {
     );
   }
 
-  /** GET /api/Levels - получить все уровни */
+  /** GET /api/Levels - get all levels */
   getAllLevels(): Observable<Level[]> {
     console.log('=== LEVEL SERVICE GET ALL LEVELS ===');
     console.log('Request URL:', this.levelsUrl);
@@ -113,11 +113,11 @@ export class LevelService {
     const payload = {
       sectionId: data.sectionId ?? '',
       name: data.name ?? '',
-      imageUrl: data.imagePath ?? '', // API ожидает imageUrl
-      headerText: data.headerText ?? '', // API ожидает headerText
-      animationImageUrl: data.animationImagePath ?? '', // API ожидает animationImageUrl
+      imageUrl: data.imagePath ?? '', // API expects imageUrl
+      headerText: data.headerText ?? '', // API expects headerText
+      animationImageUrl: data.animationImagePath ?? '', // API expects animationImageUrl
       orderIndex: data.orderIndex ?? 0,
-      timeLimitSec: data.timeLimitSec ?? 0, // API ожидает timeLimitSec
+      timeLimitSec: data.timeLimitSec ?? 0, // API expects timeLimitSec
       status: data.status ?? 0,
     };
     console.log('=== LEVEL SERVICE ADD ===');
@@ -135,11 +135,11 @@ export class LevelService {
   updateLevel(id: string, data: Partial<Level>): Observable<Level> {
     const payload = {
       name: data.name,
-      imageUrl: data.imagePath, // API ожидает imageUrl
-      headerText: data.headerText, // API ожидает headerText
-      animationImageUrl: data.animationImagePath, // API ожидает animationImageUrl
+      imageUrl: data.imagePath, // API expects imageUrl
+      headerText: data.headerText, // API expects headerText
+      animationImageUrl: data.animationImagePath, // API expects animationImageUrl
       orderIndex: data.orderIndex,
-      timeLimitSec: data.timeLimitSec, // API ожидает timeLimitSec
+      timeLimitSec: data.timeLimitSec, // API expects timeLimitSec
       status: data.status,
     };
     console.log('=== LEVEL SERVICE UPDATE ===');

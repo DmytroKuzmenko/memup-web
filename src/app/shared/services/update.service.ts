@@ -9,15 +9,15 @@ export class UpdateService {
   constructor() {
     if (!this.sw.isEnabled) return;
 
-    // Новая версия готова -> перезагружаем вкладку
+    // New version is ready -> reload the tab
     this.sw.versionUpdates
       .pipe(filter((e: VersionEvent): e is VersionReadyEvent => e.type === 'VERSION_READY'))
       .subscribe(() => location.reload());
 
-    // На случай критической ошибки SW -> тоже перезагружаем
+    // In case of a critical SW error -> also reload
     this.sw.unrecoverable.subscribe(() => location.reload());
 
-    // По желанию: периодическая проверка обновлений раз в 6 часов
+    // Optional: periodic check for updates every 6 hours
     setInterval(() => this.sw.checkForUpdate().catch(() => {}), 6 * 60 * 60 * 1000);
   }
 }

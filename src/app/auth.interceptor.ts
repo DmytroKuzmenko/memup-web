@@ -25,16 +25,16 @@ export class AuthInterceptor implements HttpInterceptor {
     console.log('Current token:', token);
     console.log('Token exists:', !!token);
 
-    // Проверяем, не истек ли токен перед отправкой запроса
+    // Check whether the token has expired before sending the request
     if (token && !this.auth.hasValidToken()) {
       console.log('Token expired, checking if this is a game request');
 
-      // Если это игровой запрос, не показываем сообщение и не перенаправляем
+      // If this is a game request, do not show a notification or redirect
       if (req.url.includes('/api/game/')) {
         console.log('Game request with expired token - letting server handle it');
-        // Просто отправляем запрос без токена, пусть сервер вернет 401
+        // Simply send the request without a token and let the server return 401
       } else {
-        // Проверяем, находимся ли мы в admin разделе
+        // Check whether we are in the admin section
         const isInAdminSection = this.router.url.includes('/admin');
 
         if (isInAdminSection) {
@@ -79,7 +79,7 @@ export class AuthInterceptor implements HttpInterceptor {
         if (err.status === 401) {
           console.log('401 Unauthorized - token expired');
 
-          // Проверяем, является ли это запросом аутентификации
+          // Check whether this is an authentication request
           const isAuthRequest =
             req.url.includes('/api/auth/login') || req.url.includes('/api/auth/register');
 
@@ -93,19 +93,19 @@ export class AuthInterceptor implements HttpInterceptor {
 
           if (isGameRequest) {
             console.log('401 on game request - letting component handle it');
-            // Не показываем сообщение и не перенаправляем для игровых запросов
-            // Пусть компоненты сами решают, что делать с 401 ошибкой
+            // Do not show a notification or redirect for game requests
+            // Let components decide how to handle the 401 error
             return throwError(() => err);
           }
 
-          // Проверяем, находимся ли мы в admin разделе
+          // Check whether we are in the admin section
           const isInAdminSection = this.router.url.includes('/admin');
 
           if (isInAdminSection) {
             console.log('401 on admin request - redirecting to admin login');
             this.notification.showSessionExpired();
 
-            // Проверяем, не находимся ли мы уже на странице логина
+            // Check if we are already on the login page
             if (!this.router.url.includes('/admin/login')) {
               console.log('Redirecting to admin login page');
               this.auth.logout().subscribe();
@@ -113,8 +113,8 @@ export class AuthInterceptor implements HttpInterceptor {
             }
           } else {
             console.log('401 on non-admin request - letting component handle error');
-            // Не показываем сообщение и не перенаправляем для не-admin запросов
-            // Пусть компоненты сами решают, что делать с 401 ошибкой
+            // Do not show a notification or redirect for non-admin requests
+            // Let components decide how to handle the 401 error
           }
 
           return throwError(() => err);

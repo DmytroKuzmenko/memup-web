@@ -30,7 +30,7 @@ export class AdminLoginComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    // Проверяем, не авторизован ли уже пользователь
+    // Check if the user is already authenticated
     if (this.authService.hasValidToken() && this.authService.isAdmin()) {
       this.router.navigate(['/admin/sections']);
     }
@@ -76,7 +76,7 @@ export class AdminLoginComponent implements OnInit {
           console.log('Access token:', accessToken);
           console.log('LocalStorage memup_auth:', localStorageData);
 
-          // Добавляем задержку чтобы логи успели отобразиться
+          // Add a short delay so logs can be displayed
           setTimeout(() => {
             if (isAdmin) {
               console.log('✅ User is admin, navigating to admin sections');
@@ -84,9 +84,9 @@ export class AdminLoginComponent implements OnInit {
             } else {
               console.log('❌ User is NOT admin, redirecting to home');
               console.log('Role from token:', userRole);
-              this.loginError = `Вы успешно вошли, но у вас нет прав администратора. Ваша роль: ${userRole || 'не определена'}`;
+              this.loginError = `You have successfully logged in, but you do not have administrator rights. Your role: ${userRole || 'not defined'}`;
 
-              // Показываем сообщение 3 секунды, затем перенаправляем
+              // Show the message for 3 seconds, then redirect
               setTimeout(() => {
                 this.router.navigate(['/']);
               }, 3000);
@@ -98,18 +98,18 @@ export class AdminLoginComponent implements OnInit {
         error: (e) => {
           console.error('Login error in component:', e);
 
-          // Более детальная обработка ошибок
-          let errorMessage = 'Произошла ошибка при входе';
+          // More detailed error handling
+          let errorMessage = 'An error occurred while logging in';
 
           if (e.status === 0) {
             errorMessage =
-              'Не удается подключиться к серверу. Проверьте, что бэкенд запущен на порту 8080';
+              'Unable to connect to the server. Make sure the backend is running on port 8080';
           } else if (e.status === 401) {
-            errorMessage = 'Неверный email или пароль';
+            errorMessage = 'Invalid email or password';
           } else if (e.status === 404) {
-            errorMessage = 'Сервер не найден. Проверьте настройки';
+            errorMessage = 'Server not found. Check the configuration';
           } else if (e.status >= 500) {
-            errorMessage = 'Ошибка сервера. Попробуйте позже';
+            errorMessage = 'Server error. Please try again later';
           } else if (e?.error?.message) {
             errorMessage = e.error.message;
           } else if (e?.error?.detail) {

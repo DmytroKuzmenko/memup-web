@@ -18,7 +18,7 @@ bootstrapApplication(AppComponent, {
 
     { provide: APP_CONFIG, useValue: { apiBaseUrl: environment.apiBaseUrl } },
 
-    // Angular 20: регистрируем SW только в проде + откладываем регистрацию
+    // Angular 20: register service worker only in production + delay registration
     provideServiceWorker('ngsw-worker.js', {
       enabled: environment.production,
       registrationStrategy: 'registerWhenStable:30000',

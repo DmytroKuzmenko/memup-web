@@ -32,7 +32,7 @@ export const routes: Routes = [
     children: [
       { path: 'login', component: AdminLoginComponent },
 
-      // --- Sections остаётся как есть ---
+      // --- Sections remains as is ---
       { path: 'sections', component: AdminSectionsComponent, canActivate: [adminGuard] },
       { path: 'sections/new', component: SectionEditComponent, canActivate: [adminGuard] },
       { path: 'sections/:id', component: SectionEditComponent, canActivate: [adminGuard] },
@@ -48,7 +48,7 @@ export const routes: Routes = [
       // { path: 'memes/new', component: MemeEditComponent, canActivate: [adminGuard] },
       // { path: 'memes/:id', component: MemeEditComponent, canActivate: [adminGuard] },
 
-      // --- TEMP: убрать уровни/задания, вернём позже ---
+      // --- TEMP: remove levels/tasks, will restore later ---
       // { path: 'levels', component: AdminLevelsComponent, canActivate: [adminGuard] },
       // { path: 'tasks', component: AdminTasksComponent, canActivate: [adminGuard] },
 

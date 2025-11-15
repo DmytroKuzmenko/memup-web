@@ -20,13 +20,13 @@ export interface RegisterResponse {
   email: string;
 }
 
-/** Фактический ответ memeup-api */
+/** Actual response from memeup-api */
 export interface ApiLoginResponse {
   token: string; // JWT
   expiresAt: string; // ISO-строка (UTC), например "2025-09-27T23:59:20.332563Z"
 }
 
-/** Если появится refresh — можно раскомментить и использовать */
+/** If a refresh endpoint appears — this can be uncommented and used */
 export interface RefreshResponse {
   accessToken: string;
   refreshToken?: string;
@@ -47,14 +47,14 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly base = inject<AppConfig>(APP_CONFIG).apiBaseUrl; // '/api'
 
-  /** реактивная роль пользователя (для guard/шапки и т.п.) */
+  /** reactive user role (for guards/header etc.) */
   userRole = signal<string | null>(
     this.restore()?.role ?? this.roleFromToken(this.restore()?.accessToken) ?? null,
   );
 
   /** === Публичное API === */
 
-  /** POST /auth/register — регистрация нового пользователя */
+  /** POST /auth/register — register a new user */
   register(payload: RegisterRequest): Observable<RegisterResponse> {
     console.log('=== AUTH SERVICE REGISTER CALLED ===');
     console.log('AuthService.register called with payload:', payload);
@@ -71,7 +71,7 @@ export class AuthService {
     );
   }
 
-  /** POST /auth/login — маппим token/expiresAt */
+  /** POST /auth/login — map token/expiresAt */
   login(payload: LoginRequest): Observable<void> {
     console.log('=== AUTH SERVICE LOGIN CALLED ===');
     console.log('AuthService.login called with payload:', payload);
@@ -92,7 +92,7 @@ export class AuthService {
     );
   }
 
-  /** POST /auth/refresh — если у бэка нет, просто возвращаем null */
+  /** POST /auth/refresh — if backend doesn't support it, return null */
   refresh(): Observable<string | null> {
     console.log('=== AUTH SERVICE REFRESH ===');
     console.log('Refresh token not supported by backend, returning null');
@@ -100,14 +100,14 @@ export class AuthService {
     return of(null);
   }
 
-  /** Логаут (локально, при желании можно добавить вызов /auth/logout на бэке) */
+  /** Logout (local). Optionally call /auth/logout on the backend if desired */
   logout(): Observable<void> {
     localStorage.removeItem(LS_KEY);
     this.userRole.set(null);
     return of(void 0);
   }
 
-  /** Есть ли валидный (не истёкший) токен */
+  /** Is there a valid (not expired) token */
   hasValidToken(): boolean {
     const token = this.accessToken;
     if (!token) {
@@ -126,19 +126,19 @@ export class AuthService {
     return isValid;
   }
 
-  /** Текущий accessToken (или null) */
+  /** Current accessToken (or null) */
   get accessToken(): string | null {
     return this.restore()?.accessToken ?? null;
   }
 
-  /** Проверка роли администратора */
+  /** Check if the user has administrator role */
   isAdmin(): boolean {
     return (this.userRole() ?? '').toLowerCase() === 'admin';
   }
 
-  /** === Внутреннее === */
+  /** === Internal === */
 
-  /** Сохраняем ответ логина из API в хранилище */
+  /** Persist login response from API into storage */
   private persistFromApi(resp: ApiLoginResponse) {
     console.log('=== PERSIST FROM API ===');
     console.log('API response:', resp);
@@ -173,7 +173,7 @@ export class AuthService {
     }
   }
 
-  /** Достаём роль из клеймов JWT */
+  /** Extract role from JWT claims */
   private roleFromToken(token?: string): string | null {
     if (!token) {
       console.log('No token provided to roleFromToken');
@@ -191,8 +191,8 @@ export class AuthService {
       return null;
     }
 
-    // Популярные варианты клеймов роли:
-    // role / roles / microsoft-namespace (из твоего примера)
+    // Common role claim variants:
+    // role / roles / microsoft-namespace (from your example)
     const claimRole =
       payload?.role ??
       (Array.isArray(payload?.roles) ? payload.roles[0] : payload?.roles) ??
@@ -216,7 +216,7 @@ export class AuthService {
     return finalRole;
   }
 
-  /** Проверяем истечение токена: сначала exp из JWT, иначе falls back на expiresAtIso */
+  /** Check token expiration: first exp from JWT, otherwise fallback to expiresAtIso */
   private isJwtExpired(token: string): boolean {
     const payload = this.decodeJwt(token);
     const exp: number | undefined = payload?.exp; // секунды с эпохи
@@ -234,7 +234,7 @@ export class AuthService {
       const parts = token.split('.');
       if (parts.length !== 3) return null;
       const json = atob(parts[1].replace(/-/g, '+').replace(/_/g, '/'));
-      // escape/unescape устаревшие, но для ASCII payload обычно ок; если будут юникод-символы — можно заменить на более надёжный декодер
+      // escape/unescape are deprecated, but for ASCII payload it's usually OK; if there are Unicode characters consider a more robust decoder
       return JSON.parse(decodeURIComponent(escape(json)));
     } catch {
       return null;

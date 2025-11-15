@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  // В проде Nginx/Traefik тоже проксируют /api → memeup-api
+  // In production Nginx/Traefik also proxy /api → memeup-api
   apiBaseUrl: '/api',
 };

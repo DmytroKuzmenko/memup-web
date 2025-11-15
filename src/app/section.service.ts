@@ -8,8 +8,8 @@ export interface Section {
   id: string;
   name: string;
   imagePath?: string;
-  orderIndex: number; // порядок отображения
-  status: number; // 0 = Чернетка, 1 = Опубліковано
+  orderIndex: number; // display order
+  status: number; // 0 = draft, 1 = published
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,11 +23,11 @@ export interface PublicSection {
   totalLevelsCount: number;
 }
 
-// Как приходит с API (даты — строки ISO)
+// How it comes from the API (dates are ISO strings)
 interface SectionDto {
   id: string;
   name: string;
-  imageUrl?: string | null; // API возвращает imageUrl, а не imagePath
+  imageUrl?: string | null; // API returns imageUrl (not imagePath)
   orderIndex: number;
   status: number;
   createdAt: string;
@@ -38,7 +38,7 @@ function mapDto(dto: SectionDto): Section {
   return {
     id: dto.id,
     name: dto.name,
-    imagePath: dto.imageUrl ?? undefined, // Маппим imageUrl в imagePath
+    imagePath: dto.imageUrl ?? undefined, // map imageUrl to imagePath
     orderIndex: dto.orderIndex,
     status: dto.status,
     createdAt: new Date(dto.createdAt),

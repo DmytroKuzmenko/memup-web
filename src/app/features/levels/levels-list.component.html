@@ -1,5 +1,5 @@
 <div class="levels-container">
-  <!-- Геометрические элементы фона -->
+  <!-- Geometric background elements -->
   <div class="background-elements">
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
@@ -11,7 +11,7 @@
     <div class="bg-particle bg-particle-4"></div>
   </div>
 
-  <!-- Заголовок -->
+  <!-- Header -->
   <div class="levels-header">
     <button class="back-button" (click)="router.navigate(['/sections'])">
       <svg
@@ -33,7 +33,7 @@
     <h1 class="levels-title">{{ 'levels.title' | translate }}</h1>
   </div>
 
-  <!-- Состояние загрузки с скелетонами -->
+  <!-- Loading state with skeletons -->
   <div *ngIf="loading" class="levels-grid">
     <div *ngFor="let item of [1, 2, 3, 4, 5, 6]" class="level-card skeleton">
       <div class="skeleton-image"></div>
@@ -43,7 +43,7 @@
     </div>
   </div>
 
-  <!-- Состояние ошибки -->
+  <!-- Error state -->
   <div *ngIf="error && !loading" class="error-state">
     <div class="error-icon">⚠️</div>
     <h3>{{ 'levels.error' | translate }}</h3>
@@ -52,7 +52,7 @@
     </button>
   </div>
 
-  <!-- Список уровней -->
+  <!-- Levels list -->
   <div *ngIf="!loading && !error && levels.length > 0" class="levels-grid">
     <div
       *ngFor="let level of levels; let i = index"
@@ -156,7 +156,7 @@
     </div>
   </div>
 
-  <!-- Сообщение если нет уровней -->
+  <!-- Message when there are no levels -->
   <div *ngIf="!loading && !error && levels.length === 0" class="empty-state">
     <div class="empty-icon">🎯</div>
     <h3>{{ 'levels.empty' | translate }}</h3>

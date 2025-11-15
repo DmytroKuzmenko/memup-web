@@ -1,5 +1,5 @@
 <div class="sections-container">
-  <!-- Геометрические элементы фона -->
+  <!-- Geometric background elements -->
   <div class="background-elements">
     <div class="bg-shape bg-shape-1"></div>
     <div class="bg-shape bg-shape-2"></div>
@@ -11,13 +11,13 @@
     <div class="bg-particle bg-particle-4"></div>
   </div>
 
-  <!-- Заголовок -->
+  <!-- Header -->
   <div class="sections-header">
     <h1 class="sections-title">{{ 'sections.title' | translate }}</h1>
     <p class="sections-subtitle">{{ 'sections.subtitle' | translate }}</p>
   </div>
 
-  <!-- Состояние загрузки с скелетонами -->
+  <!-- Loading state with skeletons -->
   <div *ngIf="loading" class="sections-grid">
     <div *ngFor="let item of [1, 2, 3, 4]" class="section-card skeleton">
       <div class="skeleton-image"></div>
@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <!-- Состояние ошибки -->
+  <!-- Error state -->
   <div *ngIf="error && !loading" class="error-state">
     <div class="error-icon">⚠️</div>
     <h3>{{ 'sections.error' | translate }}</h3>
@@ -36,7 +36,7 @@
     </button>
   </div>
 
-  <!-- Список секций -->
+  <!-- Sections list -->
   <div *ngIf="!loading && !error && sections.length > 0" class="sections-grid">
     <div
       *ngFor="let section of sections; let i = index"
@@ -126,7 +126,7 @@
     </div>
   </div>
 
-  <!-- Сообщение если нет секций -->
+  <!-- Message when there are no sections -->
   <div *ngIf="!loading && !error && sections.length === 0" class="empty-state">
     <div class="empty-icon">📚</div>
     <h3>{{ 'sections.empty' | translate }}</h3>
