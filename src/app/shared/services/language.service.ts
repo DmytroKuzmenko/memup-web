@@ -249,6 +249,9 @@ export class LanguageService {
             resultHint: 'Tap a part to place it here',
             availableHint: 'All parts are already used',
           },
+          matching: {
+            instructions: 'Match the pairs.',
+          },
         },
         intro: {
           start: 'Start',
@@ -375,6 +378,9 @@ export class LanguageService {
           anagram: {
             resultHint: 'Натисніть частину, щоб додати сюди',
             availableHint: 'Усі частини вже використано',
+          },
+          matching: {
+            instructions: "З'єднайте пари.",
           },
         },
         intro: {
@@ -505,6 +511,9 @@ export class LanguageService {
           anagram: {
             resultHint: 'Teil antippen, um ihn hier abzulegen',
             availableHint: 'Alle Teile sind bereits platziert',
+          },
+          matching: {
+            instructions: 'Ordne die Paare zu.',
           },
         },
         intro: {

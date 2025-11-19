@@ -24,6 +24,31 @@ interface AnagramState {
   answer: string;
 }
 
+interface GapFillSegmentText {
+  type: 'text';
+  value: string;
+}
+
+interface GapFillSegmentBlank {
+  type: 'blank';
+  index: number;
+  options: string[];
+}
+
+type GapFillSegment = GapFillSegmentText | GapFillSegmentBlank;
+
+interface MatchingPair {
+  leftId: string;
+  rightId: string;
+  leftText: string;
+  rightText: string;
+}
+
+interface MatchingOption {
+  id: string;
+  text: string;
+}
+
 @Component({
   selector: 'app-task-view',
   standalone: true,
@@ -39,6 +64,14 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   selectedOptionIds: Set<string> = new Set<string>();
   correctOptionIds: Set<string> = new Set<string>();
   anagramStates: Record<string, AnagramState> = {};
+  gapFillSelections: Record<number, string> = {};
+  matchingPairs: MatchingPair[] = [];
+  matchingLeftOptions: MatchingOption[] = [];
+  matchingRightOptions: MatchingOption[] = [];
+  matchedLeftIds: Set<string> = new Set();
+  matchedRightIds: Set<string> = new Set();
+  selectedMatchingLeftId: string | null = null;
+  selectedMatchingRightId: string | null = null;
   incorrectFeedback = false;
   incorrectMessage: string | null = null;
   timeRemaining: number = 0;
@@ -91,12 +124,14 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
     this.gameService.getNextTask(this.levelId).subscribe({
       next: (response) => {
-        if (response.task) {
-          this.task = response.task;
-          this.initializeAnagramState();
-          this.startTimer();
-          this.loading = false;
-        } else {
+          if (response.task) {
+            this.task = response.task;
+            this.initializeAnagramState();
+            this.initializeGapFillState();
+            this.initializeMatchingState();
+            this.startTimer();
+            this.loading = false;
+          } else {
           // No more tasks, navigate to level summary
           const navigationExtras = response.levelProgress
             ? {
@@ -346,6 +381,14 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.correctOptionIds.clear();
     this.anagramStates = {};
     this.anagramPieceCounter = 0;
+    this.gapFillSelections = {};
+    this.matchingPairs = [];
+    this.matchingLeftOptions = [];
+    this.matchingRightOptions = [];
+    this.matchedLeftIds.clear();
+    this.matchedRightIds.clear();
+    this.selectedMatchingLeftId = null;
+    this.selectedMatchingRightId = null;
   }
 
   formatTime(seconds: number): string {
@@ -408,11 +451,27 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     return this.getNormalizedTaskType() === 'anagram';
   }
 
+  get isGapFillTask(): boolean {
+    return this.getNormalizedTaskType() === 'gap_fill';
+  }
+
+  get isMatchingTask(): boolean {
+    return this.getNormalizedTaskType() === 'matching';
+  }
+
   get canSubmit(): boolean {
     if (!this.task || this.incorrectFeedback) return false;
 
     if (this.isAnagramTask) {
       return this.areAnagramAnswersComplete();
+    }
+
+    if (this.isGapFillTask) {
+      return this.isGapFillComplete();
+    }
+
+    if (this.isMatchingTask) {
+      return this.areAllPairsMatched();
     }
 
     return this.selectedOptionIds.size > 0;
@@ -537,6 +596,28 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       }, [] as TaskSubmitSelectionDto[]);
     }
 
+    if (this.isGapFillTask) {
+      return Object.entries(this.gapFillSelections).reduce((acc, [indexString, value]) => {
+        const index = parseInt(indexString, 10);
+        const option = this.task?.options[index];
+
+        if (option?.id && value) {
+          acc.push({ selectedOptionId: option.id, text: value });
+        }
+
+        return acc;
+      }, [] as TaskSubmitSelectionDto[]);
+    }
+
+    if (this.isMatchingTask) {
+      return this.matchingPairs.reduce((acc, pair) => {
+        if (!pair.leftId) return acc;
+
+        acc.push({ selectedOptionId: pair.leftId, text: pair.rightText ?? '' });
+        return acc;
+      }, [] as TaskSubmitSelectionDto[]);
+    }
+
     return Array.from(this.selectedOptionIds).map((id) => ({ selectedOptionId: id }));
   }
 
@@ -545,5 +626,190 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       const j = Math.floor(Math.random() * (i + 1));
       [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
     }
+  }
+
+  private initializeGapFillState(): void {
+    this.gapFillSelections = {};
+
+    if (!this.isGapFillTask || !this.task) return;
+
+    const regex = /{(\d+)}/g;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(this.task.headerText || ''))) {
+      const index = parseInt(match[1], 10);
+      if (!Number.isNaN(index)) {
+        this.gapFillSelections[index] = '';
+      }
+    }
+  }
+
+  get gapFillSegments(): GapFillSegment[] {
+    if (!this.isGapFillTask) return [];
+
+    const header = this.task?.headerText ?? '';
+    const segments: GapFillSegment[] = [];
+    const regex = /{(\d+)}/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(header))) {
+      if (match.index > lastIndex) {
+        segments.push({ type: 'text', value: header.slice(lastIndex, match.index) });
+      }
+
+      const index = parseInt(match[1], 10);
+      const options = this.getGapFillOptions(index);
+      segments.push({ type: 'blank', index, options });
+      lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < header.length) {
+      segments.push({ type: 'text', value: header.slice(lastIndex) });
+    }
+
+    return segments.length ? segments : [{ type: 'text', value: header }];
+  }
+
+  getGapFillOptions(index: number): string[] {
+    const option = this.task?.options[index];
+    if (!option) return [];
+
+    return option.label
+      .split('|')
+      .map((value) => value.trim())
+      .filter((value) => !!value);
+  }
+
+  onGapFillChange(index: number, event: Event): void {
+    if (this.incorrectFeedback || this.showingExplanation) return;
+
+    const target = event.target as HTMLSelectElement | null;
+    if (!target) return;
+
+    this.gapFillSelections[index] = target.value;
+  }
+
+  private isGapFillComplete(): boolean {
+    const segments = this.gapFillSegments;
+    if (!segments.length) return false;
+
+    return segments
+      .filter((segment) => segment.type === 'blank')
+      .every((segment) => !!this.gapFillSelections[(segment as GapFillSegmentBlank).index]);
+  }
+
+  private initializeMatchingState(): void {
+    this.matchingPairs = [];
+    this.matchingLeftOptions = [];
+    this.matchingRightOptions = [];
+    this.matchedLeftIds.clear();
+    this.matchedRightIds.clear();
+    this.selectedMatchingLeftId = null;
+    this.selectedMatchingRightId = null;
+
+    if (!this.isMatchingTask || !this.task) return;
+
+    const leftRightPairs = this.task.options.map((option) =>
+      this.parseMatchingLabel(option.label ?? ''),
+    );
+
+    this.matchingLeftOptions = this.task.options.map((option, index) => ({
+      id: option.id || `left-${index}`,
+      text: leftRightPairs[index]?.leftText ?? option.label ?? '',
+    }));
+
+    const rightOptions = this.task.options.map((option, index) => ({
+      id: option.id ? `${option.id}-right` : `right-${index}`,
+      text: leftRightPairs[index]?.rightText ?? '',
+    }));
+
+    this.matchingRightOptions = this.shuffleArray(rightOptions);
+  }
+
+  get availableMatchingLeftOptions(): MatchingOption[] {
+    return this.matchingLeftOptions.filter((option) => !this.matchedLeftIds.has(option.id));
+  }
+
+  get availableMatchingRightOptions(): MatchingOption[] {
+    return this.matchingRightOptions.filter((option) => !this.matchedRightIds.has(option.id));
+  }
+
+  onSelectMatchingLeft(optionId: string): void {
+    if (this.incorrectFeedback || this.showingExplanation) return;
+    if (this.matchedLeftIds.has(optionId)) return;
+
+    this.selectedMatchingLeftId = this.selectedMatchingLeftId === optionId ? null : optionId;
+    this.tryCreateMatchingPair();
+  }
+
+  onSelectMatchingRight(optionId: string): void {
+    if (this.incorrectFeedback || this.showingExplanation) return;
+    if (this.matchedRightIds.has(optionId)) return;
+
+    this.selectedMatchingRightId = this.selectedMatchingRightId === optionId ? null : optionId;
+    this.tryCreateMatchingPair();
+  }
+
+  removeMatchingPair(pair: MatchingPair): void {
+    this.matchingPairs = this.matchingPairs.filter(
+      (existing) => !(existing.leftId === pair.leftId && existing.rightId === pair.rightId),
+    );
+    this.matchedLeftIds.delete(pair.leftId);
+    this.matchedRightIds.delete(pair.rightId);
+    this.selectedMatchingLeftId = null;
+    this.selectedMatchingRightId = null;
+  }
+
+  private tryCreateMatchingPair(): void {
+    if (!this.selectedMatchingLeftId || !this.selectedMatchingRightId) return;
+
+    const leftOption = this.matchingLeftOptions.find((option) => option.id === this.selectedMatchingLeftId);
+    const rightOption = this.matchingRightOptions.find(
+      (option) => option.id === this.selectedMatchingRightId,
+    );
+    if (!rightOption || !leftOption) return;
+
+    this.matchingPairs.push({
+      leftId: this.selectedMatchingLeftId,
+      rightId: this.selectedMatchingRightId,
+      leftText: leftOption.text,
+      rightText: rightOption.text,
+    });
+
+    this.matchedLeftIds.add(this.selectedMatchingLeftId);
+    this.matchedRightIds.add(this.selectedMatchingRightId);
+    this.selectedMatchingLeftId = null;
+    this.selectedMatchingRightId = null;
+  }
+
+  isLeftSelected(optionId: string): boolean {
+    return this.selectedMatchingLeftId === optionId;
+  }
+
+  isRightSelected(optionId: string): boolean {
+    return this.selectedMatchingRightId === optionId;
+  }
+
+  private areAllPairsMatched(): boolean {
+    if (!this.isMatchingTask || !this.task) return false;
+
+    return this.matchingPairs.length === this.task.options.length && this.matchingPairs.length > 0;
+  }
+
+  private shuffleArray<T>(items: T[]): T[] {
+    const arr = [...items];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  private parseMatchingLabel(label: string): { leftText: string; rightText: string } {
+    const [leftRaw, rightRaw] = (label ?? '').split('|');
+    const leftText = (leftRaw ?? '').trim();
+    const rightText = (rightRaw ?? '').trim() || leftText;
+
+    return { leftText, rightText };
   }
 }

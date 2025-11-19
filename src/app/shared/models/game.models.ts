@@ -43,6 +43,7 @@ export interface TaskOptionVm {
   label: string;
   imageUrl?: string | null;
   isCorrect?: boolean | null;
+  correctAnswer?: string | null;
 }
 
 export type SubmitResult = 'correct' | 'incorrect' | 'timeout';

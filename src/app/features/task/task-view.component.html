@@ -80,9 +80,35 @@
       <!-- Task header -->
       <div class="task-header">
         <h2
+          *ngIf="!isGapFillTask"
           class="task-title"
           [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"
         ></h2>
+
+        <div *ngIf="isGapFillTask" class="task-title gap-fill-header">
+          <ng-container *ngIf="gapFillSegments.length; else gapFillFallback">
+            <ng-container *ngFor="let segment of gapFillSegments">
+              <ng-container *ngIf="segment.type === 'text'">{{ segment.value }}</ng-container>
+              <select
+                *ngIf="segment.type === 'blank'"
+                class="gap-fill-select"
+                [value]="gapFillSelections[segment.index]"
+                (change)="onGapFillChange(segment.index, $event)"
+                [disabled]="incorrectFeedback || showingExplanation"
+              >
+                <option value="" disabled [selected]="!gapFillSelections[segment.index]" hidden>
+                  ...
+                </option>
+                <option *ngFor="let option of segment.options" [value]="option">
+                  {{ option }}
+                </option>
+              </select>
+            </ng-container>
+          </ng-container>
+          <ng-template #gapFillFallback>
+            {{ task.headerText || ('game.task.defaultTitle' | translate) }}
+          </ng-template>
+        </div>
       </div>
 
       <div *ngIf="incorrectFeedback && incorrectMessage" class="incorrect-feedback">
@@ -155,34 +181,111 @@
         </div>
       </ng-container>
       <ng-template #defaultTaskOptions>
-        <div class="options-container">
-          <div
-            *ngFor="let option of task.options; let i = index"
-            class="option-item"
-            [class.selected]="selectedOptionIds.has(option.id)"
-            [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
-            [class.correct]="showingExplanation && isOptionCorrect(option.id)"
-            [class.disabled]="incorrectFeedback || showingExplanation"
-            (click)="onOptionToggle(option.id)"
-          >
-            <div class="option-number">{{ i + 1 }}</div>
-            <div class="option-content">
-              <div class="option-label" [innerHTML]="option.label"></div>
-              <img
-                *ngIf="option.imageUrl"
-                [src]="option.imageUrl"
-                alt="Option image"
-                class="option-image"
-              />
-            </div>
-            <div class="option-radio">
-              <!-- checkbox-style indicator for multi-select -->
-              <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
-                <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+        <div *ngIf="isMatchingTask; else standardOptions" class="matching-container">
+          <div class="matching-header">
+            <div class="matching-title">
+              <span class="matching-icon" aria-hidden="true">◎</span>
+              <div class="matching-title-text">
+                <span class="matching-label">Matching</span>
+                <div class="matching-headline">
+                  {{ 'game.task.matching.instructions' | translate }}
+                </div>
+               
               </div>
+            </div>
+            <div class="matching-progress">
+              <div class="progress-track" aria-hidden="true">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="(matchingPairs.length / matchingLeftOptions.length) * 100"
+                ></div>
+              </div>
+              <div class="progress-count">
+                {{ matchingPairs.length }} / {{ matchingLeftOptions.length }}
+              </div>
+              
+            </div>
+          </div>
+
+          <div class="matching-columns">
+            <div class="matching-column">
+              <button
+                type="button"
+                class="matching-option"
+                *ngFor="let option of availableMatchingLeftOptions"
+                (click)="onSelectMatchingLeft(option.id)"
+                [class.selected]="isLeftSelected(option.id)"
+                [disabled]="incorrectFeedback || showingExplanation"
+              >
+                {{ option.text }}
+              </button>
+            </div>
+            <div class="matching-divider" aria-hidden="true">↕</div>
+            <div class="matching-column">
+            
+              <button
+                type="button"
+                class="matching-option"
+                *ngFor="let option of availableMatchingRightOptions"
+                (click)="onSelectMatchingRight(option.id)"
+                [class.selected]="isRightSelected(option.id)"
+                [disabled]="incorrectFeedback || showingExplanation"
+              >
+                {{ option.text }}
+              </button>
+            </div>
+          </div>
+
+          <div class="matched-pairs" *ngIf="matchingPairs.length">
+            <div class="matched-pair" *ngFor="let pair of matchingPairs">
+              <div class="pair-text">
+                <span class="pair-left">{{ pair.leftText }}</span>
+                <span class="pair-divider">↔</span>
+                <span class="pair-right">{{ pair.rightText }}</span>
+              </div>
+              <button
+                type="button"
+                class="pair-remove"
+                (click)="removeMatchingPair(pair)"
+                [disabled]="incorrectFeedback || showingExplanation"
+                aria-label="Удалить пару"
+              >
+                ×
+              </button>
             </div>
           </div>
         </div>
+
+        <ng-template #standardOptions>
+          <div class="options-container">
+            <div
+              *ngFor="let option of task.options; let i = index"
+              class="option-item"
+              [class.selected]="selectedOptionIds.has(option.id)"
+              [class.incorrect]="incorrectFeedback && selectedOptionIds.has(option.id)"
+              [class.correct]="showingExplanation && isOptionCorrect(option.id)"
+              [class.disabled]="incorrectFeedback || showingExplanation"
+              (click)="onOptionToggle(option.id)"
+            >
+              <div class="option-number">{{ i + 1 }}</div>
+              <div class="option-content">
+                <div class="option-label" [innerHTML]="option.label"></div>
+                <img
+                  *ngIf="option.imageUrl"
+                  [src]="option.imageUrl"
+                  alt="Option image"
+                  class="option-image"
+                />
+              </div>
+              <div class="option-radio">
+                <!-- checkbox-style indicator for multi-select -->
+                <div class="checkbox-box" [class.checked]="selectedOptionIds.has(option.id)">
+                  <div class="checkmark" *ngIf="selectedOptionIds.has(option.id)">✓</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-template>
       </ng-template>
 
       <!-- Submit button -->
