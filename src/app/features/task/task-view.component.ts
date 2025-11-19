@@ -7,6 +7,7 @@ import {
   SubmitResponse,
   LevelIntroVm,
   TaskOptionVm,
+  TaskSubmitSelectionDto,
 } from '../../shared/models/game.models';
 import { NotificationService } from '../../shared/services/notification.service';
 import { TranslatePipe } from '../../shared/pipes/translate.pipe';
@@ -239,13 +240,14 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   }
 
   onSubmit(): void {
-    if (!this.task || this.selectedOptionIds.size === 0 || this.submitting || this.incorrectFeedback) return;
+    if (!this.task || this.submitting || this.incorrectFeedback) return;
+
+    const selectedOptions = this.buildSubmitSelections();
+    if (selectedOptions.length === 0) return;
 
     this.submitting = true;
 
-    const selected = Array.from(this.selectedOptionIds);
-
-    this.gameService.submitTask(this.task.id, selected, this.task.attemptToken).subscribe({
+    this.gameService.submitTask(this.task.id, selectedOptions, this.task.attemptToken).subscribe({
       next: (response: SubmitResponse) => {
         this.handleSubmitResponse(response);
       },
@@ -390,8 +392,30 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     return value ? this.sanitizer.bypassSecurityTrustHtml(value) : null;
   }
 
+  private getNormalizedTaskType(): string | null {
+    if (!this.task?.type) return null;
+
+    const normalizedType = this.task.type.replace(/\s+/g, '').toLowerCase();
+
+    if (normalizedType === 'buildword') return 'anagram';
+    if (normalizedType === 'imagechoice') return 'image_choice';
+    if (normalizedType === 'textchoice') return 'text_choice';
+
+    return normalizedType;
+  }
+
   get isAnagramTask(): boolean {
-    return this.task?.type === 'BuildWord';
+    return this.getNormalizedTaskType() === 'anagram';
+  }
+
+  get canSubmit(): boolean {
+    if (!this.task || this.incorrectFeedback) return false;
+
+    if (this.isAnagramTask) {
+      return this.areAnagramAnswersComplete();
+    }
+
+    return this.selectedOptionIds.size > 0;
   }
 
   trackOption(index: number, option: TaskOptionVm): string {
@@ -479,15 +503,41 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.selectedOptionIds.clear();
     if (!this.task.options.length) return;
 
-    const orderedAnswers = this.task.options.map((option, index) => {
-      const key = this.getAnagramKey(option, index);
-      return this.anagramStates[key]?.answer || '';
-    });
-
-    if (orderedAnswers.every((answer) => !!answer)) {
-      const combinedAnswer = orderedAnswers.join('|');
-      this.selectedOptionIds.add(combinedAnswer);
+    if (this.areAnagramAnswersComplete()) {
+      this.task.options.forEach((option, index) => {
+        const selectionId = option.id || this.getAnagramKey(option, index);
+        this.selectedOptionIds.add(selectionId);
+      });
     }
+  }
+
+  private areAnagramAnswersComplete(): boolean {
+    if (!this.task) return false;
+
+    return this.task.options.every((option, index) => {
+      const key = this.getAnagramKey(option, index);
+      const answer = this.anagramStates[key]?.answer?.trim();
+      return !!answer && !!option.id;
+    });
+  }
+
+  private buildSubmitSelections(): TaskSubmitSelectionDto[] {
+    if (!this.task) return [];
+
+    if (this.isAnagramTask) {
+      return this.task.options.reduce((acc, option, index) => {
+        const key = this.getAnagramKey(option, index);
+        const answer = this.anagramStates[key]?.answer?.trim();
+
+        if (answer && option.id) {
+          acc.push({ selectedOptionId: option.id, text: answer });
+        }
+
+        return acc;
+      }, [] as TaskSubmitSelectionDto[]);
+    }
+
+    return Array.from(this.selectedOptionIds).map((id) => ({ selectedOptionId: id }));
   }
 
   private shufflePieces(pieces: AnagramPiece[]): void {

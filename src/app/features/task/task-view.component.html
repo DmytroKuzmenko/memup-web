@@ -190,7 +190,7 @@
         <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
           <button
             class="submit-button"
-            [disabled]="selectedOptionIds.size === 0 || submitting"
+            [disabled]="!canSubmit || submitting"
             (click)="onSubmit()"
           >
             <span *ngIf="!submitting">Submit</span>

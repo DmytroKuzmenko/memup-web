@@ -11,6 +11,7 @@ import {
   SubmitResponse,
   LeaderboardEntryVm,
   ReplayResponse,
+  TaskSubmitSelectionDto,
 } from '../shared/models/game.models';
 
 @Injectable({ providedIn: 'root' })
@@ -97,12 +98,12 @@ export class GameService {
   /** POST /api/game/tasks/{taskId}/submit */
   submitTask(
     taskId: string,
-    selectedOptionIds: string[],
+    selectedOptions: TaskSubmitSelectionDto[],
     attemptToken: string,
   ): Observable<SubmitResponse> {
     console.log('=== GAME SERVICE SUBMIT TASK ===');
     console.log('Task ID:', taskId);
-    console.log('Selected Option IDs:', selectedOptionIds);
+    console.log('Selected Options:', selectedOptions);
     console.log('Attempt Token:', attemptToken);
 
     const idempotencyKey = this.generateIdempotencyKey();
@@ -112,8 +113,7 @@ export class GameService {
       .post<SubmitResponse>(
         `${this.gameUrl}/tasks/${taskId}/submit`,
         {
-          // New API contract: send selectedOptionIds collection and attemptToken
-          selectedOptionIds,
+          selectedOptions,
           attemptToken,
         },
         {

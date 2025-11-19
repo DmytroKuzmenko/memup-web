@@ -61,6 +61,16 @@ export interface TaskVm {
   attemptToken: string;
 }
 
+export interface TaskSubmitSelectionDto {
+  selectedOptionId: string;
+  text?: string | null;
+}
+
+export interface TaskSubmitRequest {
+  selectedOptions: TaskSubmitSelectionDto[];
+  attemptToken: string;
+}
+
 export interface LevelProgressVm {
   completedTasks: number;
   totalTasks: number;
