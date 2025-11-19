@@ -185,7 +185,7 @@ export class TaskEditComponent {
         this.uploadOptionImages(v.options),
       ]);
 
-      const isAnagram = v.type === 'anagram';
+      const isAnagram = this.isAnagramLikeType(v.type);
 
       const mappedOptions = (this.options.controls as FormGroup[])
         .map((g, index) => {
@@ -368,5 +368,9 @@ export class TaskEditComponent {
     }
 
     return 'image';
+  }
+
+  isAnagramLikeType(type: TaskType | null | undefined): boolean {
+    return type === 'anagram' || type === 'gap_fill' || type === 'matching';
   }
 }

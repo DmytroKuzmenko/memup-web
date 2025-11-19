@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { APP_CONFIG, AppConfig } from './shared/app-config';
 
-export type TaskType = 'anagram' | 'image_choice' | 'text_choice';
+export type TaskType = 'anagram' | 'gap_fill' | 'matching' | 'image_choice' | 'text_choice';
 
 export type Guid = string;
 
@@ -135,6 +135,10 @@ function mapTaskType(type: number): TaskType {
       return 'image_choice';
     case 2:
       return 'text_choice';
+    case 3:
+      return 'gap_fill';
+    case 4:
+      return 'matching';
     default:
       return 'text_choice';
   }
@@ -148,6 +152,10 @@ function mapTaskTypeToNumber(type: TaskType): number {
       return 1;
     case 'text_choice':
       return 2;
+    case 'gap_fill':
+      return 3;
+    case 'matching':
+      return 4;
     default:
       return 2;
   }

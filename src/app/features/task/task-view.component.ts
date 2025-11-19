@@ -133,7 +133,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error loading level intro:', error);
-        this.introError = 'Не удалось загрузить данные уровня';
+        this.introError = 'Failed to load level data';
         this.introLoading = false;
       },
     });

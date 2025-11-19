@@ -37,6 +37,8 @@
             formControlName="type"
           >
             <option value="anagram">Build the word</option>
+            <option value="gap_fill">GapFill</option>
+            <option value="matching">Matching</option>
             <option value="image_choice">Image choice</option>
             <option value="text_choice">Text choice</option>
           </select>
@@ -202,7 +204,11 @@
 
         <!-- Answer options -->
         <div
-          *ngIf="form.value.type === 'image_choice' || form.value.type === 'text_choice' || form.value.type === 'anagram'"
+          *ngIf="
+            form.value.type === 'image_choice' ||
+            form.value.type === 'text_choice' ||
+            isAnagramLikeType(form.value.type)
+          "
           class="grid gap-2 rounded-xl border border-neutral-200 p-3"
         >
           <div class="text-sm font-semibold">Answer options</div>
@@ -212,7 +218,7 @@
             <ng-container *ngFor="let opt of options.controls; let i = index">
               <div [formGroupName]="i" class="grid gap-2 rounded-xl border border-neutral-200 p-2">
                 <div class="grid gap-3">
-                  <div *ngIf="form.value.type === 'anagram'; else choiceOption" class="grid gap-1.5 md:grid-cols-2 md:gap-3">
+                  <div *ngIf="isAnagramLikeType(form.value.type); else choiceOption" class="grid gap-1.5 md:grid-cols-2 md:gap-3">
                     <div class="grid gap-1.5">
                       <label class="text-sm font-medium">Parts</label>
                       <textarea
