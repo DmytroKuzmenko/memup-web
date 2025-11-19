@@ -88,26 +88,44 @@
         <div *ngIf="isGapFillTask" class="task-title gap-fill-header">
           <ng-container *ngIf="gapFillSegments.length; else gapFillFallback">
             <ng-container *ngFor="let segment of gapFillSegments">
-              <ng-container *ngIf="segment.type === 'text'">{{ segment.value }}</ng-container>
-              <select
+              <span
+                *ngIf="segment.type === 'text'"
+                class="gap-fill-text"
+                [innerHTML]="segment.value"
+              ></span>
+              <span
                 *ngIf="segment.type === 'blank'"
-                class="gap-fill-select"
-                [value]="gapFillSelections[segment.index]"
-                (change)="onGapFillChange(segment.index, $event)"
-                [disabled]="incorrectFeedback || showingExplanation"
+                class="gap-fill-blank"
+                [class.filled]="gapFillSelections[segment.index]"
+                [class.disabled]="incorrectFeedback || showingExplanation"
+                (click)="onGapFillBlankClick(segment.index)"
+                (keydown.enter)="onGapFillBlankClick(segment.index)"
+                (keydown.space)="onGapFillBlankClick(segment.index)"
+                [attr.role]="'button'"
+                [attr.tabindex]="incorrectFeedback || showingExplanation ? -1 : 0"
+                [attr.aria-disabled]="incorrectFeedback || showingExplanation"
               >
-                <option value="" disabled [selected]="!gapFillSelections[segment.index]" hidden>
-                  ...
-                </option>
-                <option *ngFor="let option of segment.options" [value]="option">
-                  {{ option }}
-                </option>
-              </select>
+                {{ gapFillSelections[segment.index] || '______' }}
+              </span>
             </ng-container>
           </ng-container>
           <ng-template #gapFillFallback>
-            {{ task.headerText || ('game.task.defaultTitle' | translate) }}
+            <span
+              class="gap-fill-text"
+              [innerHTML]="task.headerText || ('game.task.defaultTitle' | translate)"
+            ></span>
           </ng-template>
+        </div>
+        <div *ngIf="isGapFillTask && gapFillAvailableChips.length" class="gap-fill-chips">
+          <button
+            *ngFor="let chip of gapFillAvailableChips; let i = index"
+            type="button"
+            class="gap-fill-chip"
+            (click)="onGapFillChipSelect(chip, i)"
+            [disabled]="incorrectFeedback || showingExplanation"
+          >
+            {{ chip }}
+          </button>
         </div>
       </div>
 
@@ -278,7 +296,7 @@
         </div>
 
         <ng-template #standardOptions>
-          <div class="options-container">
+          <ng-container *ngIf="!isGapFillTask">
             <div
               *ngFor="let option of task.options; let i = index"
               class="option-item"
@@ -305,7 +323,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </ng-container>
         </ng-template>
       </ng-template>
 

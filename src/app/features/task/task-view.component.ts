@@ -32,7 +32,6 @@ interface GapFillSegmentText {
 interface GapFillSegmentBlank {
   type: 'blank';
   index: number;
-  options: string[];
 }
 
 type GapFillSegment = GapFillSegmentText | GapFillSegmentBlank;
@@ -65,6 +64,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   correctOptionIds: Set<string> = new Set<string>();
   anagramStates: Record<string, AnagramState> = {};
   gapFillSelections: Record<number, string> = {};
+  gapFillBlankOrder: number[] = [];
+  gapFillAvailableChips: string[] = [];
   matchingPairs: MatchingPair[] = [];
   matchingLeftOptions: MatchingOption[] = [];
   matchingRightOptions: MatchingOption[] = [];
@@ -382,6 +383,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.anagramStates = {};
     this.anagramPieceCounter = 0;
     this.gapFillSelections = {};
+    this.gapFillBlankOrder = [];
+    this.gapFillAvailableChips = [];
     this.matchingPairs = [];
     this.matchingLeftOptions = [];
     this.matchingRightOptions = [];
@@ -443,6 +446,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     if (normalizedType === 'buildword') return 'anagram';
     if (normalizedType === 'imagechoice') return 'image_choice';
     if (normalizedType === 'textchoice') return 'text_choice';
+    if (normalizedType === 'gapfill') return 'gap_fill';
+    if (normalizedType === 'gapfilltask') return 'gap_fill';
 
     return normalizedType;
   }
@@ -630,23 +635,41 @@ export class TaskViewComponent implements OnInit, OnDestroy {
 
   private initializeGapFillState(): void {
     this.gapFillSelections = {};
+    this.gapFillBlankOrder = [];
+    this.gapFillAvailableChips = [];
 
     if (!this.isGapFillTask || !this.task) return;
 
     const regex = /{(\d+)}/g;
     let match: RegExpExecArray | null;
-    while ((match = regex.exec(this.task.headerText || ''))) {
+    const encountered = new Set<number>();
+    const header = this.getDecodedGapFillHeaderText();
+    while ((match = regex.exec(header))) {
       const index = parseInt(match[1], 10);
       if (!Number.isNaN(index)) {
-        this.gapFillSelections[index] = '';
+        if (!encountered.has(index)) {
+          this.gapFillSelections[index] = '';
+          encountered.add(index);
+          this.gapFillBlankOrder.push(index);
+        }
       }
     }
+
+    this.gapFillAvailableChips = this.buildGapFillChipList();
+  }
+
+  private buildGapFillChipList(): string[] {
+    const label = this.task?.options?.[0]?.label ?? '';
+    return label
+      .split('|')
+      .map((value) => value.trim())
+      .filter((value) => !!value);
   }
 
   get gapFillSegments(): GapFillSegment[] {
     if (!this.isGapFillTask) return [];
 
-    const header = this.task?.headerText ?? '';
+    const header = this.getDecodedGapFillHeaderText();
     const segments: GapFillSegment[] = [];
     const regex = /{(\d+)}/g;
     let lastIndex = 0;
@@ -658,8 +681,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       }
 
       const index = parseInt(match[1], 10);
-      const options = this.getGapFillOptions(index);
-      segments.push({ type: 'blank', index, options });
+      segments.push({ type: 'blank', index });
       lastIndex = regex.lastIndex;
     }
 
@@ -670,32 +692,82 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     return segments.length ? segments : [{ type: 'text', value: header }];
   }
 
-  getGapFillOptions(index: number): string[] {
-    const option = this.task?.options[index];
-    if (!option) return [];
-
-    return option.label
-      .split('|')
-      .map((value) => value.trim())
-      .filter((value) => !!value);
-  }
-
-  onGapFillChange(index: number, event: Event): void {
+  onGapFillChipSelect(value: string, chipIndex: number): void {
     if (this.incorrectFeedback || this.showingExplanation) return;
 
-    const target = event.target as HTMLSelectElement | null;
-    if (!target) return;
+    const targetIndex = this.findFirstEmptyGapFillIndex();
+    if (targetIndex === null) return;
 
-    this.gapFillSelections[index] = target.value;
+    this.gapFillSelections[targetIndex] = value;
+    this.gapFillAvailableChips.splice(chipIndex, 1);
+  }
+
+  onGapFillBlankClick(index: number): void {
+    if (this.incorrectFeedback || this.showingExplanation) return;
+
+    const currentValue = this.gapFillSelections[index];
+    if (!currentValue) return;
+
+    this.gapFillSelections[index] = '';
+    this.gapFillAvailableChips.push(currentValue);
+  }
+
+  private findFirstEmptyGapFillIndex(): number | null {
+    const order = this.gapFillBlankOrder.length
+      ? this.gapFillBlankOrder
+      : Object.keys(this.gapFillSelections)
+          .map((key) => parseInt(key, 10))
+          .sort((a, b) => a - b);
+
+    for (const index of order) {
+      if (!this.gapFillSelections[index]) {
+        return index;
+      }
+    }
+
+    return null;
   }
 
   private isGapFillComplete(): boolean {
-    const segments = this.gapFillSegments;
-    if (!segments.length) return false;
+    const order = this.gapFillBlankOrder.length
+      ? this.gapFillBlankOrder
+      : Object.keys(this.gapFillSelections).map((key) => parseInt(key, 10));
 
-    return segments
-      .filter((segment) => segment.type === 'blank')
-      .every((segment) => !!this.gapFillSelections[(segment as GapFillSegmentBlank).index]);
+    if (!order.length) return false;
+
+    return order.every((index) => !!this.gapFillSelections[index]);
+  }
+
+  private getDecodedGapFillHeaderText(): string {
+    const raw = this.task?.headerText ?? '';
+    if (!raw) return '';
+
+    let decoded = raw;
+
+    decoded = decoded.replace(/&#(\d+);/g, (_, num) => {
+      const code = parseInt(num, 10);
+      return Number.isNaN(code) ? _ : String.fromCharCode(code);
+    });
+
+    decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
+      const code = parseInt(hex, 16);
+      return Number.isNaN(code) ? _ : String.fromCharCode(code);
+    });
+
+    const entityMap: Record<string, string> = {
+      '&lbrace;': '{',
+      '&#123;': '{',
+      '&rbrace;': '}',
+      '&#125;': '}',
+      '&nbsp;': '\u00a0',
+    };
+
+    Object.entries(entityMap).forEach(([entity, replacement]) => {
+      const regex = new RegExp(entity, 'gi');
+      decoded = decoded.replace(regex, replacement);
+    });
+
+    return decoded;
   }
 
   private initializeMatchingState(): void {
