@@ -16,6 +16,10 @@ import { TaskEditComponent } from './admin/tasks/task-edit.component';
 import { TaskViewComponent } from './features/task/task-view.component';
 import { LevelSummaryComponent } from './features/level-summary/level-summary.component';
 import { LeaderboardComponent } from './features/leaderboard/leaderboard.component';
+import { SurveyPlayerComponent } from './features/surveys/survey-player.component';
+import { SurveyAdminListComponent } from './admin/surveys/survey-admin-list.component';
+import { SurveyAdminEditorComponent } from './admin/surveys/survey-admin-editor.component';
+import { authGuard } from './auth.guard';
 
 export const routes: Routes = [
   { path: '', component: WelcomeComponent },
@@ -27,6 +31,7 @@ export const routes: Routes = [
   { path: 'levels/:id/play', component: TaskViewComponent },
   { path: 'levels/:id/summary', component: LevelSummaryComponent },
   { path: 'leaderboard', component: LeaderboardComponent },
+  { path: 'surveys/:surveyId', component: SurveyPlayerComponent, canActivate: [authGuard] },
   {
     path: 'admin',
     children: [
@@ -42,6 +47,9 @@ export const routes: Routes = [
 
       { path: 'tasks/new', component: TaskEditComponent, canActivate: [adminGuard] },
       { path: 'tasks/:id', component: TaskEditComponent, canActivate: [adminGuard] },
+
+      { path: 'surveys', component: SurveyAdminListComponent, canActivate: [adminGuard] },
+      { path: 'surveys/:surveyId/edit', component: SurveyAdminEditorComponent, canActivate: [adminGuard] },
 
       // --- NEW: Memes admin ---
       // { path: 'memes', component: AdminMemesComponent, canActivate: [adminGuard] },

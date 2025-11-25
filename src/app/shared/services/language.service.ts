@@ -257,6 +257,16 @@ export class LanguageService {
           start: 'Start',
         },
       },
+      surveys: {
+        thankYou: {
+          title: 'Thank you!',
+          submitted: 'Thank you! Your responses have been submitted.',
+          alreadySubmitted: 'You have already completed this survey.',
+        },
+        errors: {
+          alreadySubmitted: 'You have already completed this survey.',
+        },
+      },
       common: {
         close: 'Close',
       },
@@ -385,6 +395,16 @@ export class LanguageService {
         },
         intro: {
           start: 'Почати',
+        },
+      },
+      surveys: {
+        thankYou: {
+          title: 'Дякуємо!',
+          submitted: 'Дякуємо! Ваші відповіді надіслані.',
+          alreadySubmitted: 'Ви вже пройшли це опитування.',
+        },
+        errors: {
+          alreadySubmitted: 'Ви вже пройшли це опитування.',
         },
       },
       common: {
@@ -518,6 +538,16 @@ export class LanguageService {
         },
         intro: {
           start: 'Starten',
+        },
+      },
+      surveys: {
+        thankYou: {
+          title: 'Danke!',
+          submitted: 'Danke! Deine Antworten wurden übermittelt.',
+          alreadySubmitted: 'Du hast diese Umfrage bereits abgeschlossen.',
+        },
+        errors: {
+          alreadySubmitted: 'Du hast diese Umfrage bereits abgeschlossen.',
         },
       },
       common: {

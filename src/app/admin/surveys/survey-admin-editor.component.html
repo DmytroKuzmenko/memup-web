@@ -1,0 +1,54 @@
+<div class="editor">
+  <div class="editor__header">
+    <h1>Edit Survey</h1>
+    <div class="status" *ngIf="surveyId">ID: {{ surveyId }}</div>
+  </div>
+
+  <div *ngIf="loading()" class="state">Loading survey...</div>
+  <div *ngIf="!loading() && loadError()" class="state state--error">{{ loadError() }}</div>
+
+  <div *ngIf="!loading() && !loadError()">
+    <div class="grid">
+      <div class="panel">
+        <div class="panel__header">
+          <h2>JSON Definition</h2>
+          <span *ngIf="validationError()" class="error">Invalid JSON: {{ validationError() }}</span>
+        </div>
+        <textarea
+          class="json-input"
+          [ngModel]="jsonText()"
+          (ngModelChange)="onJsonChange($event)"
+          rows="18"
+          spellcheck="false"
+        ></textarea>
+        <div class="actions">
+          <button class="btn" type="button" (click)="save()" [disabled]="saving() || !!validationError()">
+            {{ saving() ? 'Saving...' : 'Save' }}
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel__header">
+          <h2>Quick Preview</h2>
+        </div>
+
+        <div *ngIf="!preview()" class="muted">Valid JSON preview will appear here.</div>
+
+        <div *ngIf="preview() as survey" class="preview">
+          <div class="preview__item"><strong>Title:</strong> {{ survey.title }}</div>
+          <div class="preview__item"><strong>Hidden:</strong> {{ survey.isHidden ? 'Yes' : 'No' }}</div>
+          <div class="preview__item"><strong>Questions:</strong> {{ survey.questions.length || 0 }}</div>
+
+          <div class="question-list" *ngIf="survey.questions.length">
+            <div *ngFor="let question of survey.questions" class="question-card">
+              <div class="question-card__id">{{ question.id }}</div>
+              <div class="question-card__text">{{ question.text }}</div>
+              <div class="question-card__type">{{ question.type }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

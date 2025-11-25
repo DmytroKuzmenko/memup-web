@@ -1,0 +1,92 @@
+<div class="survey-wrapper">
+  <div class="survey-card">
+    <div *ngIf="loading()" class="loading">Loading survey...</div>
+
+    <ng-container *ngIf="!loading()">
+      <div *ngIf="error()" class="error">{{ error() }}</div>
+
+      <ng-container *ngIf="!error()">
+        <ng-container *ngIf="thankYou(); else player">
+          <div class="thank-you">
+            <h2>{{ thankYouTitle() }}</h2>
+            <p>{{ thankYouMessage() }}</p>
+          </div>
+        </ng-container>
+
+        <ng-template #player>
+          <div *ngIf="survey() && currentQuestion() as question" class="question-block">
+            <div class="progress">
+              <span>{{ progressText }}</span>
+              <div class="progress-bar">
+                <div
+                  class="progress-fill"
+                  [style.width.%]="progressPercentage"
+                ></div>
+              </div>
+            </div>
+
+            <h2 class="question-title">{{ survey()?.title }}</h2>
+            <p class="question-text">{{ question.text }}</p>
+
+            <div [ngSwitch]="question.type" class="question-variant">
+              <div *ngSwitchCase="'single-choice'" class="option-list">
+                <button
+                  *ngFor="let option of question.options || []; trackBy: trackByOption"
+                  class="option"
+                  type="button"
+                  [class.option--selected]="answers()[question.id] === option"
+                  (click)="setSingleChoice(question.id, option)"
+                  [disabled]="submitting()"
+                >
+                  {{ option }}
+                </button>
+              </div>
+
+              <div *ngSwitchCase="'scale'" class="scale">
+                <button
+                  *ngFor="let value of getScaleValues(question); trackBy: trackByNumber"
+                  class="scale__option"
+                  type="button"
+                  [class.scale__option--selected]="answers()[question.id] === value"
+                  (click)="setScaleAnswer(question.id, value)"
+                  [disabled]="submitting()"
+                >
+                  {{ value }}
+                </button>
+              </div>
+
+              <div *ngSwitchCase="'short-text'" class="short-text">
+                <input
+                  class="text-input"
+                  type="text"
+                  [ngModel]="getTextAnswer(question.id)"
+                  (ngModelChange)="setTextAnswer(question.id, $event)"
+                  [disabled]="submitting()"
+                  placeholder="Type your answer"
+                />
+              </div>
+
+              <div *ngSwitchDefault class="error">Unsupported question type</div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--ghost" type="button" (click)="goBack()" [disabled]="currentIndex() === 0">
+                Back
+              </button>
+              <button
+                class="btn"
+                type="button"
+                (click)="next()"
+                [disabled]="!isCurrentAnswered() || submitting()"
+              >
+                {{ isLastQuestion ? 'Submit' : 'Next' }}
+              </button>
+            </div>
+
+            <div *ngIf="submitting()" class="loading">Submitting...</div>
+          </div>
+        </ng-template>
+      </ng-container>
+    </ng-container>
+  </div>
+</div>

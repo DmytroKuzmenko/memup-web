@@ -1,0 +1,28 @@
+<div class="admin-list">
+  <div class="header">
+    <h1>Surveys</h1>
+    <button class="refresh" type="button" (click)="loadSurveys()" [disabled]="loading">Refresh</button>
+  </div>
+
+  <div *ngIf="loading" class="state">Loading surveys...</div>
+  <div *ngIf="!loading && error" class="state state--error">{{ error }}</div>
+
+  <div *ngIf="!loading && !error" class="table">
+    <div class="table__header">
+      <span>Title</span>
+      <span>ID</span>
+      <span>Status</span>
+      <span>Actions</span>
+    </div>
+
+    <div *ngFor="let survey of surveys" class="table__row">
+      <span class="title">{{ survey.title }}</span>
+      <span class="muted">{{ survey.surveyId }}</span>
+      <span>
+        <span *ngIf="survey.isHidden" class="badge">Hidden</span>
+        <span *ngIf="!survey.isHidden" class="badge badge--visible">Visible</span>
+      </span>
+      <a class="link" [routerLink]="['/admin/surveys', survey.surveyId, 'edit']">Edit</a>
+    </div>
+  </div>
+</div>
