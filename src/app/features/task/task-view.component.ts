@@ -578,7 +578,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.task.options.forEach((option, optionIndex) => {
       const optionKey = this.getAnagramKey(option, optionIndex);
       const pieces: AnagramPiece[] = [];
-      const parts = option.label?.split(';') ?? [];
+      const parts = option.label?.split(/[;|]/) ?? [];
       parts.forEach((rawPart, partIndex) => {
         const text = rawPart.trim();
         if (!text) return;
