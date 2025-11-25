@@ -336,6 +336,7 @@
         <ng-container *ngIf="!incorrectFeedback; else tryAgainButton">
           <button
             class="submit-button"
+            #submitButton
             [disabled]="!canSubmit || submitting"
             (click)="onSubmit()"
           >

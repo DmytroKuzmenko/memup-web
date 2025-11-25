@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GameService } from '../../services/game.service';
@@ -55,7 +55,7 @@ interface MatchingOption {
   templateUrl: './task-view.component.html',
   styleUrls: ['./task-view.component.scss'],
 })
-export class TaskViewComponent implements OnInit, OnDestroy {
+export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   task: TaskVm | null = null;
   levelId: string = '';
   levelIntro: LevelIntroVm | null = null;
@@ -87,6 +87,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   introError: string | null = null;
   animationPlaying = false;
   showAnimationImage = false;
+  @ViewChild('submitButton') submitButtonRef?: ElementRef<HTMLButtonElement>;
 
   private gameService = inject(GameService);
   private route = inject(ActivatedRoute);
@@ -95,6 +96,10 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   private sanitizer = inject(DomSanitizer);
   private levelCompletionState: { earnedScore?: number; maxScore?: number } | null = null;
   private anagramPieceCounter = 0;
+  private submitScrollTimeoutId: any = null;
+  private hasScrolledToSubmit = false;
+  private lastSubmitEligibleState = false;
+  private explanationScrollTimeoutId: any = null;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -109,6 +114,16 @@ export class TaskViewComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
+    }
+
+    if (this.submitScrollTimeoutId) {
+      clearTimeout(this.submitScrollTimeoutId);
+      this.submitScrollTimeoutId = null;
+    }
+
+    if (this.explanationScrollTimeoutId) {
+      clearTimeout(this.explanationScrollTimeoutId);
+      this.explanationScrollTimeoutId = null;
     }
   }
 
@@ -310,6 +325,7 @@ export class TaskViewComponent implements OnInit, OnDestroy {
       }
       this.showingExplanation = true;
       this.explanationText = response.explanationText || '';
+      this.scheduleExplanationScroll();
       const correctIds = response.correctOptionIds?.length
         ? response.correctOptionIds
         : Array.from(this.selectedOptionIds);
@@ -373,6 +389,19 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.loadCurrentTask();
   }
 
+  ngAfterViewChecked(): void {
+    const canSubmit = this.canSubmit && !this.showingExplanation && !this.submitting;
+
+    if (canSubmit && !this.lastSubmitEligibleState && !this.hasScrolledToSubmit) {
+      this.hasScrolledToSubmit = true;
+      this.scheduleSubmitButtonScroll();
+    } else if (!canSubmit && this.lastSubmitEligibleState) {
+      this.hasScrolledToSubmit = false;
+    }
+
+    this.lastSubmitEligibleState = canSubmit;
+  }
+
   private resetInteractionState(): void {
     this.selectedOptionIds.clear();
     this.incorrectFeedback = false;
@@ -392,6 +421,8 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     this.matchedRightIds.clear();
     this.selectedMatchingLeftId = null;
     this.selectedMatchingRightId = null;
+    this.resetSubmitScrollState();
+    this.cancelExplanationScroll();
   }
 
   formatTime(seconds: number): string {
@@ -883,5 +914,53 @@ export class TaskViewComponent implements OnInit, OnDestroy {
     const rightText = (rightRaw ?? '').trim() || leftText;
 
     return { leftText, rightText };
+  }
+
+  private scheduleSubmitButtonScroll(): void {
+    if (this.submitScrollTimeoutId) {
+      clearTimeout(this.submitScrollTimeoutId);
+    }
+
+    this.submitScrollTimeoutId = setTimeout(() => {
+      this.submitScrollTimeoutId = null;
+      const button = this.submitButtonRef?.nativeElement;
+      if (button) {
+        button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 0);
+  }
+
+  private resetSubmitScrollState(): void {
+    this.hasScrolledToSubmit = false;
+    this.lastSubmitEligibleState = false;
+  }
+
+  private scheduleExplanationScroll(): void {
+    this.cancelExplanationScroll();
+
+    this.explanationScrollTimeoutId = setTimeout(() => {
+      this.explanationScrollTimeoutId = null;
+      this.scrollToBottom();
+    }, 0);
+  }
+
+  private cancelExplanationScroll(): void {
+    if (this.explanationScrollTimeoutId) {
+      clearTimeout(this.explanationScrollTimeoutId);
+      this.explanationScrollTimeoutId = null;
+    }
+  }
+
+  private scrollToBottom(): void {
+    if (typeof window === 'undefined') return;
+
+    const doc = window.document;
+    const docHeight = Math.max(
+      doc?.documentElement?.scrollHeight ?? 0,
+      doc?.body?.scrollHeight ?? 0,
+      window.innerHeight ?? 0,
+    );
+
+    window.scrollTo({ top: docHeight, behavior: 'smooth' });
   }
 }
