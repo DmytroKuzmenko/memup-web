@@ -105,7 +105,14 @@
         <div class="score-container" *ngIf="section.maxScore > 0">
           <div class="score-info">
             <span class="score-text">
-              {{ section.score }} / {{ section.maxScore }} {{ 'sections.points' | translate }}
+              {{ section.score }} / {{ section.maxScore }}
+              <span class="points-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M12 17.27L18.18 21L16.54 13.97L22 9.23997L14.81 8.62997L12 2L9.18999 8.62997L1.99999 9.23997L7.45999 13.97L5.81999 21L12 17.27Z"
+                  />
+                </svg>
+              </span>
             </span>
             <span class="score-percentage">
               {{ getScorePercentage(section) | number: '1.0-0' }}%
