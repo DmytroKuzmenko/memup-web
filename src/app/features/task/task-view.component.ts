@@ -147,6 +147,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.initializeMatchingState();
             this.startTimer();
             this.loading = false;
+            this.scrollToTop();
           } else {
           // No more tasks, navigate to level summary
           const navigationExtras = response.levelProgress
@@ -962,5 +963,10 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
     );
 
     window.scrollTo({ top: docHeight, behavior: 'smooth' });
+  }
+
+  private scrollToTop(): void {
+    if (typeof window === 'undefined') return;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
