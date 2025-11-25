@@ -392,8 +392,9 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   ngAfterViewChecked(): void {
     const canSubmit = this.canSubmit && !this.showingExplanation && !this.submitting;
+    const allowSubmitScroll = !this.isBuildTheWordTask();
 
-    if (canSubmit && !this.lastSubmitEligibleState && !this.hasScrolledToSubmit) {
+    if (allowSubmitScroll && canSubmit && !this.lastSubmitEligibleState && !this.hasScrolledToSubmit) {
       this.hasScrolledToSubmit = true;
       this.scheduleSubmitButtonScroll();
     } else if (!canSubmit && this.lastSubmitEligibleState) {
@@ -921,6 +922,10 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.submitScrollTimeoutId) {
       clearTimeout(this.submitScrollTimeoutId);
     }
+    if (this.isBuildTheWordTask()) {
+      this.hasScrolledToSubmit = false;
+      return;
+    }
 
     this.submitScrollTimeoutId = setTimeout(() => {
       this.submitScrollTimeoutId = null;
@@ -964,7 +969,16 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
       window.innerHeight ?? 0,
     );
 
-    window.scrollTo({ top: docHeight, behavior: 'smooth' });
+    const summary = doc?.querySelector('.summary-content') as HTMLElement | null;
+    const margin = 32;
+    let target = docHeight;
+
+    if (summary) {
+      const summaryBottom = summary.getBoundingClientRect().bottom + window.scrollY + margin;
+      target = Math.min(target, summaryBottom);
+    }
+
+    window.scrollTo({ top: target, behavior: 'smooth' });
   }
 
   private scrollToTop(): void {
