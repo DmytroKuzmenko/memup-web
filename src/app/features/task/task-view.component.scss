@@ -248,7 +248,7 @@
   flex-wrap: wrap;
   gap: 0.6rem;
   justify-content: center;
-  margin-top: 0.75rem;
+  margin-top: 1.5rem;
 }
 
 .gap-fill-chip {
@@ -544,6 +544,23 @@
     width: 100%;
     justify-content: flex-start;
     flex-wrap: wrap;
+  }
+
+  .matched-pair {
+    align-items: flex-start;
+  }
+
+  .pair-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 0.1rem;
+  }
+
+  .pair-right {
+    justify-self: flex-start;
+    text-align: left;
   }
 }
 
