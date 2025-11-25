@@ -475,7 +475,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     const normalizedType = this.task.type.replace(/\s+/g, '').toLowerCase();
 
-    if (normalizedType === 'buildword') return 'anagram';
+    if (normalizedType === 'buildword' || normalizedType === 'buildtheword') return 'anagram';
     if (normalizedType === 'imagechoice') return 'image_choice';
     if (normalizedType === 'textchoice') return 'text_choice';
     if (normalizedType === 'gapfill') return 'gap_fill';
@@ -939,6 +939,8 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   private scheduleExplanationScroll(): void {
     this.cancelExplanationScroll();
 
+    if (this.shouldSkipExplanationScroll()) return;
+
     this.explanationScrollTimeoutId = setTimeout(() => {
       this.explanationScrollTimeoutId = null;
       this.scrollToBottom();
@@ -968,5 +970,20 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   private scrollToTop(): void {
     if (typeof window === 'undefined') return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  private shouldSkipExplanationScroll(): boolean {
+    return this.hasResultMedia() || this.isBuildTheWordTask();
+  }
+
+  private hasResultMedia(): boolean {
+    const path = this.task?.resultImagePath?.trim();
+    const source = this.task?.resultImageSource?.trim();
+    return !!(path || source);
+  }
+
+  private isBuildTheWordTask(): boolean {
+    const type = this.task?.type?.replace(/\s+/g, '').toLowerCase();
+    return type === 'buildtheword';
   }
 }
