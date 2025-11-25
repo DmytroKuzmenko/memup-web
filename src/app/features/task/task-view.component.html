@@ -134,7 +134,7 @@
       </div>
 
       <!-- Task image -->
-      <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container">
+      <div *ngIf="displayedImageUrl as imageUrl" class="task-image-container" #resultMediaContainer>
         <ng-container *ngIf="isVideoUrl(imageUrl); else taskImage">
           <video
             [src]="imageUrl"

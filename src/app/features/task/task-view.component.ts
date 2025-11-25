@@ -88,6 +88,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   animationPlaying = false;
   showAnimationImage = false;
   @ViewChild('submitButton') submitButtonRef?: ElementRef<HTMLButtonElement>;
+  @ViewChild('resultMediaContainer') resultMediaContainerRef?: ElementRef<HTMLDivElement>;
 
   private gameService = inject(GameService);
   private route = inject(ActivatedRoute);
@@ -100,6 +101,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   private hasScrolledToSubmit = false;
   private lastSubmitEligibleState = false;
   private explanationScrollTimeoutId: any = null;
+  private resultMediaScrollTimeoutId: any = null;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -124,6 +126,11 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (this.explanationScrollTimeoutId) {
       clearTimeout(this.explanationScrollTimeoutId);
       this.explanationScrollTimeoutId = null;
+    }
+
+    if (this.resultMediaScrollTimeoutId) {
+      clearTimeout(this.resultMediaScrollTimeoutId);
+      this.resultMediaScrollTimeoutId = null;
     }
   }
 
@@ -425,6 +432,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.selectedMatchingRightId = null;
     this.resetSubmitScrollState();
     this.cancelExplanationScroll();
+    this.cancelResultMediaScroll();
   }
 
   formatTime(seconds: number): string {
@@ -943,6 +951,12 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   private scheduleExplanationScroll(): void {
     this.cancelExplanationScroll();
+    this.cancelResultMediaScroll();
+
+    if (this.hasResultMedia()) {
+      this.scheduleResultMediaScroll();
+      return;
+    }
 
     if (this.shouldSkipExplanationScroll()) return;
 
@@ -987,7 +1001,7 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private shouldSkipExplanationScroll(): boolean {
-    return this.hasResultMedia() || this.isBuildTheWordTask();
+    return this.isBuildTheWordTask();
   }
 
   private hasResultMedia(): boolean {
@@ -999,5 +1013,28 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   private isBuildTheWordTask(): boolean {
     const type = this.task?.type?.replace(/\s+/g, '').toLowerCase();
     return type === 'buildtheword';
+  }
+
+  private scheduleResultMediaScroll(): void {
+    if (this.resultMediaScrollTimeoutId) {
+      clearTimeout(this.resultMediaScrollTimeoutId);
+    }
+
+    this.resultMediaScrollTimeoutId = setTimeout(() => {
+      this.resultMediaScrollTimeoutId = null;
+      const container = this.resultMediaContainerRef?.nativeElement;
+      if (container?.scrollIntoView) {
+        container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      this.scrollToBottom();
+    }, 0);
+  }
+
+  private cancelResultMediaScroll(): void {
+    if (this.resultMediaScrollTimeoutId) {
+      clearTimeout(this.resultMediaScrollTimeoutId);
+      this.resultMediaScrollTimeoutId = null;
+    }
   }
 }
