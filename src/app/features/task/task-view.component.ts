@@ -89,6 +89,19 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   showAnimationImage = false;
   @ViewChild('submitButton') submitButtonRef?: ElementRef<HTMLButtonElement>;
   @ViewChild('resultMediaContainer') resultMediaContainerRef?: ElementRef<HTMLDivElement>;
+  @ViewChild('taskVideo')
+  set taskVideoElementRef(ref: ElementRef<HTMLVideoElement> | undefined) {
+    if (ref?.nativeElement === this.taskVideoElement) {
+      return;
+    }
+
+    this.teardownTaskVideoListeners();
+    this.taskVideoElement = ref?.nativeElement ?? null;
+
+    if (this.taskVideoElement) {
+      this.setupTaskVideoListeners(this.taskVideoElement);
+    }
+  }
 
   private gameService = inject(GameService);
   private route = inject(ActivatedRoute);
@@ -102,6 +115,11 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   private lastSubmitEligibleState = false;
   private explanationScrollTimeoutId: any = null;
   private resultMediaScrollTimeoutId: any = null;
+  private taskVideoElement: HTMLVideoElement | null = null;
+  private taskVideoPlayListener: (() => void) | null = null;
+  private taskVideoEndedListener: (() => void) | null = null;
+  private isVideoFullscreenActive = false;
+  private hasRequestedVideoFullscreen = false;
 
   ngOnInit(): void {
     this.route.params.subscribe((params) => {
@@ -132,6 +150,9 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
       clearTimeout(this.resultMediaScrollTimeoutId);
       this.resultMediaScrollTimeoutId = null;
     }
+
+    this.exitVideoFullscreen();
+    this.teardownTaskVideoListeners();
   }
 
   loadCurrentTask(): void {
@@ -412,6 +433,8 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private resetInteractionState(): void {
+    this.exitVideoFullscreen();
+    this.teardownTaskVideoListeners();
     this.selectedOptionIds.clear();
     this.incorrectFeedback = false;
     this.incorrectMessage = null;
@@ -1036,5 +1059,167 @@ export class TaskViewComponent implements OnInit, OnDestroy, AfterViewChecked {
       clearTimeout(this.resultMediaScrollTimeoutId);
       this.resultMediaScrollTimeoutId = null;
     }
+  }
+
+  private setupTaskVideoListeners(video: HTMLVideoElement): void {
+    this.hasRequestedVideoFullscreen = false;
+
+    this.taskVideoPlayListener = () => this.handleTaskVideoPlay();
+    this.taskVideoEndedListener = () => this.handleTaskVideoEnded();
+
+    video.addEventListener('play', this.taskVideoPlayListener);
+    video.addEventListener('ended', this.taskVideoEndedListener);
+
+    if (!video.paused) {
+      this.handleTaskVideoPlay();
+    }
+  }
+
+  private teardownTaskVideoListeners(): void {
+    if (this.taskVideoElement && this.taskVideoPlayListener) {
+      this.taskVideoElement.removeEventListener('play', this.taskVideoPlayListener);
+    }
+
+    if (this.taskVideoElement && this.taskVideoEndedListener) {
+      this.taskVideoElement.removeEventListener('ended', this.taskVideoEndedListener);
+    }
+
+    this.taskVideoElement = null;
+    this.taskVideoPlayListener = null;
+    this.taskVideoEndedListener = null;
+    this.hasRequestedVideoFullscreen = false;
+  }
+
+  private handleTaskVideoPlay(): void {
+    if (this.hasRequestedVideoFullscreen) {
+      return;
+    }
+
+    if (!this.shouldAutoFullscreenVideo()) {
+      return;
+    }
+
+    this.hasRequestedVideoFullscreen = true;
+    this.enterVideoFullscreen();
+  }
+
+  private handleTaskVideoEnded(): void {
+    this.exitVideoFullscreen();
+  }
+
+  private shouldAutoFullscreenVideo(): boolean {
+    if (!this.task || this.showingExplanation) {
+      return false;
+    }
+
+    return this.isVideoUrl(this.task.imageUrl);
+  }
+
+  private enterVideoFullscreen(): void {
+    const video = this.taskVideoElement;
+    if (!video) {
+      return;
+    }
+
+    const anyVideo = video as any;
+    const requestFullscreen =
+      video.requestFullscreen?.bind(video) ??
+      anyVideo.webkitRequestFullscreen?.bind(video) ??
+      anyVideo.mozRequestFullScreen?.bind(video) ??
+      anyVideo.msRequestFullscreen?.bind(video);
+
+    if (requestFullscreen) {
+      try {
+        const result = requestFullscreen();
+        if (result instanceof Promise) {
+          result
+            .then(() => {
+              this.isVideoFullscreenActive = true;
+            })
+            .catch(() => {
+              this.isVideoFullscreenActive = false;
+            });
+        } else {
+          this.isVideoFullscreenActive = true;
+        }
+      } catch {
+        this.isVideoFullscreenActive = false;
+      }
+      return;
+    }
+
+    if (typeof anyVideo.webkitEnterFullscreen === 'function') {
+      try {
+        anyVideo.webkitEnterFullscreen();
+        this.isVideoFullscreenActive = true;
+      } catch {
+        this.isVideoFullscreenActive = false;
+      }
+    }
+  }
+
+  private exitVideoFullscreen(): void {
+    if (!this.isVideoFullscreenActive && !this.isBrowserFullscreenActive()) {
+      return;
+    }
+
+    const documentExit = this.getDocumentExitFullscreen();
+    if (documentExit) {
+      try {
+        const result = documentExit();
+        if (result instanceof Promise) {
+          result
+            .catch(() => undefined)
+            .finally(() => {
+              this.isVideoFullscreenActive = false;
+            });
+        } else {
+          this.isVideoFullscreenActive = false;
+        }
+      } catch {
+        this.isVideoFullscreenActive = false;
+      }
+      return;
+    }
+
+    const video = this.taskVideoElement as any;
+    if (video && typeof video.webkitExitFullscreen === 'function') {
+      try {
+        video.webkitExitFullscreen();
+      } catch {
+        // Ignore errors in browsers that do not support exiting this way.
+      }
+    }
+
+    this.isVideoFullscreenActive = false;
+  }
+
+  private getDocumentExitFullscreen(): (() => Promise<void> | void) | null {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    const doc: any = document;
+    return (
+      document.exitFullscreen?.bind(document) ??
+      doc.webkitExitFullscreen?.bind(document) ??
+      doc.mozCancelFullScreen?.bind(document) ??
+      doc.msExitFullscreen?.bind(document) ??
+      null
+    );
+  }
+
+  private isBrowserFullscreenActive(): boolean {
+    if (typeof document === 'undefined') {
+      return false;
+    }
+
+    const doc: any = document;
+    return Boolean(
+      doc.fullscreenElement ||
+        doc.webkitFullscreenElement ||
+        doc.mozFullScreenElement ||
+        doc.msFullscreenElement,
+    );
   }
 }
