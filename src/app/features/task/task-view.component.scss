@@ -123,9 +123,9 @@
 .intro-animation-image {
   position: absolute;
   top: 50%;
-  left: -100%;
-  -webkit-transform: translate(-100vw, -50%);
-          transform: translate(-100vw, -50%);
+  left: 0;
+  -webkit-transform: translate(calc(-100% - 12vw), -50%);
+          transform: translate(calc(-100% - 12vw), -50%);
   will-change: transform;
   /* Set fixed height for consistent animation, let width adjust proportionally */
   height: clamp(120px, 10vh, 600px);
@@ -138,37 +138,6 @@
 @media (max-width: 768px) {
   .intro-animation-image {
     height: clamp(120px, 10vh, 600px);
-    max-width: none;
-    left: 50%;
-    -webkit-transform: translate(calc(-50vw - 50%), -50%);
-            transform: translate(calc(-50vw - 50%), -50%);
-  }
-
-  .intro-animation-image.playing {
-    -webkit-animation: intro-slide-mobile 3s linear forwards;
-            animation: intro-slide-mobile 3s linear forwards;
-  }
-
-  @keyframes intro-slide-mobile {
-    0% {
-      -webkit-transform: translate(calc(-50vw - 50%), -50%);
-              transform: translate(calc(-50vw - 50%), -50%);
-    }
-    100% {
-      -webkit-transform: translate(calc(50vw + 50%), -50%);
-              transform: translate(calc(50vw + 50%), -50%);
-    }
-  }
-
-  @-webkit-keyframes intro-slide-mobile {
-    0% {
-      -webkit-transform: translate(calc(-50vw - 50%), -50%);
-              transform: translate(calc(-50vw - 50%), -50%);
-    }
-    100% {
-      -webkit-transform: translate(calc(50vw + 50%), -50%);
-              transform: translate(calc(50vw + 50%), -50%);
-    }
   }
 }
 
@@ -633,23 +602,23 @@
 
 @keyframes intro-slide {
   0% {
-    -webkit-transform: translate(-100vw, -50%);
-            transform: translate(-100vw, -50%);
+    -webkit-transform: translate(calc(-100% - 12vw), -50%);
+            transform: translate(calc(-100% - 12vw), -50%);
   }
   100% {
-    -webkit-transform: translate(200vw, -50%);
-            transform: translate(200vw, -50%);
+    -webkit-transform: translate(calc(100vw + 12vw), -50%);
+            transform: translate(calc(100vw + 12vw), -50%);
   }
 }
 
 @-webkit-keyframes intro-slide {
   0% {
-    -webkit-transform: translate(-100vw, -50%);
-            transform: translate(-100vw, -50%);
+    -webkit-transform: translate(calc(-100% - 12vw), -50%);
+            transform: translate(calc(-100% - 12vw), -50%);
   }
   100% {
-    -webkit-transform: translate(200vw, -50%);
-            transform: translate(200vw, -50%);
+    -webkit-transform: translate(calc(100vw + 12vw), -50%);
+            transform: translate(calc(100vw + 12vw), -50%);
   }
 }
 
