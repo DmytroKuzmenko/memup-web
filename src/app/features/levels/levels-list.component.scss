@@ -177,25 +177,27 @@
   transform: translateY(30px);
 }
 
-.level-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+@media (hover: hover) and (pointer: fine) {
+  .level-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 
-  .card-overlay {
-    opacity: 1;
-  }
-
-  .play-icon {
-    transform: scale(1.1);
-
-    svg {
-      transform: scale(1.1);
-      filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+    .card-overlay {
+      opacity: 1;
     }
-  }
 
-  .arrow-icon {
-    transform: translateX(4px);
+    .play-icon {
+      transform: scale(1.1);
+
+      svg {
+        transform: scale(1.1);
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+      }
+    }
+
+    .arrow-icon {
+      transform: translateX(4px);
+    }
   }
 }
 
@@ -281,6 +283,12 @@
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
     transition: all 0.3s ease;
     animation: playIconPulse 2s ease-in-out infinite;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .card-overlay {
+    display: none;
   }
 }
 
