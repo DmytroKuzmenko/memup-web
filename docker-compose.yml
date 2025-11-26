@@ -8,19 +8,40 @@ services:
     restart: always
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.routers.memeup-web.rule=Host(`memeup.kuzmenko.dev`)'
-      - 'traefik.http.routers.memeup-web.entrypoints=websecure'
-      - 'traefik.http.routers.memeup-web.tls.certresolver=myresolver'
-      - 'traefik.http.routers.memeup-web-api.rule=Host(`memeup.kuzmenko.dev`) && PathPrefix(`/api`)'
-      - 'traefik.http.routers.memeup-web-api.entrypoints=websecure'
-      - 'traefik.http.routers.memeup-web-api.tls.certresolver=myresolver'
-      - 'traefik.http.routers.memeup-web-api.service=memeup-web-api'
-      - 'traefik.http.routers.memeup-web-api.middlewares=memeup-web-api-headers'
+
+      # 1) Веб для memeup.kuzmenko.dev
+      - 'traefik.http.routers.memeup-web-kuz.rule=Host(`memeup.kuzmenko.dev`)'
+      - 'traefik.http.routers.memeup-web-kuz.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web-kuz.tls.certresolver=myresolver'
+
+      # 2) Веб для memeup.de
+      - 'traefik.http.routers.memeup-web-de.rule=Host(`memeup.de`)'
+      - 'traefik.http.routers.memeup-web-de.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web-de.tls.certresolver=myresolver'
+
+      # 3) API через тот же фронтовый контейнер (как у тебя было)
+
+      # API для memeup.kuzmenko.dev
+      - 'traefik.http.routers.memeup-web-api-kuz.rule=Host(`memeup.kuzmenko.dev`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.memeup-web-api-kuz.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web-api-kuz.tls.certresolver=myresolver'
+      - 'traefik.http.routers.memeup-web-api-kuz.service=memeup-web-api'
+      - 'traefik.http.routers.memeup-web-api-kuz.middlewares=memeup-web-api-headers'
+
+      # API для memeup.de
+      - 'traefik.http.routers.memeup-web-api-de.rule=Host(`memeup.de`) && PathPrefix(`/api`)'
+      - 'traefik.http.routers.memeup-web-api-de.entrypoints=websecure'
+      - 'traefik.http.routers.memeup-web-api-de.tls.certresolver=myresolver'
+      - 'traefik.http.routers.memeup-web-api-de.service=memeup-web-api'
+      - 'traefik.http.routers.memeup-web-api-de.middlewares=memeup-web-api-headers'
+
+      # сам сервис API (как у тебя было)
       - 'traefik.http.services.memeup-web-api.loadbalancer.server.url=https://memeup-api.kuzmenko.dev'
       - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.Host=memeup-api.kuzmenko.dev'
       - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Host=memeup.kuzmenko.dev'
       - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Proto=https'
       - 'traefik.http.middlewares.memeup-web-api-headers.headers.customrequestheaders.X-Forwarded-Port=443'
+
     networks:
       - web
 
