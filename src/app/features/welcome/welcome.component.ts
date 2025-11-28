@@ -123,14 +123,22 @@ export class WelcomeComponent {
     this.error = '';
 
     this.authService.register({ email, userName, password }).subscribe({
-      next: (response) => {
-        this.loading = false;
+      next: () => {
         this.error = '';
-        // Show success message and redirect to login
-        alert(this.languageService.translate('welcome.forms.signup.success'));
-        this.showLogin();
-        // Pre-fill email in login form
-        this.loginForm.patchValue({ email });
+
+        this.authService.login({ email, password }).subscribe({
+          next: () => {
+            this.loading = false;
+            this.router.navigate(['/sections']);
+          },
+          error: (loginErr) => {
+            this.loading = false;
+            console.error('Auto-login error:', loginErr);
+            this.error = this.languageService.translate(
+              'welcome.forms.login.errors.invalidCredentials',
+            );
+          },
+        });
       },
       error: (err) => {
         this.loading = false;
